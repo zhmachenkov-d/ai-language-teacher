@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Key screen — Прогресс</title>
+<style>
+/*
+  KEY SCREEN: progress
+  Spine sections governing this screen:
+    DESIGN.md — Brand & Style; Colors; Typography; Layout & Spacing; Elevation & Depth; Shapes;
+                Components (progress-sections, accent-rule, cta-button-coral); Do's and Don'ts
+    EXPERIENCE.md — Foundation; Information Architecture (Progress);
+                    Voice and Tone; Component Patterns (Progress sections, Accent rule, CTA);
+                    State Patterns (Progress sync after micro-lesson); Interaction Primitives (Inline expand);
+                    Key Flows (Flow 5 — Progress diagnosis)
+  Tokens locked from DESIGN.md neutral-cool-lines (light).
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: #E5E7EB;
+  color: #1A1C1E;
+  padding: 24px;
+  line-height: 1.35;
+}
+.window {
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  background: #F7F8F9;
+  border: 1px solid #D1D5DB;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.titlebar {
+  height: 28px;
+  background: #1A1C1E;
+  color: #E8EAED;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.titlebar .dots span {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 1px;
+  background: #6B7280;
+  margin-right: 4px;
+}
+.app { display: flex; flex: 1; min-height: 0; }
+
+.nav {
+  width: 168px;
+  background: #F3F4F6;
+  border-right: 1px solid #D1D5DB;
+  padding: 14px 0;
+  flex-shrink: 0;
+}
+.nav .brand {
+  padding: 2px 14px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A1C1E;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav .brand .mark {
+  width: 16px; height: 16px;
+  border: 2px solid #FF8161;
+  border-radius: 9999px;
+  position: relative;
+  flex-shrink: 0;
+}
+.nav .brand .mark::after {
+  content: "";
+  position: absolute;
+  left: 2px; right: 2px; top: 50%;
+  border-top: 1px solid #FF8161;
+}
+.nav a {
+  display: block;
+  padding: 8px 14px;
+  color: #6B7280;
+  text-decoration: none;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+}
+.nav a.active {
+  color: #1A1C1E;
+  font-weight: 600;
+  background: #FFFFFF;
+  border-left-color: #FF8161;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #F7F8F9;
+}
+.toolbar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 10px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #D1D5DB;
+  flex-shrink: 0;
+}
+.toolbar h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1C1E;
+}
+.toolbar .meta {
+  font-size: 12px;
+  color: #6B7280;
+  margin-left: 8px;
+}
+
+.scroll {
+  flex: 1;
+  overflow: hidden;
+  padding: 16px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section {
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+.section .sec-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #6B7280;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section .sec-label::before {
+  content: "";
+  width: 16px;
+  height: 3px;
+  background: #FF8161;
+}
+.section .sec-label .hint {
+  margin-left: auto;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* 1. Streak / XP */
+.stats-row {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+.stat {
+  flex: 1;
+  padding: 10px 12px;
+  background: #F7F8F9;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+}
+.stat .k {
+  font-size: 11px;
+  color: #6B7280;
+  margin-bottom: 4px;
+}
+.stat .v {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1A1C1E;
+  line-height: 1.1;
+}
+.stat .s {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 2px;
+}
+.streak-dots {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.streak-dots span {
+  width: 10px; height: 10px;
+  border-radius: 9999px;
+  background: #D1D5DB;
+}
+.streak-dots span.on { background: #B75C45; }
+.streak-dots span.miss { background: #C44B3A; }
+
+/* 2. Mastery */
+.mastery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.m-card {
+  padding: 10px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  background: #F7F8F9;
+}
+.m-card .t {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1C1E;
+  margin-bottom: 6px;
+}
+.bar {
+  height: 6px;
+  background: #D1D5DB;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.bar .fill {
+  height: 100%;
+  background: #B75C45;
+  border-radius: 4px;
+}
+.m-card .pct {
+  font-size: 11px;
+  color: #6B7280;
+}
+
+/* 3. Error themes — expanded */
+.section.expanded {
+  border-color: #FF8161;
+}
+.err-list { display: flex; flex-direction: column; gap: 6px; }
+.err-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  background: #FFFFFF;
+  font-size: 13px;
+  color: #1A1C1E;
+}
+.err-row.open {
+  background: #FFF9F7;
+  border-color: #FF8161;
+}
+.err-row .cat {
+  font-weight: 600;
+  min-width: 120px;
+}
+.err-row .count {
+  font-size: 12px;
+  color: #6B7280;
+  min-width: 72px;
+}
+.err-row .bar-mini {
+  flex: 1;
+  height: 4px;
+  background: #D1D5DB;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.err-row .bar-mini .fill {
+  height: 100%;
+  background: #C44B3A;
+  border-radius: 4px;
+}
+.err-row .chev {
+  font-size: 11px;
+  color: #6B7280;
+  width: 14px;
+  text-align: center;
+}
+.err-detail {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: #F7F8F9;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+}
+.err-detail .lead {
+  font-size: 13px;
+  color: #1A1C1E;
+  margin-bottom: 8px;
+}
+.err-detail ul {
+  list-style: none;
+  font-size: 12px;
+  color: #6B7280;
+}
+.err-detail li {
+  padding: 4px 0;
+  border-bottom: 1px solid #D1D5DB;
+  display: flex;
+  gap: 10px;
+}
+.err-detail li:last-child { border-bottom: none; }
+.err-detail .ex {
+  color: #1A1C1E;
+  font-weight: 600;
+  min-width: 140px;
+}
+.err-detail .fix { color: #FF8161; font-weight: 600; }
+
+/* 4. Words */
+.words-wrap {
+  display: flex;
+  gap: 16px;
+}
+.words-col { flex: 1; }
+.words-col .sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1C1E;
+  margin-bottom: 6px;
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  background: #F7F8F9;
+  color: #1A1C1E;
+}
+.chip.err {
+  background: #FFE8E2;
+  border-color: #FF8161;
+}
+.chip .muted { color: #6B7280; }
+
+/* 5. Living plan link */
+.plan-link .body {
+  font-size: 13px;
+  color: #1A1C1E;
+  margin-bottom: 12px;
+  max-width: 640px;
+}
+.plan-link .body .muted { color: #6B7280; }
+.cta-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.cta {
+  display: inline-block;
+  padding: 9px 16px;
+  background: #B75C45;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.cta-sec {
+  display: inline-block;
+  padding: 8px 14px;
+  background: #FFFFFF;
+  color: #1A1C1E;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <div class="dots"><span></span><span></span><span></span></div>
+    AI Language Teacher — Прогресс
+  </div>
+  <div class="app">
+    <nav class="nav">
+      <div class="brand"><span class="mark"></span>Учитель</div>
+      <a href="#">Календарь</a>
+      <a href="#">План</a>
+      <a class="active" href="#">Прогресс</a>
+      <a href="#">Настройки</a>
+    </nav>
+    <div class="main">
+      <div class="toolbar">
+        <h1>Прогресс</h1>
+        <span class="meta">Обновлено после урока · 23 сен</span>
+      </div>
+      <div class="scroll">
+
+        <!-- 1. Streak / XP -->
+        <section class="section">
+          <div class="sec-label">Серия и опыт</div>
+          <div class="stats-row">
+            <div class="stat">
+              <div class="k">Серия</div>
+              <div class="v">6 дней</div>
+              <div class="s">Лучшая: 11</div>
+              <div class="streak-dots">
+                <span class="on"></span><span class="on"></span><span class="on"></span>
+                <span class="miss"></span>
+                <span class="on"></span><span class="on"></span><span class="on"></span>
+              </div>
+            </div>
+            <div class="stat">
+              <div class="k">Опыт (XP)</div>
+              <div class="v">1 840</div>
+              <div class="s">+120 за сегодняшний урок</div>
+            </div>
+            <div class="stat">
+              <div class="k">Уроки за неделю</div>
+              <div class="v">4 / 5</div>
+              <div class="s">План: 5 занятий</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Mastery -->
+        <section class="section">
+          <div class="sec-label">Освоение</div>
+          <div class="mastery-grid">
+            <div class="m-card">
+              <div class="t">Travel / Аэропорт</div>
+              <div class="bar"><div class="fill" style="width:72%"></div></div>
+              <div class="pct">72% · устойчиво в диалоге</div>
+            </div>
+            <div class="m-card">
+              <div class="t">Past Simple</div>
+              <div class="bar"><div class="fill" style="width:58%"></div></div>
+              <div class="pct">58% · ещё путает did/was</div>
+            </div>
+            <div class="m-card">
+              <div class="t">Числительные</div>
+              <div class="bar"><div class="fill" style="width:41%"></div></div>
+              <div class="pct">41% · слабое звено</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Error themes — ONE expanded inline -->
+        <section class="section expanded">
+          <div class="sec-label">
+            Темы ошибок
+            <span class="hint">Развёрнуто · орфография</span>
+          </div>
+          <div class="err-list">
+            <div class="err-row open">
+              <span class="cat">Орфография</span>
+              <span class="count">14 за 14 дн.</span>
+              <div class="bar-mini"><div class="fill" style="width:88%"></div></div>
+              <span class="chev">▾</span>
+            </div>
+            <div class="err-detail">
+              <div class="lead">Чаще всего — удвоение согласных и -ed в Past Simple при письме в Telegram.</div>
+              <ul>
+                <li><span class="ex">boarding → bordding</span><span>Модель: <span class="fix">boarding</span></span></li>
+                <li><span class="ex">arrived → arived</span><span>Модель: <span class="fix">arrived</span></span></li>
+                <li><span class="ex">passport → pasport</span><span>Модель: <span class="fix">passport</span></span></li>
+              </ul>
+            </div>
+            <div class="err-row">
+              <span class="cat">Грамматика</span>
+              <span class="count">9 за 14 дн.</span>
+              <div class="bar-mini"><div class="fill" style="width:56%"></div></div>
+              <span class="chev">▸</span>
+            </div>
+            <div class="err-row">
+              <span class="cat">Перевод</span>
+              <span class="count">7 за 14 дн.</span>
+              <div class="bar-mini"><div class="fill" style="width:44%"></div></div>
+              <span class="chev">▸</span>
+            </div>
+            <div class="err-row">
+              <span class="cat">Проблемные темы</span>
+              <span class="count">Числительные, th-</span>
+              <div class="bar-mini"><div class="fill" style="width:62%"></div></div>
+              <span class="chev">▸</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. Words + translation errors -->
+        <section class="section">
+          <div class="sec-label">Слова и перевод</div>
+          <div class="words-wrap">
+            <div class="words-col">
+              <div class="sub">Выучено недавно</div>
+              <div class="chip-row">
+                <span class="chip">boarding</span>
+                <span class="chip">gate</span>
+                <span class="chip">baggage claim</span>
+                <span class="chip">customs</span>
+                <span class="chip">departure</span>
+              </div>
+            </div>
+            <div class="words-col">
+              <div class="sub">Ошибки перевода</div>
+              <div class="chip-row">
+                <span class="chip err">«стойка» → <span class="muted">counter</span> ≠ desk</span>
+                <span class="chip err">«багаж» → luggage / baggage</span>
+                <span class="chip err">«вылет» → departure</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. Living-plan link -->
+        <section class="section plan-link">
+          <div class="sec-label">Что учитель усилит</div>
+          <div class="body">
+            По орфографии и числительным учитель подтянет следующий блок в живом плане —
+            короткий письменный разбор + oral-повтор объявлений.
+            <span class="muted">Не серия дней, а следующий шаг обучения.</span>
+          </div>
+          <div class="cta-row">
+            <a class="cta" href="#">Учесть в живом плане</a>
+            <a class="cta-sec" href="#">Открыть план</a>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

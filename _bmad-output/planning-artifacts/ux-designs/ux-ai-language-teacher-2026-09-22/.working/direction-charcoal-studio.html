@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Direction: Charcoal Studio</title>
+<style>
+/*
+  DIRECTION: charcoal-studio
+  Hex palette:
+    --coral:       #FF8161
+    --coral-dim:   #E87558
+    --charcoal:    #1E1E1E
+    --charcoal-2:  #2A2A2A
+    --ink:         #141414
+    --muted:       #8C8C8C
+    --line:        #3A3A3A
+    --surface:     #F4F4F4
+    --white:       #FFFFFF
+    --grid:        #E8E8E8
+    --missed:      #E05545
+  Personality: Charcoal-forward studio tool with coral sparks only. Serious working-tool register; friendly microcopy; ALL CAPS chrome labels.
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Trebuchet MS", "Arial Narrow", Arial, sans-serif;
+  background: #C8C8C8;
+  color: #141414;
+  padding: 24px;
+  line-height: 1.3;
+}
+.rationale {
+  max-width: 1280px;
+  margin: 0 auto 16px;
+  font-size: 13px;
+  color: #222;
+  background: #1E1E1E;
+  color: #E8E8E8;
+  padding: 12px 16px;
+  border-bottom: 3px solid #FF8161;
+}
+.rationale strong {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FF8161;
+  margin-bottom: 6px;
+}
+.label-strip {
+  max-width: 1280px;
+  margin: 0 auto 10px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #555;
+}
+.window {
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  background: #F4F4F4;
+  border: 1px solid #1E1E1E;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.titlebar {
+  height: 26px;
+  background: #141414;
+  color: #B8B8B8;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.app { display: flex; flex: 1; min-height: 0; }
+.nav {
+  width: 160px;
+  background: #1E1E1E;
+  color: #CFCFCF;
+  padding: 14px 0;
+  flex-shrink: 0;
+}
+.nav .brand {
+  padding: 2px 14px 18px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #FF8161;
+  font-weight: 700;
+}
+.nav a {
+  display: block;
+  padding: 9px 14px;
+  color: #A8A8A8;
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border-left: 2px solid transparent;
+}
+.nav a:hover { color: #fff; }
+.nav a.active {
+  color: #fff;
+  background: #2A2A2A;
+  border-left-color: #FF8161;
+}
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #F4F4F4; }
+.toolbar {
+  height: 40px;
+  background: #2A2A2A;
+  color: #EDEDED;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.toolbar .title {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.toolbar .title i {
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  background: #FF8161;
+  vertical-align: middle;
+  margin-right: 8px;
+  font-style: normal;
+}
+.seg { display: flex; border: 1px solid #4A4A4A; }
+.seg span {
+  padding: 3px 10px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #A0A0A0;
+  border-right: 1px solid #4A4A4A;
+}
+.seg span:last-child { border-right: 0; }
+.seg span.on { background: #FF8161; color: #fff; border-color: #FF8161; }
+.spacer { flex: 1; }
+.week-nav { font-size: 11px; color: #9A9A9A; letter-spacing: 0.06em; text-transform: uppercase; }
+.body { flex: 1; display: flex; min-height: 0; }
+.cal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid #CFCFCF;
+  background: #fff;
+}
+.days {
+  display: grid;
+  grid-template-columns: 44px repeat(7, 1fr);
+  border-bottom: 1px solid #1E1E1E;
+  background: #1E1E1E;
+  color: #CFCFCF;
+  flex-shrink: 0;
+}
+.days .h {
+  padding: 8px 2px;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-right: 1px solid #333;
+}
+.days .h .n {
+  display: block;
+  margin: 4px auto 0;
+  width: 24px; height: 24px;
+  line-height: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 0;
+}
+.days .h.today .n {
+  background: #FF8161;
+  color: #fff;
+}
+.grid-wrap { flex: 1; overflow: hidden; position: relative; }
+.grid { display: grid; grid-template-columns: 44px repeat(7, 1fr); height: 100%; }
+.time-col, .day-col { border-right: 1px solid #E8E8E8; position: relative; }
+.hour {
+  height: 54px;
+  border-bottom: 1px solid #EDEDED;
+  font-size: 10px;
+  color: #8C8C8C;
+  padding: 2px 4px 0 0;
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+.day-col .hour { padding: 0; }
+.event {
+  position: absolute;
+  left: 2px; right: 2px;
+  padding: 3px 5px;
+  font-size: 11px;
+  overflow: hidden;
+  border-radius: 0;
+  background: #F4F4F4;
+  border-left: 3px solid #8C8C8C;
+}
+.event .t { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event .m { font-size: 10px; color: #6A6A6A; letter-spacing: 0.02em; }
+.event.done { border-left-color: #6A6A6A; color: #6A6A6A; background: #F0F0F0; }
+.event.sched { border-left-color: #1E1E1E; background: #FAFAFA; }
+.event.next {
+  border-left: 3px solid #FF8161;
+  background: #1E1E1E;
+  color: #fff;
+}
+.event.next .m { color: #FF8161; }
+.event.missed {
+  border-left-color: #E05545;
+  background: #FFF5F3;
+  color: #8B2E22;
+}
+.event.incomplete {
+  border-left-style: dashed;
+  border-left-color: #1E1E1E;
+  background: #FFF;
+}
+.bang {
+  display: inline-block;
+  background: #E05545;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  width: 12px; height: 12px;
+  line-height: 12px;
+  text-align: center;
+  margin-right: 3px;
+}
+.now-line {
+  position: absolute;
+  left: 0; right: 0;
+  top: 162px;
+  border-top: 2px solid #FF8161;
+  z-index: 2;
+}
+.now-line::before {
+  content: "";
+  position: absolute;
+  left: 0; top: -4px;
+  width: 0; height: 0;
+  border-left: 5px solid #FF8161;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+.panel {
+  width: 286px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-left: 1px solid #CFCFCF;
+}
+.panel-head {
+  background: #1E1E1E;
+  color: #fff;
+  padding: 14px 14px 12px;
+}
+.panel-head .kicker {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FF8161;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.panel-head h2 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.panel-head .meta {
+  font-size: 11px;
+  color: #A8A8A8;
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+}
+.panel-body { padding: 12px 14px; flex: 1; background: #F4F4F4; }
+.panel-body .sec {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1E1E1E;
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #FF8161;
+  display: inline-block;
+}
+.panel-body ul { list-style: none; margin-top: 4px; }
+.panel-body li {
+  padding: 6px 0;
+  font-size: 12px;
+  border-bottom: 1px solid #E0E0E0;
+  color: #333;
+}
+.cta {
+  margin: 0;
+  display: block;
+  text-align: center;
+  padding: 12px;
+  background: #FF8161;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.cta:hover { background: #E87558; }
+.secondary {
+  max-width: 1280px;
+  margin: 20px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.chip {
+  background: #1E1E1E;
+  color: #E0E0E0;
+  padding: 12px;
+  font-size: 12px;
+  border-top: 2px solid #FF8161;
+}
+.chip .t {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #FF8161;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.chip .ghost {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border: 1px solid #FF8161;
+  color: #FF8161;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.chip .fill {
+  display: inline-block;
+  margin-top: 8px;
+  margin-right: 6px;
+  padding: 6px 10px;
+  background: #FF8161;
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+<p class="rationale">
+  <strong>Charcoal Studio</strong>
+  Угольный «студийный» инструмент: тёмный хром, ALL CAPS ярлыки, острые углы. Коралл — редкие искры (сегодня, следующий урок инвертированным блоком, линия времени, CTA). Серьёзный рабочий регистр при дружеской микрокопии в панели.
+</p>
+<div class="label-strip">Hero · Календарь (неделя) · ~1280×800</div>
+<div class="window">
+  <div class="titlebar">AI Language Teacher · Studio</div>
+  <div class="app">
+    <nav class="nav">
+      <div class="brand">Teacher</div>
+      <a class="active" href="#">Календарь</a>
+      <a href="#">План</a>
+      <a href="#">Прогресс</a>
+      <a href="#">Настройки</a>
+    </nav>
+    <div class="main">
+      <div class="toolbar">
+        <span class="title"><i></i>22–28 сен · Неделя</span>
+        <div class="seg"><span class="on">Неделя</span><span>Месяц</span></div>
+        <span class="spacer"></span>
+        <span class="week-nav">‹ &nbsp; Сегодня &nbsp; ›</span>
+      </div>
+      <div class="body">
+        <div class="cal">
+          <div class="days">
+            <div class="h"></div>
+            <div class="h">Пн<div class="n">22</div></div>
+            <div class="h today">Вт<div class="n">23</div></div>
+            <div class="h">Ср<div class="n">24</div></div>
+            <div class="h">Чт<div class="n">25</div></div>
+            <div class="h">Пт<div class="n">26</div></div>
+            <div class="h">Сб<div class="n">27</div></div>
+            <div class="h">Вс<div class="n">28</div></div>
+          </div>
+          <div class="grid-wrap">
+            <div class="grid">
+              <div class="time-col">
+                <div class="hour">09:00</div><div class="hour">10:00</div><div class="hour">11:00</div><div class="hour">12:00</div>
+                <div class="hour">13:00</div><div class="hour">14:00</div><div class="hour">15:00</div><div class="hour">16:00</div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event done" style="top:54px;height:50px;"><div class="t">Работа / Созвон</div><div class="m">Завершён</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="now-line"></div>
+                <div class="event missed" style="top:0;height:50px;"><div class="t"><span class="bang">!</span>Еда / В кафе</div><div class="m">Пропущен</div></div>
+                <div class="event next" style="top:108px;height:72px;"><div class="t">Travel / В аэропорту</div><div class="m">Следующий · 11:00–12:15</div></div>
+                <div class="event incomplete" style="top:270px;height:50px;"><div class="t">Gram / Past Simple</div><div class="m">Не завершён</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:162px;height:50px;"><div class="t">Жильё / Отель</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:54px;height:50px;"><div class="t">Покупки / Магазин</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:216px;height:50px;"><div class="t">Друзья / Встреча</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+              <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+            </div>
+          </div>
+        </div>
+        <aside class="panel">
+          <div class="panel-head">
+            <div class="kicker">Следующий урок</div>
+            <h2>Travel / В аэропорту</h2>
+            <div class="meta">Вт 23 сен · 11:00–12:15</div>
+          </div>
+          <div class="panel-body">
+            <div class="sec">Краткий план</div>
+            <ul>
+              <li>Регистрация и паспортный контроль</li>
+              <li>Диалог у стойки информации</li>
+              <li>Объявления в аэропорту</li>
+            </ul>
+          </div>
+          <a class="cta" href="#">Начать урок</a>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="label-strip" style="margin-top:18px;">Вторичная полоса · CTA sparks</div>
+<div class="secondary">
+  <div class="chip">
+    <div class="t">Без выбора</div>
+    выберите урок для просмотра краткой информации или истории
+  </div>
+  <div class="chip">
+    <div class="t">Не завершён</div>
+    Gram / Past Simple
+    <div><span class="fill">Продолжить</span></div>
+  </div>
+  <div class="chip">
+    <div class="t">Завершён</div>
+    Работа / Созвон
+    <div><span class="ghost">Открыть историю</span></div>
+  </div>
+</div>
+</body>
+</html>

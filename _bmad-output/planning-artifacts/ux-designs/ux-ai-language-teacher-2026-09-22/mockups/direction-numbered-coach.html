@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Direction: Numbered Coach</title>
+<style>
+/*
+  DIRECTION: numbered-coach
+  Hex palette:
+    --coral:       #FF8161
+    --coral-soft:  #FFE4DC
+    --wash:        #FFF9F7
+    --charcoal:    #333333
+    --ink:         #262626
+    --muted:       #737373
+    --line:        #E8DDD8
+    --white:       #FFFFFF
+    --missed:      #C94F3C
+    --done:        #6A6A6A
+  Personality: Coach-like side panel with numbered coral circles + short accent rules from the PSD. Warmer wash; calendar stays dense.
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Tahoma, Verdana, "Segoe UI", sans-serif;
+  background: #E9E2DE;
+  color: #262626;
+  padding: 24px;
+  line-height: 1.4;
+}
+.rationale {
+  max-width: 1280px;
+  margin: 0 auto 16px;
+  font-size: 13px;
+  color: #333;
+  background: #fff;
+  padding: 12px 16px;
+  border-left: 4px solid #FF8161;
+}
+.rationale strong { display: block; font-size: 12px; color: #FF8161; margin-bottom: 6px; }
+.label-strip {
+  max-width: 1280px;
+  margin: 0 auto 10px;
+  font-size: 11px;
+  color: #737373;
+}
+.window {
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  background: #FFF9F7;
+  border: 1px solid #D4C8C2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.titlebar {
+  height: 28px;
+  background: #333;
+  color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.app { display: flex; flex: 1; min-height: 0; }
+.nav {
+  width: 176px;
+  background: #fff;
+  border-right: 1px solid #E8DDD8;
+  padding: 16px 0;
+  flex-shrink: 0;
+}
+.nav .brand {
+  padding: 0 16px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+}
+.nav .brand .mark {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2px solid #FF8161;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 6px;
+  position: relative;
+}
+.nav .brand .mark::after {
+  content: "";
+  position: absolute;
+  left: 3px; right: 3px; top: 50%;
+  border-top: 1px solid #FF8161;
+}
+.nav a {
+  display: block;
+  padding: 9px 16px;
+  color: #555;
+  text-decoration: none;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+}
+.nav a.active {
+  color: #FF8161;
+  font-weight: 700;
+  background: #FFF0EC;
+  border-left-color: #FF8161;
+}
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.toolbar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  background: #fff;
+  border-bottom: 1px solid #E8DDD8;
+  flex-shrink: 0;
+}
+.toolbar h1 {
+  font-size: 15px;
+  font-weight: 700;
+}
+.toolbar h1 .rule {
+  display: inline-block;
+  width: 22px;
+  height: 3px;
+  background: #FF8161;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+.seg {
+  display: flex;
+  gap: 0;
+  margin-left: 12px;
+  border: 1px solid #E8DDD8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.seg span {
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #737373;
+  background: #fff;
+}
+.seg span.on { background: #FF8161; color: #fff; }
+.spacer { flex: 1; }
+.body { flex: 1; display: flex; min-height: 0; }
+.cal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid #E8DDD8;
+  background: #fff;
+}
+.days {
+  display: grid;
+  grid-template-columns: 48px repeat(7, 1fr);
+  border-bottom: 1px solid #E8DDD8;
+  background: #FFF9F7;
+  flex-shrink: 0;
+}
+.days .h {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 11px;
+  color: #737373;
+  border-right: 1px solid #F2E9E5;
+}
+.days .h .n {
+  display: block;
+  margin: 4px auto 0;
+  width: 28px; height: 28px;
+  line-height: 28px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #262626;
+  border-radius: 50%;
+}
+.days .h.today .n {
+  background: #FF8161;
+  color: #fff;
+}
+.grid-wrap { flex: 1; overflow: hidden; position: relative; }
+.grid { display: grid; grid-template-columns: 48px repeat(7, 1fr); height: 100%; }
+.time-col, .day-col { border-right: 1px solid #F2E9E5; position: relative; }
+.hour {
+  height: 52px;
+  border-bottom: 1px solid #F5EFEC;
+  font-size: 10px;
+  color: #9A8F8A;
+  padding: 2px 4px 0 0;
+  text-align: right;
+}
+.day-col .hour { padding: 0; }
+.event {
+  position: absolute;
+  left: 3px; right: 3px;
+  padding: 4px 6px;
+  font-size: 11px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #FFF9F7;
+  border: 1px solid #E8DDD8;
+}
+.event .t { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event .m { font-size: 10px; color: #737373; }
+.event.done { background: #F4F4F4; color: #6A6A6A; border-color: #DDD; }
+.event.sched { background: #fff; }
+.event.next {
+  background: #FFE4DC;
+  border: 1.5px solid #FF8161;
+  font-weight: 700;
+}
+.event.missed {
+  background: #FFF5F3;
+  border-color: #C94F3C;
+}
+.event.incomplete {
+  background: #FFFBF5;
+  border-style: dashed;
+  border-color: #C9A06A;
+}
+.bang {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px; height: 14px;
+  background: #C94F3C;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  margin-right: 3px;
+}
+.now-line {
+  position: absolute;
+  left: 0; right: 0;
+  top: 156px;
+  border-top: 2px solid #FF8161;
+  z-index: 2;
+}
+.now-line::before {
+  content: "";
+  position: absolute;
+  left: -3px; top: -5px;
+  width: 8px; height: 8px;
+  background: #FF8161;
+  border-radius: 50%;
+}
+.panel {
+  width: 300px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.panel-head {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #E8DDD8;
+}
+.panel-head .kicker {
+  font-size: 11px;
+  color: #FF8161;
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-head .kicker::before {
+  content: "";
+  width: 20px;
+  height: 3px;
+  background: #FF8161;
+}
+.panel-head h2 { font-size: 16px; font-weight: 700; }
+.panel-head .meta { font-size: 11px; color: #737373; margin-top: 4px; }
+.panel-body { padding: 14px 18px; flex: 1; }
+.panel-body .sec {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #333;
+}
+.steps { list-style: none; }
+.steps li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.num {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  background: #FF8161;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cta {
+  margin: 12px 18px 18px;
+  display: block;
+  text-align: center;
+  padding: 11px;
+  background: #FF8161;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.secondary {
+  max-width: 1280px;
+  margin: 20px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.chip {
+  background: #fff;
+  border: 1px solid #D4C8C2;
+  padding: 14px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+.chip .t {
+  font-weight: 700;
+  color: #FF8161;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chip .t::before {
+  content: "";
+  width: 16px;
+  height: 3px;
+  background: #FF8161;
+}
+.chip .row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+.chip .num { width: 20px; height: 20px; font-size: 10px; }
+</style>
+</head>
+<body>
+<p class="rationale">
+  <strong>Numbered Coach</strong>
+  Мотивы брошюры выходят на первый план в правой панели: нумерованные коралловые круги шагов плана и короткие accent-rules у заголовков. Календарь остаётся плотным и «аутлуковым», но тон чуть теплее и коучинговый — sentence case в навигации, круглый «сегодня».
+</p>
+<div class="label-strip">Hero · Календарь (неделя) · ~1280×800</div>
+<div class="window">
+  <div class="titlebar">AI Language Teacher — Календарь</div>
+  <div class="app">
+    <nav class="nav">
+      <div class="brand"><span class="mark"></span>Учитель</div>
+      <a class="active" href="#">Календарь</a>
+      <a href="#">Living plan / План</a>
+      <a href="#">Прогресс</a>
+      <a href="#">Настройки</a>
+    </nav>
+    <div class="main">
+      <div class="toolbar">
+        <h1><span class="rule"></span>Неделя 22–28 сентября</h1>
+        <div class="seg"><span class="on">Неделя</span><span>Месяц</span></div>
+        <span class="spacer"></span>
+        <span style="font-size:12px;color:#737373;">‹ &nbsp; Сегодня &nbsp; ›</span>
+      </div>
+      <div class="body">
+        <div class="cal">
+          <div class="days">
+            <div class="h"></div>
+            <div class="h">Пн<div class="n">22</div></div>
+            <div class="h today">Вт<div class="n">23</div></div>
+            <div class="h">Ср<div class="n">24</div></div>
+            <div class="h">Чт<div class="n">25</div></div>
+            <div class="h">Пт<div class="n">26</div></div>
+            <div class="h">Сб<div class="n">27</div></div>
+            <div class="h">Вс<div class="n">28</div></div>
+          </div>
+          <div class="grid-wrap">
+            <div class="grid">
+              <div class="time-col">
+                <div class="hour">09:00</div><div class="hour">10:00</div><div class="hour">11:00</div><div class="hour">12:00</div>
+                <div class="hour">13:00</div><div class="hour">14:00</div><div class="hour">15:00</div><div class="hour">16:00</div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event done" style="top:52px;height:48px;"><div class="t">Работа / Созвон</div><div class="m">Завершён</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="now-line"></div>
+                <div class="event missed" style="top:0;height:48px;"><div class="t"><span class="bang">!</span>Еда / В кафе</div><div class="m">Пропущен</div></div>
+                <div class="event next" style="top:104px;height:70px;"><div class="t">Travel / В аэропорту</div><div class="m">Следующий · 11:00–12:15</div></div>
+                <div class="event incomplete" style="top:260px;height:48px;"><div class="t">Gram / Past Simple</div><div class="m">Не завершён</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:156px;height:48px;"><div class="t">Жильё / Отель</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:52px;height:48px;"><div class="t">Покупки / Магазин</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:208px;height:48px;"><div class="t">Друзья / Встреча</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+              <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+            </div>
+          </div>
+        </div>
+        <aside class="panel">
+          <div class="panel-head">
+            <div class="kicker">Следующий урок</div>
+            <h2>Travel / В аэропорту</h2>
+            <div class="meta">Вт 23 сен · 11:00–12:15</div>
+          </div>
+          <div class="panel-body">
+            <div class="sec">Краткий план</div>
+            <ul class="steps">
+              <li><span class="num">1</span><span>Регистрация и паспортный контроль</span></li>
+              <li><span class="num">2</span><span>Диалог у стойки информации</span></li>
+              <li><span class="num">3</span><span>Объявления в аэропорту</span></li>
+            </ul>
+          </div>
+          <a class="cta" href="#">Начать урок</a>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="label-strip" style="margin-top:18px;">Вторичная полоса · мотивы панели</div>
+<div class="secondary">
+  <div class="chip">
+    <div class="t">Без выбора</div>
+    выберите урок для просмотра краткой информации или истории
+  </div>
+  <div class="chip">
+    <div class="t">Не завершён</div>
+    Gram / Past Simple
+    <div class="row"><span class="num">…</span> Продолжить с шага 2</div>
+  </div>
+  <div class="chip">
+    <div class="t">Завершён</div>
+    Работа / Созвон — Открыть историю
+  </div>
+</div>
+</body>
+</html>

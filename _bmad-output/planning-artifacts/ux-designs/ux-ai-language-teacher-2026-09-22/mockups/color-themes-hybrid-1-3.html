@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Color Themes — Hybrid 1+3</title>
+<style>
+/*
+  COLOR THEMES RENDERER — Hybrid direction 1+3
+  (coral-accent-tool density + numbered-coach motifs)
+
+  Locked brand:
+    Accent coral spark ~#FF8161 (not large brochure blocks)
+    Warm wash light surfaces ~#FFF9F7
+    Light sidebar in light mode
+    Motifs: numbered coral circles + short accent rules
+    Type: sentence case nav; ALL CAPS section labels
+    Dense Outlook calendar vibe
+
+  ---------------------------------------------------------------------------
+  VARIATION 1 — psd-faithful
+  Emotional register: closest to Language Center PSD; soft warm tool.
+  Light:
+    --bg:         #FFF9F7
+    --surface:    #FFFFFF
+    --sidebar:    #FFFFFF
+    --ink:        #262626
+    --muted:      #737373
+    --line:       #E8DDD8
+    --coral:      #FF8161
+    --coral-soft: #FFE4DC
+    --missed:     #C94F3C
+    --done:       #6A6A6A
+    --on-coral:   #FFFFFF
+  Dark:
+    --bg:         #1C1918
+    --surface:    #262220
+    --sidebar:    #221F1D
+    --ink:        #F2EDE9
+    --muted:      #A89F98
+    --line:       #3D3632
+    --coral:      #FF8161
+    --coral-soft: #3A2A26
+    --missed:     #E07060
+    --done:       #9A9490
+    --on-coral:   #FFFFFF
+
+  ---------------------------------------------------------------------------
+  VARIATION 2 — coral-deeper
+  Emotional register: stronger tool contrast; coral-terracotta spark.
+  Light:
+    --bg:         #FFF8F5
+    --surface:    #FFFFFF
+    --sidebar:    #FFFAF8
+    --ink:        #1F1A18
+    --muted:      #6B625C
+    --line:       #E0D4CE
+    --coral:      #E86A48
+    --coral-soft: #F8D9CF
+    --missed:     #B84332
+    --done:       #5C5652
+    --on-coral:   #FFFFFF
+  Dark:
+    --bg:         #181512
+    --surface:    #24201C
+    --sidebar:    #1E1B18
+    --ink:        #F4EEE9
+    --muted:      #A39890
+    --line:       #3A342E
+    --coral:      #E86A48
+    --coral-soft: #3D261F
+    --missed:     #D46552
+    --done:       #948C86
+    --on-coral:   #FFFFFF
+
+  ---------------------------------------------------------------------------
+  VARIATION 3 — neutral-cool-lines
+  Emotional register: coral spark against cooler grey chrome (optional tension).
+  Light:
+    --bg:         #F7F8F9
+    --surface:    #FFFFFF
+    --sidebar:    #F3F4F6
+    --ink:        #1A1C1E
+    --muted:      #6B7280
+    --line:       #D1D5DB
+    --coral:      #FF8161
+    --coral-soft: #FFE8E2
+    --missed:     #C44B3A
+    --done:       #5A5A5A
+    --on-coral:   #FFFFFF
+    note: wash kept only as faint warm tint on calendar today cell (#FFF9F7)
+  Dark:
+    --bg:         #16181A
+    --surface:    #1E2124
+    --sidebar:    #1A1D20
+    --ink:        #E8EAED
+    --muted:      #9AA0A8
+    --line:       #343A40
+    --coral:      #FF8161
+    --coral-soft: #352622
+    --missed:     #E07060
+    --done:       #8E949A
+    --on-coral:   #FFFFFF
+
+  ---------------------------------------------------------------------------
+  VARIATION 4 — high-contrast-a11y
+  Emotional register: stronger ink/line for later a11y; coral still spark-only.
+  Light:
+    --bg:         #FFF9F7
+    --surface:    #FFFFFF
+    --sidebar:    #FFFFFF
+    --ink:        #0D0D0D
+    --muted:      #4A4A4A
+    --line:       #9A9A9A
+    --coral:      #E55A38
+    --coral-soft: #FFD4C8
+    --missed:     #A83222
+    --done:       #2E2E2E
+    --on-coral:   #FFFFFF
+  Dark:
+    --bg:         #0A0A0A
+    --surface:    #161616
+    --sidebar:    #111111
+    --ink:        #FAFAFA
+    --muted:      #C0C0C0
+    --line:       #6E6E6E
+    --coral:      #FF8161
+    --coral-soft: #4A2A22
+    --missed:     #FF6B5A
+    --done:       #D0D0D0
+    --on-coral:   #0D0D0D
+
+  ---------------------------------------------------------------------------
+  VARIATION 5 — muted-coral
+  Emotional register: quieter desaturated coral for calm long sessions.
+  Light:
+    --bg:         #FAF7F5
+    --surface:    #FFFFFF
+    --sidebar:    #F8F5F3
+    --ink:        #2A2624
+    --muted:      #7A736E
+    --line:       #DED6D1
+    --coral:      #D4886E
+    --coral-soft: #F0E4DE
+    --missed:     #B06A5A
+    --done:       #6E6864
+    --on-coral:   #FFFFFF
+  Dark:
+    --bg:         #1A1817
+    --surface:    #242120
+    --sidebar:    #1F1D1C
+    --ink:        #EDE8E4
+    --muted:      #A39B95
+    --line:       #3C3835
+    --coral:      #C4806A
+    --coral-soft: #342825
+    --missed:     #C4887A
+    --done:       #9A9490
+    --on-coral:   #FFFFFF
+*/
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", Tahoma, "Helvetica Neue", Arial, sans-serif;
+  background: #E6E2DF;
+  color: #262626;
+  padding: 28px 24px 48px;
+  line-height: 1.35;
+}
+
+.page-head {
+  max-width: 1480px;
+  margin: 0 auto 20px;
+}
+.page-head h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.page-head p {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #5C5652;
+  max-width: 72ch;
+}
+.page-head .meta {
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8A827C;
+}
+
+.variations {
+  max-width: 1480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.variation {
+  background: #F0EBE8;
+  border: 1px solid #C9C0BA;
+  padding: 16px;
+}
+
+.var-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+.var-head h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+.var-head .register {
+  font-size: 13px;
+  color: #5C5652;
+}
+.var-head .num {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8A827C;
+}
+
+.modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 1100px) {
+  .modes { grid-template-columns: 1fr; }
+}
+
+.mode {
+  border: 1px solid #B8AFA9;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.mode-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 3px 7px 3px 4px;
+  background: var(--bg);
+}
+.chip .swatch {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.chip .hex {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— UI snippet —— */
+.snippet {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  min-height: 220px;
+  background: var(--bg);
+}
+
+.cal {
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 12px;
+}
+.cal-toolbar .nav-items {
+  display: flex;
+  gap: 12px;
+  color: var(--muted);
+}
+.cal-toolbar .nav-items span.active {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom: 2px solid var(--coral);
+  padding-bottom: 2px;
+}
+.cal-toolbar .week {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: 44px repeat(5, 1fr);
+  flex: 1;
+  font-size: 11px;
+}
+.cal-grid .corner,
+.cal-grid .dayhead,
+.cal-grid .time,
+.cal-grid .cell {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.cal-grid .dayhead {
+  padding: 6px 4px;
+  text-align: center;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+}
+.cal-grid .dayhead.today {
+  color: var(--coral);
+  font-weight: 700;
+}
+.cal-grid .dayhead .dnum {
+  display: block;
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.cal-grid .dayhead.today .dnum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--coral);
+  color: var(--on-coral);
+  margin: 2px auto 0;
+}
+.cal-grid .time {
+  padding: 8px 4px;
+  text-align: right;
+  color: var(--muted);
+  font-size: 10px;
+  background: var(--surface);
+}
+.cal-grid .cell {
+  padding: 3px;
+  position: relative;
+  min-height: 48px;
+  background: var(--bg);
+}
+.cal-grid .cell.today-col {
+  background: color-mix(in srgb, var(--coral-soft) 55%, var(--bg));
+}
+.evt {
+  font-size: 10px;
+  padding: 3px 5px;
+  border-left: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+.evt.next {
+  border-left-color: var(--coral);
+  background: var(--coral-soft);
+}
+.evt.done {
+  color: var(--done);
+  border-left-color: var(--done);
+  opacity: 0.85;
+}
+.evt.missed {
+  border-left-color: var(--missed);
+  color: var(--missed);
+}
+.evt .bang {
+  font-weight: 700;
+  color: var(--missed);
+}
+
+/* side panel */
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--sidebar);
+  min-width: 0;
+}
+.panel-head {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.panel-head .label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.panel-head h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.panel-head .rule {
+  width: 28px;
+  height: 2px;
+  background: var(--coral);
+  margin-top: 8px;
+}
+.steps {
+  padding: 10px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.step {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 11px;
+  color: var(--ink);
+}
+.step .n {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--coral);
+  color: var(--on-coral);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step.idle .n {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.step .txt { color: var(--ink); line-height: 1.3; }
+.step .txt small { display: block; color: var(--muted); font-size: 10px; margin-top: 1px; }
+
+.panel-cta {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--line);
+}
+.btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: var(--coral);
+  color: var(--on-coral);
+  cursor: default;
+}
+.btn:active { opacity: 0.95; }
+
+/* ——— Variation token bindings ——— */
+
+/* 1 psd-faithful */
+.v1.light {
+  --bg: #FFF9F7; --surface: #FFFFFF; --sidebar: #FFFFFF;
+  --ink: #262626; --muted: #737373; --line: #E8DDD8;
+  --coral: #FF8161; --coral-soft: #FFE4DC;
+  --missed: #C94F3C; --done: #6A6A6A; --on-coral: #FFFFFF;
+}
+.v1.dark {
+  --bg: #1C1918; --surface: #262220; --sidebar: #221F1D;
+  --ink: #F2EDE9; --muted: #A89F98; --line: #3D3632;
+  --coral: #FF8161; --coral-soft: #3A2A26;
+  --missed: #E07060; --done: #9A9490; --on-coral: #FFFFFF;
+}
+
+/* 2 coral-deeper */
+.v2.light {
+  --bg: #FFF8F5; --surface: #FFFFFF; --sidebar: #FFFAF8;
+  --ink: #1F1A18; --muted: #6B625C; --line: #E0D4CE;
+  --coral: #E86A48; --coral-soft: #F8D9CF;
+  --missed: #B84332; --done: #5C5652; --on-coral: #FFFFFF;
+}
+.v2.dark {
+  --bg: #181512; --surface: #24201C; --sidebar: #1E1B18;
+  --ink: #F4EEE9; --muted: #A39890; --line: #3A342E;
+  --coral: #E86A48; --coral-soft: #3D261F;
+  --missed: #D46552; --done: #948C86; --on-coral: #FFFFFF;
+}
+
+/* 3 neutral-cool-lines */
+.v3.light {
+  --bg: #F7F8F9; --surface: #FFFFFF; --sidebar: #F3F4F6;
+  --ink: #1A1C1E; --muted: #6B7280; --line: #D1D5DB;
+  --coral: #FF8161; --coral-soft: #FFE8E2;
+  --missed: #C44B3A; --done: #5A5A5A; --on-coral: #FFFFFF;
+}
+.v3.dark {
+  --bg: #16181A; --surface: #1E2124; --sidebar: #1A1D20;
+  --ink: #E8EAED; --muted: #9AA0A8; --line: #343A40;
+  --coral: #FF8161; --coral-soft: #352622;
+  --missed: #E07060; --done: #8E949A; --on-coral: #FFFFFF;
+}
+
+/* 4 high-contrast-a11y */
+.v4.light {
+  --bg: #FFF9F7; --surface: #FFFFFF; --sidebar: #FFFFFF;
+  --ink: #0D0D0D; --muted: #4A4A4A; --line: #9A9A9A;
+  --coral: #E55A38; --coral-soft: #FFD4C8;
+  --missed: #A83222; --done: #2E2E2E; --on-coral: #FFFFFF;
+}
+.v4.dark {
+  --bg: #0A0A0A; --surface: #161616; --sidebar: #111111;
+  --ink: #FAFAFA; --muted: #C0C0C0; --line: #6E6E6E;
+  --coral: #FF8161; --coral-soft: #4A2A22;
+  --missed: #FF6B5A; --done: #D0D0D0; --on-coral: #0D0D0D;
+}
+
+/* 5 muted-coral */
+.v5.light {
+  --bg: #FAF7F5; --surface: #FFFFFF; --sidebar: #F8F5F3;
+  --ink: #2A2624; --muted: #7A736E; --line: #DED6D1;
+  --coral: #D4886E; --coral-soft: #F0E4DE;
+  --missed: #B06A5A; --done: #6E6864; --on-coral: #FFFFFF;
+}
+.v5.dark {
+  --bg: #1A1817; --surface: #242120; --sidebar: #1F1D1C;
+  --ink: #EDE8E4; --muted: #A39B95; --line: #3C3835;
+  --coral: #C4806A; --coral-soft: #342825;
+  --missed: #C4887A; --done: #9A9490; --on-coral: #FFFFFF;
+}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Color themes — Hybrid 1+3</h1>
+  <p>Coral-accent-tool density with numbered-coach motifs. Coral is spark only (next lesson, today, CTA, missed). Light sidebar in light mode. Pick a register; each variation includes Light | Dark for OS follow + manual override.</p>
+  <div class="meta">Inline tokens · system fonts · no network</div>
+</div>
+
+<div class="variations">
+
+  <!-- ========== 1 psd-faithful ========== -->
+  <section class="variation" id="psd-faithful">
+    <div class="var-head">
+      <span class="num">01</span>
+      <h2>psd-faithful</h2>
+      <span class="register">Closest to the Language Center PSD — soft warm wash, #FF8161 spark, quiet tool chrome.</span>
+    </div>
+    <div class="modes">
+      <div class="mode v1 light">
+        <div class="mode-label">Light</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#FFF9F7"></span>background <span class="hex">#FFF9F7</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>surface <span class="hex">#FFFFFF</span></span>
+          <span class="chip"><span class="swatch" style="background:#262626"></span>ink <span class="hex">#262626</span></span>
+          <span class="chip"><span class="swatch" style="background:#737373"></span>muted <span class="hex">#737373</span></span>
+          <span class="chip"><span class="swatch" style="background:#E8DDD8"></span>line <span class="hex">#E8DDD8</span></span>
+          <span class="chip"><span class="swatch" style="background:#FF8161"></span>coral <span class="hex">#FF8161</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFE4DC"></span>coral-soft <span class="hex">#FFE4DC</span></span>
+          <span class="chip"><span class="swatch" style="background:#C94F3C"></span>missed <span class="hex">#C94F3C</span></span>
+          <span class="chip"><span class="swatch" style="background:#6A6A6A"></span>done <span class="hex">#6A6A6A</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF; outline:1px solid #ccc"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+      <div class="mode v1 dark">
+        <div class="mode-label">Dark</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#1C1918"></span>background <span class="hex">#1C1918</span></span>
+          <span class="chip"><span class="swatch" style="background:#262220"></span>surface <span class="hex">#262220</span></span>
+          <span class="chip"><span class="swatch" style="background:#F2EDE9"></span>ink <span class="hex">#F2EDE9</span></span>
+          <span class="chip"><span class="swatch" style="background:#A89F98"></span>muted <span class="hex">#A89F98</span></span>
+          <span class="chip"><span class="swatch" style="background:#3D3632"></span>line <span class="hex">#3D3632</span></span>
+          <span class="chip"><span class="swatch" style="background:#FF8161"></span>coral <span class="hex">#FF8161</span></span>
+          <span class="chip"><span class="swatch" style="background:#3A2A26"></span>coral-soft <span class="hex">#3A2A26</span></span>
+          <span class="chip"><span class="swatch" style="background:#E07060"></span>missed <span class="hex">#E07060</span></span>
+          <span class="chip"><span class="swatch" style="background:#9A9490"></span>done <span class="hex">#9A9490</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 2 coral-deeper ========== -->
+  <section class="variation" id="coral-deeper">
+    <div class="var-head">
+      <span class="num">02</span>
+      <h2>coral-deeper</h2>
+      <span class="register">Deeper coral-terracotta spark for stronger tool contrast — still adult, not candy.</span>
+    </div>
+    <div class="modes">
+      <div class="mode v2 light">
+        <div class="mode-label">Light</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#FFF8F5"></span>background <span class="hex">#FFF8F5</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>surface <span class="hex">#FFFFFF</span></span>
+          <span class="chip"><span class="swatch" style="background:#1F1A18"></span>ink <span class="hex">#1F1A18</span></span>
+          <span class="chip"><span class="swatch" style="background:#6B625C"></span>muted <span class="hex">#6B625C</span></span>
+          <span class="chip"><span class="swatch" style="background:#E0D4CE"></span>line <span class="hex">#E0D4CE</span></span>
+          <span class="chip"><span class="swatch" style="background:#E86A48"></span>coral <span class="hex">#E86A48</span></span>
+          <span class="chip"><span class="swatch" style="background:#F8D9CF"></span>coral-soft <span class="hex">#F8D9CF</span></span>
+          <span class="chip"><span class="swatch" style="background:#B84332"></span>missed <span class="hex">#B84332</span></span>
+          <span class="chip"><span class="swatch" style="background:#5C5652"></span>done <span class="hex">#5C5652</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF; outline:1px solid #ccc"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+      <div class="mode v2 dark">
+        <div class="mode-label">Dark</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#181512"></span>background <span class="hex">#181512</span></span>
+          <span class="chip"><span class="swatch" style="background:#24201C"></span>surface <span class="hex">#24201C</span></span>
+          <span class="chip"><span class="swatch" style="background:#F4EEE9"></span>ink <span class="hex">#F4EEE9</span></span>
+          <span class="chip"><span class="swatch" style="background:#A39890"></span>muted <span class="hex">#A39890</span></span>
+          <span class="chip"><span class="swatch" style="background:#3A342E"></span>line <span class="hex">#3A342E</span></span>
+          <span class="chip"><span class="swatch" style="background:#E86A48"></span>coral <span class="hex">#E86A48</span></span>
+          <span class="chip"><span class="swatch" style="background:#3D261F"></span>coral-soft <span class="hex">#3D261F</span></span>
+          <span class="chip"><span class="swatch" style="background:#D46552"></span>missed <span class="hex">#D46552</span></span>
+          <span class="chip"><span class="swatch" style="background:#948C86"></span>done <span class="hex">#948C86</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 3 neutral-cool-lines ========== -->
+  <section class="variation" id="neutral-cool-lines">
+    <div class="var-head">
+      <span class="num">03</span>
+      <h2>neutral-cool-lines</h2>
+      <span class="register">Coral spark kept; cooler grey lines and surfaces — optional tension against the warm brand wash.</span>
+    </div>
+    <div class="modes">
+      <div class="mode v3 light">
+        <div class="mode-label">Light</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#F7F8F9"></span>background <span class="hex">#F7F8F9</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>surface <span class="hex">#FFFFFF</span></span>
+          <span class="chip"><span class="swatch" style="background:#1A1C1E"></span>ink <span class="hex">#1A1C1E</span></span>
+          <span class="chip"><span class="swatch" style="background:#6B7280"></span>muted <span class="hex">#6B7280</span></span>
+          <span class="chip"><span class="swatch" style="background:#D1D5DB"></span>line <span class="hex">#D1D5DB</span></span>
+          <span class="chip"><span class="swatch" style="background:#FF8161"></span>coral <span class="hex">#FF8161</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFE8E2"></span>coral-soft <span class="hex">#FFE8E2</span></span>
+          <span class="chip"><span class="swatch" style="background:#C44B3A"></span>missed <span class="hex">#C44B3A</span></span>
+          <span class="chip"><span class="swatch" style="background:#5A5A5A"></span>done <span class="hex">#5A5A5A</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF; outline:1px solid #ccc"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+      <div class="mode v3 dark">
+        <div class="mode-label">Dark</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#16181A"></span>background <span class="hex">#16181A</span></span>
+          <span class="chip"><span class="swatch" style="background:#1E2124"></span>surface <span class="hex">#1E2124</span></span>
+          <span class="chip"><span class="swatch" style="background:#E8EAED"></span>ink <span class="hex">#E8EAED</span></span>
+          <span class="chip"><span class="swatch" style="background:#9AA0A8"></span>muted <span class="hex">#9AA0A8</span></span>
+          <span class="chip"><span class="swatch" style="background:#343A40"></span>line <span class="hex">#343A40</span></span>
+          <span class="chip"><span class="swatch" style="background:#FF8161"></span>coral <span class="hex">#FF8161</span></span>
+          <span class="chip"><span class="swatch" style="background:#352622"></span>coral-soft <span class="hex">#352622</span></span>
+          <span class="chip"><span class="swatch" style="background:#E07060"></span>missed <span class="hex">#E07060</span></span>
+          <span class="chip"><span class="swatch" style="background:#8E949A"></span>done <span class="hex">#8E949A</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 4 high-contrast-a11y ========== -->
+  <section class="variation" id="high-contrast-a11y">
+    <div class="var-head">
+      <span class="num">04</span>
+      <h2>high-contrast-a11y</h2>
+      <span class="register">Stronger ink and line contrast for later a11y work; coral remains spark-only.</span>
+    </div>
+    <div class="modes">
+      <div class="mode v4 light">
+        <div class="mode-label">Light</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#FFF9F7"></span>background <span class="hex">#FFF9F7</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>surface <span class="hex">#FFFFFF</span></span>
+          <span class="chip"><span class="swatch" style="background:#0D0D0D"></span>ink <span class="hex">#0D0D0D</span></span>
+          <span class="chip"><span class="swatch" style="background:#4A4A4A"></span>muted <span class="hex">#4A4A4A</span></span>
+          <span class="chip"><span class="swatch" style="background:#9A9A9A"></span>line <span class="hex">#9A9A9A</span></span>
+          <span class="chip"><span class="swatch" style="background:#E55A38"></span>coral <span class="hex">#E55A38</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFD4C8"></span>coral-soft <span class="hex">#FFD4C8</span></span>
+          <span class="chip"><span class="swatch" style="background:#A83222"></span>missed <span class="hex">#A83222</span></span>
+          <span class="chip"><span class="swatch" style="background:#2E2E2E"></span>done <span class="hex">#2E2E2E</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF; outline:1px solid #ccc"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+      <div class="mode v4 dark">
+        <div class="mode-label">Dark</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#0A0A0A"></span>background <span class="hex">#0A0A0A</span></span>
+          <span class="chip"><span class="swatch" style="background:#161616"></span>surface <span class="hex">#161616</span></span>
+          <span class="chip"><span class="swatch" style="background:#FAFAFA"></span>ink <span class="hex">#FAFAFA</span></span>
+          <span class="chip"><span class="swatch" style="background:#C0C0C0"></span>muted <span class="hex">#C0C0C0</span></span>
+          <span class="chip"><span class="swatch" style="background:#6E6E6E"></span>line <span class="hex">#6E6E6E</span></span>
+          <span class="chip"><span class="swatch" style="background:#FF8161"></span>coral <span class="hex">#FF8161</span></span>
+          <span class="chip"><span class="swatch" style="background:#4A2A22"></span>coral-soft <span class="hex">#4A2A22</span></span>
+          <span class="chip"><span class="swatch" style="background:#FF6B5A"></span>missed <span class="hex">#FF6B5A</span></span>
+          <span class="chip"><span class="swatch" style="background:#D0D0D0"></span>done <span class="hex">#D0D0D0</span></span>
+          <span class="chip"><span class="swatch" style="background:#0D0D0D"></span>on-coral <span class="hex">#0D0D0D</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 5 muted-coral ========== -->
+  <section class="variation" id="muted-coral">
+    <div class="var-head">
+      <span class="num">05</span>
+      <h2>muted-coral</h2>
+      <span class="register">Quieter desaturated coral for calmer long sessions — still readable as brand spark.</span>
+    </div>
+    <div class="modes">
+      <div class="mode v5 light">
+        <div class="mode-label">Light</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#FAF7F5"></span>background <span class="hex">#FAF7F5</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>surface <span class="hex">#FFFFFF</span></span>
+          <span class="chip"><span class="swatch" style="background:#2A2624"></span>ink <span class="hex">#2A2624</span></span>
+          <span class="chip"><span class="swatch" style="background:#7A736E"></span>muted <span class="hex">#7A736E</span></span>
+          <span class="chip"><span class="swatch" style="background:#DED6D1"></span>line <span class="hex">#DED6D1</span></span>
+          <span class="chip"><span class="swatch" style="background:#D4886E"></span>coral <span class="hex">#D4886E</span></span>
+          <span class="chip"><span class="swatch" style="background:#F0E4DE"></span>coral-soft <span class="hex">#F0E4DE</span></span>
+          <span class="chip"><span class="swatch" style="background:#B06A5A"></span>missed <span class="hex">#B06A5A</span></span>
+          <span class="chip"><span class="swatch" style="background:#6E6864"></span>done <span class="hex">#6E6864</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF; outline:1px solid #ccc"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+      <div class="mode v5 dark">
+        <div class="mode-label">Dark</div>
+        <div class="tokens">
+          <span class="chip"><span class="swatch" style="background:#1A1817"></span>background <span class="hex">#1A1817</span></span>
+          <span class="chip"><span class="swatch" style="background:#242120"></span>surface <span class="hex">#242120</span></span>
+          <span class="chip"><span class="swatch" style="background:#EDE8E4"></span>ink <span class="hex">#EDE8E4</span></span>
+          <span class="chip"><span class="swatch" style="background:#A39B95"></span>muted <span class="hex">#A39B95</span></span>
+          <span class="chip"><span class="swatch" style="background:#3C3835"></span>line <span class="hex">#3C3835</span></span>
+          <span class="chip"><span class="swatch" style="background:#C4806A"></span>coral <span class="hex">#C4806A</span></span>
+          <span class="chip"><span class="swatch" style="background:#342825"></span>coral-soft <span class="hex">#342825</span></span>
+          <span class="chip"><span class="swatch" style="background:#C4887A"></span>missed <span class="hex">#C4887A</span></span>
+          <span class="chip"><span class="swatch" style="background:#9A9490"></span>done <span class="hex">#9A9490</span></span>
+          <span class="chip"><span class="swatch" style="background:#FFFFFF"></span>on-coral <span class="hex">#FFFFFF</span></span>
+        </div>
+        <div class="snippet">
+          <div class="cal">
+            <div class="cal-toolbar">
+              <div class="nav-items">
+                <span class="active">Календарь</span>
+                <span>Уроки</span>
+                <span>Прогресс</span>
+              </div>
+              <span class="week">22–26 сен</span>
+            </div>
+            <div class="cal-grid">
+              <div class="corner"></div>
+              <div class="dayhead">Пн<span class="dnum">22</span></div>
+              <div class="dayhead today">Вт<span class="dnum">23</span></div>
+              <div class="dayhead">Ср<span class="dnum">24</span></div>
+              <div class="dayhead">Чт<span class="dnum">25</span></div>
+              <div class="dayhead">Пт<span class="dnum">26</span></div>
+              <div class="time">10:00</div>
+              <div class="cell"><div class="evt done">Слушание · A2</div></div>
+              <div class="cell today-col"><div class="evt next">Диалог · кафе</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt">Грамматика</div></div>
+              <div class="cell"></div>
+              <div class="time">14:00</div>
+              <div class="cell"></div>
+              <div class="cell today-col"><div class="evt missed"><span class="bang">!</span> Повтор слов</div></div>
+              <div class="cell"><div class="evt">Письмо</div></div>
+              <div class="cell"></div>
+              <div class="cell"><div class="evt done">Обзор</div></div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="label">Следующий урок</div>
+              <h3>Диалог в кафе</h3>
+              <div class="rule"></div>
+            </div>
+            <div class="steps">
+              <div class="step"><span class="n">1</span><div class="txt">Разминка<small>3 мин · слух</small></div></div>
+              <div class="step"><span class="n">2</span><div class="txt">Диалог<small>основной блок</small></div></div>
+              <div class="step idle"><span class="n">3</span><div class="txt">Закрепление<small>слова и фразы</small></div></div>
+            </div>
+            <div class="panel-cta"><button class="btn" type="button">Начать урок</button></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

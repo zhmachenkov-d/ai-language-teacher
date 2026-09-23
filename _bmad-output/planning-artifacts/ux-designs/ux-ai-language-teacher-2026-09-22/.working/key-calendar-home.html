@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Key screen — Календарь</title>
+<style>
+/*
+  KEY SCREEN: calendar-home
+  Spine sections governing this screen:
+    DESIGN.md — Brand & Style; Colors; Typography; Layout & Spacing; Elevation & Depth; Shapes;
+                Components (calendar-event-block, week-month-switcher, side-panel, cta-button-coral,
+                numbered-step-circle, accent-rule); Do's and Don'ts
+    EXPERIENCE.md — Foundation; Information Architecture (Calendar home + side panel);
+                    Voice and Tone; Component Patterns (Calendar event block, Week/month switcher,
+                    Side panel, CTA, Numbered plan steps, Accent rule);
+                    State Patterns (Next lesson selected, Today orientation, Missed, Completed);
+                    Inspiration & Anti-patterns (Outlook 365 calendar)
+  Tokens locked from DESIGN.md neutral-cool-lines (light).
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: #E5E7EB;
+  color: #1A1C1E;
+  padding: 24px;
+  line-height: 1.35;
+}
+.window {
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  background: #F7F8F9;
+  border: 1px solid #D1D5DB;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.titlebar {
+  height: 28px;
+  background: #1A1C1E;
+  color: #E8EAED;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.titlebar .dots span {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 1px;
+  background: #6B7280;
+  margin-right: 4px;
+}
+.app { display: flex; flex: 1; min-height: 0; }
+
+/* Light sidebar — sentence case nav */
+.nav {
+  width: 168px;
+  background: #F3F4F6;
+  border-right: 1px solid #D1D5DB;
+  padding: 14px 0;
+  flex-shrink: 0;
+}
+.nav .brand {
+  padding: 2px 14px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A1C1E;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav .brand .mark {
+  width: 16px; height: 16px;
+  border: 2px solid #FF8161;
+  border-radius: 9999px;
+  position: relative;
+  flex-shrink: 0;
+}
+.nav .brand .mark::after {
+  content: "";
+  position: absolute;
+  left: 2px; right: 2px; top: 50%;
+  border-top: 1px solid #FF8161;
+}
+.nav a {
+  display: block;
+  padding: 8px 14px;
+  color: #6B7280;
+  text-decoration: none;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+}
+.nav a.active {
+  color: #1A1C1E;
+  font-weight: 600;
+  background: #FFFFFF;
+  border-left-color: #FF8161;
+}
+
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.toolbar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #D1D5DB;
+  flex-shrink: 0;
+}
+.toolbar h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1C1E;
+}
+.seg {
+  display: flex;
+  margin-left: 8px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+.seg span {
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #6B7280;
+}
+.seg span.on {
+  background: #F3F4F6;
+  color: #1A1C1E;
+  font-weight: 600;
+}
+.spacer { flex: 1; }
+.chrome-nav {
+  font-size: 12px;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.chrome-nav .today-btn {
+  padding: 4px 10px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: #1A1C1E;
+  font-size: 12px;
+}
+
+.body { flex: 1; display: flex; min-height: 0; }
+
+/* Calendar sheet */
+.cal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid #D1D5DB;
+  background: #FFFFFF;
+}
+.days {
+  display: grid;
+  grid-template-columns: 48px repeat(7, 1fr);
+  border-bottom: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  flex-shrink: 0;
+}
+.days .h {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 11px;
+  color: #6B7280;
+  border-right: 1px solid #D1D5DB;
+}
+.days .h:last-child { border-right: none; }
+.days .h .n {
+  display: block;
+  margin: 4px auto 0;
+  width: 28px; height: 28px;
+  line-height: 28px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1C1E;
+  border-radius: 9999px;
+}
+/* Today pill — coral spark edge + ink numeral (not body text on spark fill) */
+.days .h.today {
+  background: #FFF9F7;
+}
+.days .h.today .n {
+  border: 2px solid #FF8161;
+  line-height: 24px;
+  color: #1A1C1E;
+  font-weight: 700;
+}
+.grid-wrap { flex: 1; overflow: hidden; position: relative; }
+.grid {
+  display: grid;
+  grid-template-columns: 48px repeat(7, 1fr);
+  height: 100%;
+}
+.time-col, .day-col {
+  border-right: 1px solid #D1D5DB;
+  position: relative;
+}
+.day-col:last-child { border-right: none; }
+.day-col.today-col { background: #FFF9F7; }
+.hour {
+  height: 52px;
+  border-bottom: 1px solid #D1D5DB;
+  font-size: 10px;
+  color: #6B7280;
+  padding: 2px 6px 0 0;
+  text-align: right;
+}
+.day-col .hour { padding: 0; }
+
+.event {
+  position: absolute;
+  left: 3px; right: 3px;
+  padding: 4px 6px;
+  font-size: 11px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  color: #1A1C1E;
+}
+.event .t {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.event .m { font-size: 10px; color: #6B7280; margin-top: 1px; }
+.event.done {
+  background: #F3F4F6;
+  color: #5A5A5A;
+  border-color: #D1D5DB;
+}
+.event.done .t { color: #5A5A5A; font-weight: 600; }
+.event.sched { background: #FFFFFF; }
+.event.next {
+  background: #FFE8E2;
+  border: 1.5px solid #FF8161;
+  font-weight: 700;
+}
+.event.next .t { font-weight: 700; }
+.event.missed {
+  background: #FFFFFF;
+  border-color: #C44B3A;
+}
+.event.incomplete {
+  background: #FFFFFF;
+  border: 1.5px solid #FFE8E2;
+}
+.event.incomplete .m { color: #6B7280; }
+.bang {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px; height: 14px;
+  background: #C44B3A;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 9999px;
+  margin-right: 3px;
+  vertical-align: -1px;
+}
+.now-line {
+  position: absolute;
+  left: 0; right: 0;
+  top: 156px;
+  border-top: 2px solid #FF8161;
+  z-index: 2;
+}
+.now-line::before {
+  content: "";
+  position: absolute;
+  left: -4px; top: -5px;
+  width: 8px; height: 8px;
+  background: #FF8161;
+  border-radius: 9999px;
+}
+
+/* Side panel */
+.panel {
+  width: 300px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.panel-head {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #D1D5DB;
+}
+.panel-head .kicker {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6B7280;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-head .kicker::before {
+  content: "";
+  width: 20px;
+  height: 3px;
+  background: #FF8161;
+  flex-shrink: 0;
+}
+.panel-head h2 { font-size: 16px; font-weight: 700; color: #1A1C1E; }
+.panel-head .meta { font-size: 11px; color: #6B7280; margin-top: 4px; }
+.panel-body { padding: 14px 18px; flex: 1; }
+.panel-body .sec {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-body .sec::before {
+  content: "";
+  width: 16px;
+  height: 3px;
+  background: #FF8161;
+}
+.steps { list-style: none; }
+.steps li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #1A1C1E;
+}
+.num {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  background: #B75C45;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cta {
+  margin: 12px 18px 18px;
+  display: block;
+  text-align: center;
+  padding: 11px;
+  background: #B75C45;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.panel-foot {
+  padding: 0 18px 14px;
+  font-size: 12px;
+}
+.panel-foot a {
+  color: #6B7280;
+  text-decoration: none;
+  border-bottom: 1px solid #D1D5DB;
+}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <div class="dots"><span></span><span></span><span></span></div>
+    AI Language Teacher — Календарь
+  </div>
+  <div class="app">
+    <nav class="nav">
+      <div class="brand"><span class="mark"></span>Учитель</div>
+      <a class="active" href="#">Календарь</a>
+      <a href="#">План</a>
+      <a href="#">Прогресс</a>
+      <a href="#">Настройки</a>
+    </nav>
+    <div class="main">
+      <div class="toolbar">
+        <h1>Неделя 22–28 сентября</h1>
+        <div class="seg"><span class="on">Неделя</span><span>Месяц</span></div>
+        <span class="spacer"></span>
+        <div class="chrome-nav">
+          <span>‹</span>
+          <span class="today-btn">Сегодня</span>
+          <span>›</span>
+        </div>
+      </div>
+      <div class="body">
+        <div class="cal">
+          <div class="days">
+            <div class="h"></div>
+            <div class="h">Пн<div class="n">22</div></div>
+            <div class="h today">Вт<div class="n">23</div></div>
+            <div class="h">Ср<div class="n">24</div></div>
+            <div class="h">Чт<div class="n">25</div></div>
+            <div class="h">Пт<div class="n">26</div></div>
+            <div class="h">Сб<div class="n">27</div></div>
+            <div class="h">Вс<div class="n">28</div></div>
+          </div>
+          <div class="grid-wrap">
+            <div class="grid">
+              <div class="time-col">
+                <div class="hour">09:00</div><div class="hour">10:00</div><div class="hour">11:00</div><div class="hour">12:00</div>
+                <div class="hour">13:00</div><div class="hour">14:00</div><div class="hour">15:00</div><div class="hour">16:00</div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event done" style="top:52px;height:48px;"><div class="t">Работа / Созвон</div><div class="m">Завершён</div></div>
+              </div>
+              <div class="day-col today-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="now-line"></div>
+                <div class="event missed" style="top:0;height:48px;"><div class="t"><span class="bang">!</span>Еда / В кафе</div><div class="m">Пропущен</div></div>
+                <div class="event next" style="top:104px;height:70px;"><div class="t">Travel / В аэропорту</div><div class="m">Следующий · 11:00–12:15</div></div>
+                <div class="event incomplete" style="top:260px;height:48px;"><div class="t">Gram / Past Simple</div><div class="m">Не завершён</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:156px;height:48px;"><div class="t">Жильё / Отель</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:52px;height:48px;"><div class="t">Покупки / Магазин</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:208px;height:48px;"><div class="t">Друзья / Встреча</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+              <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+            </div>
+          </div>
+        </div>
+        <aside class="panel">
+          <div class="panel-head">
+            <div class="kicker">Следующий урок</div>
+            <h2>Travel / В аэропорту</h2>
+            <div class="meta">Вт 23 сен · 11:00–12:15</div>
+          </div>
+          <div class="panel-body">
+            <div class="sec">Краткий план</div>
+            <ul class="steps">
+              <li><span class="num">1</span><span>Регистрация и паспортный контроль</span></li>
+              <li><span class="num">2</span><span>Диалог у стойки информации</span></li>
+              <li><span class="num">3</span><span>Объявления в аэропорту</span></li>
+            </ul>
+          </div>
+          <a class="cta" href="#">Начать урок</a>
+          <div class="panel-foot"><a href="#">Открыть план</a></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

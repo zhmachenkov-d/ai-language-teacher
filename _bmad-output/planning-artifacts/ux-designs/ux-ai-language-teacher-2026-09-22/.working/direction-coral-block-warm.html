@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Direction: Coral Block Warm</title>
+<style>
+/*
+  DIRECTION: coral-block-warm
+  Hex palette:
+    --coral:       #FF8161
+    --coral-deep:  #E86A4B
+    --coral-wash:  #FFF0EC
+    --charcoal:    #2F2F2F
+    --ink:         #222222
+    --muted:       #7A7A7A
+    --line:        #E2D8D4
+    --surface:     #FFF8F6
+    --white:       #FFFFFF
+    --missed:      #D4553F
+  Personality: Brochure coral as large structural blocks (header bar, panel header, CTA fill). Still a dense tool — not a marketing landing.
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Arial, Helvetica, "Helvetica Neue", sans-serif;
+  background: #EDE6E2;
+  color: #222;
+  padding: 24px;
+  line-height: 1.35;
+}
+.rationale {
+  max-width: 1280px;
+  margin: 0 auto 16px;
+  font-size: 13px;
+  color: #333;
+  background: #fff;
+  border-top: 4px solid #FF8161;
+  padding: 12px 16px;
+}
+.rationale strong { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #FF8161; margin-bottom: 6px; }
+.label-strip {
+  max-width: 1280px;
+  margin: 0 auto 10px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7A7A7A;
+}
+.window {
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #D0C4BE;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.titlebar {
+  height: 26px;
+  background: #2F2F2F;
+  color: #eee;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.app { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+.topbar {
+  background: #FF8161;
+  color: #fff;
+  display: flex;
+  align-items: stretch;
+  height: 48px;
+  flex-shrink: 0;
+}
+.topbar .brand {
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 12px;
+  background: #E86A4B;
+}
+.topbar a {
+  color: #fff;
+  text-decoration: none;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  opacity: 0.85;
+}
+.topbar a.active {
+  opacity: 1;
+  background: rgba(0,0,0,0.12);
+  box-shadow: inset 0 -3px 0 #fff;
+}
+.content { flex: 1; display: flex; min-height: 0; }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #FFF8F6; }
+.toolbar {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 12px;
+  border-bottom: 1px solid #E2D8D4;
+  background: #fff;
+  flex-shrink: 0;
+}
+.toolbar .title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.rule {
+  width: 28px;
+  height: 3px;
+  background: #FF8161;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+.seg { display: flex; margin-left: 8px; }
+.seg span {
+  padding: 4px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid #E2D8D4;
+  color: #7A7A7A;
+  margin-left: -1px;
+  background: #fff;
+}
+.seg span.on { background: #2F2F2F; color: #fff; border-color: #2F2F2F; }
+.spacer { flex: 1; }
+.body { flex: 1; display: flex; min-height: 0; }
+.cal { flex: 1; display: flex; flex-direction: column; min-width: 0; border-right: 1px solid #E2D8D4; background: #fff; }
+.days {
+  display: grid;
+  grid-template-columns: 48px repeat(7, 1fr);
+  border-bottom: 1px solid #E2D8D4;
+  flex-shrink: 0;
+}
+.days .h {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7A7A7A;
+  border-right: 1px solid #F0E8E4;
+}
+.days .h .n {
+  display: block;
+  margin: 4px auto 0;
+  width: 28px; height: 28px;
+  line-height: 28px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+  border-radius: 2px;
+}
+.days .h.today {
+  background: #FF8161;
+  color: #fff;
+}
+.days .h.today .n { color: #fff; background: transparent; }
+.days .h.today { color: rgba(255,255,255,0.85); }
+.grid-wrap { flex: 1; overflow: hidden; position: relative; }
+.grid { display: grid; grid-template-columns: 48px repeat(7, 1fr); height: 100%; }
+.time-col, .day-col { border-right: 1px solid #F0E8E4; position: relative; }
+.hour {
+  height: 52px;
+  border-bottom: 1px solid #F5EFEC;
+  font-size: 10px;
+  color: #9A8F8A;
+  padding: 2px 4px 0 0;
+  text-align: right;
+}
+.day-col .hour { padding: 0; }
+.event {
+  position: absolute;
+  left: 2px; right: 2px;
+  padding: 4px 6px;
+  font-size: 11px;
+  overflow: hidden;
+  border-radius: 0;
+  border: 1px solid #E2D8D4;
+  background: #FFF8F6;
+}
+.event .t { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event .m { font-size: 10px; color: #7A7A7A; margin-top: 1px; }
+.event.done { background: #F5F5F5; border-color: #D8D8D8; color: #666; }
+.event.sched { background: #fff; }
+.event.next {
+  background: #FF8161;
+  color: #fff;
+  border-color: #E86A4B;
+  font-weight: 700;
+}
+.event.next .m { color: rgba(255,255,255,0.9); }
+.event.missed {
+  background: #fff;
+  border-color: #D4553F;
+  border-left: 4px solid #D4553F;
+  color: #8B2E22;
+}
+.event.incomplete {
+  background: #FFF8F0;
+  border-style: dashed;
+  border-color: #C9A06A;
+}
+.bang {
+  display: inline-block;
+  background: #D4553F;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  width: 14px; height: 14px;
+  line-height: 14px;
+  text-align: center;
+  margin-right: 3px;
+}
+.now-line {
+  position: absolute;
+  left: 0; right: 0;
+  top: 156px;
+  border-top: 2px solid #FF8161;
+  z-index: 2;
+}
+.now-line::before {
+  content: "";
+  position: absolute;
+  left: 0; top: -5px;
+  width: 10px; height: 8px;
+  background: #FF8161;
+}
+.panel {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  background: #fff;
+}
+.panel-head {
+  background: #FF8161;
+  color: #fff;
+  padding: 16px 16px 14px;
+}
+.panel-head .kicker {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.9;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.panel-head h2 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.panel-head .meta { font-size: 11px; margin-top: 6px; opacity: 0.95; }
+.panel-body { padding: 14px 16px; flex: 1; background: #FFF8F6; }
+.panel-body .sec {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #FF8161;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-body .sec::before {
+  content: "";
+  width: 18px;
+  height: 3px;
+  background: #FF8161;
+}
+.panel-body ul { list-style: none; }
+.panel-body li {
+  padding: 7px 0;
+  border-bottom: 1px solid #E2D8D4;
+  font-size: 12px;
+}
+.cta {
+  margin: 0;
+  display: block;
+  text-align: center;
+  padding: 14px;
+  background: #E86A4B;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.secondary {
+  max-width: 1280px;
+  margin: 20px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.chip {
+  background: #fff;
+  border: 1px solid #D0C4BE;
+  overflow: hidden;
+  font-size: 12px;
+}
+.chip .bar {
+  background: #FF8161;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.chip .inner { padding: 12px; }
+.mini {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: #FF8161;
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.mini.dark { background: #2F2F2F; }
+</style>
+</head>
+<body>
+<p class="rationale">
+  <strong>Coral Block Warm</strong>
+  Коралл из брошюры Language Center становится несущими плоскостями: шапка навигации, колонка «сегодня», заголовок панели и заполненная кнопка «Начать урок». Плотность недели сохраняется — это всё ещё календарный инструмент, а не лендинг, но тепло взрослой школы ощущается сильнее за счёт крупных блоков.
+</p>
+<div class="label-strip">Hero · Календарь (неделя) · ~1280×800</div>
+<div class="window">
+  <div class="titlebar">AI Language Teacher</div>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">Языковой центр</div>
+      <a class="active" href="#">Календарь</a>
+      <a href="#">План</a>
+      <a href="#">Прогресс</a>
+      <a href="#">Настройки</a>
+    </div>
+    <div class="content">
+      <div class="main">
+        <div class="toolbar">
+          <span class="rule"></span>
+          <span class="title">22–28 сентября</span>
+          <div class="seg"><span class="on">Неделя</span><span>Месяц</span></div>
+          <span class="spacer"></span>
+          <span style="font-size:12px;color:#7A7A7A;">‹ &nbsp; Сегодня &nbsp; ›</span>
+        </div>
+        <div class="body">
+          <div class="cal">
+            <div class="days">
+              <div class="h"></div>
+              <div class="h">Пн<div class="n">22</div></div>
+              <div class="h today">Вт<div class="n">23</div></div>
+              <div class="h">Ср<div class="n">24</div></div>
+              <div class="h">Чт<div class="n">25</div></div>
+              <div class="h">Пт<div class="n">26</div></div>
+              <div class="h">Сб<div class="n">27</div></div>
+              <div class="h">Вс<div class="n">28</div></div>
+            </div>
+            <div class="grid-wrap">
+              <div class="grid">
+                <div class="time-col">
+                  <div class="hour">09:00</div><div class="hour">10:00</div><div class="hour">11:00</div><div class="hour">12:00</div>
+                  <div class="hour">13:00</div><div class="hour">14:00</div><div class="hour">15:00</div><div class="hour">16:00</div>
+                </div>
+                <div class="day-col">
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="event done" style="top:52px;height:48px;"><div class="t">Работа / Созвон</div><div class="m">Завершён</div></div>
+                </div>
+                <div class="day-col">
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="now-line"></div>
+                  <div class="event missed" style="top:0;height:48px;"><div class="t"><span class="bang">!</span>Еда / В кафе</div><div class="m">Пропущен</div></div>
+                  <div class="event next" style="top:104px;height:70px;"><div class="t">Travel / В аэропорту</div><div class="m">Следующий · 11:00–12:15</div></div>
+                  <div class="event incomplete" style="top:260px;height:48px;"><div class="t">Gram / Past Simple</div><div class="m">Не завершён</div></div>
+                </div>
+                <div class="day-col">
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="event sched" style="top:156px;height:48px;"><div class="t">Жильё / Отель</div><div class="m">Запланирован</div></div>
+                </div>
+                <div class="day-col">
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="event sched" style="top:52px;height:48px;"><div class="t">Покупки / Магазин</div><div class="m">Запланирован</div></div>
+                </div>
+                <div class="day-col">
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                  <div class="event sched" style="top:208px;height:48px;"><div class="t">Друзья / Встреча</div><div class="m">Запланирован</div></div>
+                </div>
+                <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+                <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+              </div>
+            </div>
+          </div>
+          <aside class="panel">
+            <div class="panel-head">
+              <div class="kicker">Следующий урок</div>
+              <h2>Travel / В аэропорту</h2>
+              <div class="meta">Вт 23 сен · 11:00–12:15</div>
+            </div>
+            <div class="panel-body">
+              <div class="sec">Краткий план</div>
+              <ul>
+                <li>Регистрация и паспортный контроль</li>
+                <li>Диалог у стойки информации</li>
+                <li>Объявления в аэропорту</li>
+              </ul>
+            </div>
+            <a class="cta" href="#">Начать урок</a>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="label-strip" style="margin-top:18px;">Вторичная полоса · варианты CTA</div>
+<div class="secondary">
+  <div class="chip">
+    <div class="bar">Панель по умолчанию</div>
+    <div class="inner">выберите урок для просмотра краткой информации или истории</div>
+  </div>
+  <div class="chip">
+    <div class="bar">Пропущен · Еда / В кафе</div>
+    <div class="inner">
+      Можно начать заново после пропуска.
+      <div><span class="mini">Начать урок</span> <span class="mini dark">Открыть историю</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

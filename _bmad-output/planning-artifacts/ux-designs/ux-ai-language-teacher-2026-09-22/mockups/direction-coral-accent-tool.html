@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Direction: Coral Accent Tool</title>
+<style>
+/*
+  DIRECTION: coral-accent-tool
+  Hex palette:
+    --coral:       #FF8161
+    --coral-soft:  #FFE8E2
+    --charcoal:    #2B2B2B
+    --ink:         #1A1A1A
+    --muted:       #6B6B6B
+    --line:        #D8D8D8
+    --surface:     #F3F3F3
+    --white:       #FFFFFF
+    --missed:      #C44B3A
+    --done:        #5A5A5A
+  Personality: Maximum Outlook density. Coral only as spark — next lesson, today pill, CTA, !. Charcoal chrome.
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: #E8E8E8;
+  color: #1A1A1A;
+  padding: 24px;
+  line-height: 1.35;
+}
+.rationale {
+  max-width: 1280px;
+  margin: 0 auto 16px;
+  font-size: 13px;
+  color: #333;
+  background: #fff;
+  border-left: 3px solid #FF8161;
+  padding: 12px 16px;
+}
+.rationale strong { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #FF8161; margin-bottom: 6px; }
+.label-strip {
+  max-width: 1280px;
+  margin: 0 auto 10px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6B6B6B;
+}
+.window {
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #B8B8B8;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.titlebar {
+  height: 28px;
+  background: #2B2B2B;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 11px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.titlebar .dots span {
+  display: inline-block; width: 8px; height: 8px; border-radius: 1px; background: #666; margin-right: 4px;
+}
+.app {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.nav {
+  width: 168px;
+  background: #2B2B2B;
+  color: #EDEDED;
+  padding: 12px 0;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.nav .brand {
+  padding: 4px 14px 16px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FF8161;
+  font-weight: 700;
+}
+.nav a {
+  display: block;
+  padding: 8px 14px;
+  color: #C8C8C8;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+}
+.nav a.active {
+  background: #3A3A3A;
+  color: #fff;
+  border-left-color: #FF8161;
+}
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #fff;
+}
+.toolbar {
+  height: 40px;
+  border-bottom: 1px solid #D8D8D8;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 10px;
+  font-size: 12px;
+  background: #F7F7F7;
+  flex-shrink: 0;
+}
+.toolbar .title {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+.toolbar .seg {
+  display: flex;
+  border: 1px solid #C0C0C0;
+  margin-left: 8px;
+}
+.toolbar .seg span {
+  padding: 3px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #555;
+  border-right: 1px solid #C0C0C0;
+}
+.toolbar .seg span:last-child { border-right: 0; }
+.toolbar .seg span.on { background: #2B2B2B; color: #fff; }
+.toolbar .spacer { flex: 1; }
+.toolbar .week-nav { color: #6B6B6B; }
+.body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.cal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid #D8D8D8;
+}
+.days {
+  display: grid;
+  grid-template-columns: 48px repeat(7, 1fr);
+  border-bottom: 1px solid #D8D8D8;
+  background: #FAFAFA;
+  flex-shrink: 0;
+}
+.days .h {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6B6B6B;
+  border-right: 1px solid #E8E8E8;
+}
+.days .h .n {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  border-radius: 2px;
+}
+.days .h.today .n {
+  background: #FF8161;
+  color: #fff;
+}
+.grid-wrap {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 48px repeat(7, 1fr);
+  height: 100%;
+}
+.time-col, .day-col {
+  border-right: 1px solid #E4E4E4;
+  position: relative;
+}
+.hour {
+  height: 52px;
+  border-bottom: 1px solid #EBEBEB;
+  font-size: 10px;
+  color: #8A8A8A;
+  padding: 2px 4px 0 0;
+  text-align: right;
+}
+.day-col .hour { padding: 0; }
+.event {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  border-left: 3px solid #8A8A8A;
+  background: #F0F0F0;
+  padding: 3px 5px;
+  font-size: 11px;
+  overflow: hidden;
+  border-radius: 1px;
+}
+.event .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event .m { font-size: 10px; color: #6B6B6B; }
+.event.done { border-left-color: #5A5A5A; color: #5A5A5A; background: #F5F5F5; }
+.event.sched { border-left-color: #A0A0A0; background: #F7F7F7; }
+.event.next {
+  border-left-color: #FF8161;
+  background: #FFE8E2;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px #FF8161;
+}
+.event.missed {
+  border-left-color: #C44B3A;
+  background: #FCEDEA;
+  color: #8B2E22;
+}
+.event.incomplete {
+  border-left-color: #B07A3A;
+  background: #FBF3E8;
+  border-style: dashed;
+  border-width: 0 0 0 3px;
+}
+.event .bang {
+  display: inline-block;
+  width: 12px; height: 12px;
+  background: #C44B3A;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 12px;
+  border-radius: 1px;
+  margin-right: 3px;
+}
+.now-line {
+  position: absolute;
+  left: 0; right: 0;
+  top: 156px;
+  height: 0;
+  border-top: 2px solid #FF8161;
+  z-index: 2;
+  pointer-events: none;
+}
+.now-line::before {
+  content: "";
+  position: absolute;
+  left: -4px; top: -5px;
+  width: 8px; height: 8px;
+  background: #FF8161;
+  border-radius: 1px;
+}
+.panel {
+  width: 280px;
+  background: #FAFAFA;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.panel-head {
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid #D8D8D8;
+  background: #fff;
+}
+.panel-head .kicker {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #FF8161;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.panel-head h2 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.panel-head .meta { color: #6B6B6B; font-size: 11px; margin-top: 4px; }
+.panel-body { padding: 12px 14px; flex: 1; }
+.panel-body .sec {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6B6B6B;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.panel-body ul { list-style: none; color: #333; }
+.panel-body li { padding: 3px 0; border-bottom: 1px solid #EDEDED; }
+.panel-body li:last-child { border-bottom: 0; }
+.cta {
+  margin: 14px;
+  display: block;
+  text-align: center;
+  padding: 9px 12px;
+  background: #FF8161;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+}
+.hint-panel {
+  padding: 40px 20px;
+  color: #8A8A8A;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.secondary {
+  max-width: 1280px;
+  margin: 20px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.chip {
+  background: #fff;
+  border: 1px solid #D0D0D0;
+  padding: 10px 12px;
+  font-size: 11px;
+}
+.chip .t {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6B6B6B;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.mini-btn {
+  display: inline-block;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-right: 6px;
+  margin-top: 4px;
+}
+.mini-btn.primary { background: #FF8161; color: #fff; }
+.mini-btn.ghost { border: 1px solid #FF8161; color: #FF8161; background: #fff; }
+.mini-btn.hist { border: 1px solid #2B2B2B; color: #2B2B2B; background: #fff; }
+.note { font-size: 10px; color: #888; margin-top: 8px; }
+</style>
+</head>
+<body>
+<p class="rationale">
+  <strong>Coral Accent Tool</strong>
+  Максимально плотный Outlook-подобный рабочий экран: уголь в хроме, коралл только как искра — следующий урок, линия «сейчас», сегодняшняя дата и CTA. ALL CAPS на ярлыках навигации и секций подчёркивает регистр «инструмент», без маркетинговых блоков и без «воздушного» SaaS.
+</p>
+<div class="label-strip">Hero · Календарь (неделя) · ~1280×800</div>
+<div class="window">
+  <div class="titlebar"><div class="dots"><span></span><span></span><span></span></div>AI Language Teacher — Календарь</div>
+  <div class="app">
+    <nav class="nav">
+      <div class="brand">Language Teacher</div>
+      <a class="active" href="#">Календарь</a>
+      <a href="#">План</a>
+      <a href="#">Прогресс</a>
+      <a href="#">Настройки</a>
+    </nav>
+    <div class="main">
+      <div class="toolbar">
+        <span class="title">Неделя · 22–28 сен</span>
+        <div class="seg"><span class="on">Неделя</span><span>Месяц</span></div>
+        <span class="spacer"></span>
+        <span class="week-nav">‹  Сегодня  ›</span>
+      </div>
+      <div class="body">
+        <div class="cal">
+          <div class="days">
+            <div class="h"></div>
+            <div class="h">Пн<div class="n">22</div></div>
+            <div class="h today">Вт<div class="n">23</div></div>
+            <div class="h">Ср<div class="n">24</div></div>
+            <div class="h">Чт<div class="n">25</div></div>
+            <div class="h">Пт<div class="n">26</div></div>
+            <div class="h">Сб<div class="n">27</div></div>
+            <div class="h">Вс<div class="n">28</div></div>
+          </div>
+          <div class="grid-wrap">
+            <div class="grid">
+              <div class="time-col">
+                <div class="hour">09:00</div>
+                <div class="hour">10:00</div>
+                <div class="hour">11:00</div>
+                <div class="hour">12:00</div>
+                <div class="hour">13:00</div>
+                <div class="hour">14:00</div>
+                <div class="hour">15:00</div>
+                <div class="hour">16:00</div>
+              </div>
+              <!-- Mon -->
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event done" style="top:52px;height:48px;"><div class="t">Работа / Созвон</div><div class="m">Завершён</div></div>
+              </div>
+              <!-- Tue today -->
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="now-line"></div>
+                <div class="event missed" style="top:0;height:48px;"><div class="t"><span class="bang">!</span>Еда / В кафе</div><div class="m">Пропущен</div></div>
+                <div class="event next" style="top:104px;height:70px;"><div class="t">Travel / В аэропорту</div><div class="m">Следующий · 11:00–12:15</div></div>
+                <div class="event incomplete" style="top:260px;height:48px;"><div class="t">Gram / Past Simple</div><div class="m">Не завершён</div></div>
+              </div>
+              <!-- Wed -->
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:156px;height:48px;"><div class="t">Жильё / Отель</div><div class="m">Запланирован</div></div>
+              </div>
+              <!-- Thu -->
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:52px;height:48px;"><div class="t">Покупки / Магазин</div><div class="m">Запланирован</div></div>
+              </div>
+              <!-- Fri -->
+              <div class="day-col">
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div>
+                <div class="event sched" style="top:208px;height:48px;"><div class="t">Друзья / Встреча</div><div class="m">Запланирован</div></div>
+              </div>
+              <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+              <div class="day-col"><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div><div class="hour"></div></div>
+            </div>
+          </div>
+        </div>
+        <aside class="panel">
+          <div class="panel-head">
+            <div class="kicker">Следующий урок</div>
+            <h2>Travel / В аэропорту</h2>
+            <div class="meta">Вт 23 сен · 11:00–12:15</div>
+          </div>
+          <div class="panel-body">
+            <div class="sec">Краткий план</div>
+            <ul>
+              <li>Регистрация и паспортный контроль</li>
+              <li>Диалог у стойки информации</li>
+              <li>Объявления в аэропорту</li>
+            </ul>
+          </div>
+          <a class="cta" href="#">Начать урок</a>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="label-strip" style="margin-top:18px;">Вторичная полоса · состояния панели</div>
+<div class="secondary">
+  <div class="chip">
+    <div class="t">Без выбора</div>
+    выберите урок для просмотра краткой информации или истории
+  </div>
+  <div class="chip">
+    <div class="t">Не завершён</div>
+    Gram / Past Simple
+    <div><span class="mini-btn ghost">Продолжить</span></div>
+  </div>
+  <div class="chip">
+    <div class="t">Завершён</div>
+    Работа / Созвон
+    <div><span class="mini-btn hist">Открыть историю</span></div>
+    <div class="note">Тёмная тема — позже · light primary</div>
+  </div>
+</div>
+</body>
+</html>
