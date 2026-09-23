@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<!--
+  UX Design Validation Report — skeleton template.
+
+  This file is a starter the synthesis pass fills in directly. There is no
+  substitution engine. The LLM:
+    1. Reads {doc_workspace}/review-rubric.md and every review-{slug}.md from
+       additional reviewers.
+    2. Copies this skeleton.
+    3. Replaces the placeholder content (everything between TEMPLATE markers)
+       with the consolidated review, preserving the structure and CSS.
+    4. Writes the result to {doc_workspace}/validation-report.html.
+    5. Writes a markdown twin to {doc_workspace}/validation-report.md.
+
+  Visual rules the LLM must preserve:
+    - The container width, the color tokens, the typography.
+    - One dimension = one collapsible <section class="dimension">.
+    - Verdict pill uses the verdict-* class matching its judgment.
+    - Severity badge uses the badge-sev-* class matching its level.
+    - Each extra reviewer (accessibility, adversarial, etc.) gets its own
+      collapsible section below the rubric dimensions.
+    - The footer always shows the artifact paths and timestamp.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>UX Design Validation: ai-language-teacher</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --text: #1c1917;
+    --muted: #78716c;
+
+    --verdict-strong: #16a34a;
+    --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706;
+    --verdict-broken: #dc2626;
+
+    --sev-low: #64748b;
+    --sev-medium: #ca8a04;
+    --sev-high: #ea580c;
+    --sev-critical: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  header.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .synthesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    font-size: 15.5px;
+  }
+  .synthesis p { margin: 0 0 10px; }
+  .synthesis p:last-child { margin-bottom: 0; }
+
+  .dimension-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dim-card .dim-verdict { font-size: 14px; font-weight: 600; }
+
+  section.dimension, section.reviewer-section { margin-bottom: 14px; }
+  section.dimension details, section.reviewer-section details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  section summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section summary::-webkit-details-marker { display: none; }
+  section summary::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  section details[open] summary::before { transform: rotate(90deg); }
+  section summary h2 {
+    display: inline;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    flex: 1;
+  }
+  .verdict-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  .verdict-strong { background: var(--verdict-strong); }
+  .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); }
+  .verdict-broken { background: var(--verdict-broken); }
+
+  .dim-body { padding: 4px 20px 18px; }
+  .dim-judgment { color: var(--text); font-size: 14.5px; }
+  .dim-judgment p { margin: 0 0 10px; }
+
+  .findings-list { padding: 0 20px 4px; }
+  article.finding {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  article.finding:first-child { border-top: none; }
+  article.finding header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
+  .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
+  .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
+  .finding-fix strong { color: var(--muted); font-weight: 500; }
+
+  .reviewer-source {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  .mechanical {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mechanical ul { margin: 0; padding-left: 20px; }
+  .mechanical li { margin-bottom: 4px; color: var(--text); }
+
+  footer.report-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="report-header">
+      <div class="title">
+        <h1>ai-language-teacher — UX Design Validation Report</h1>
+        <div class="subtitle">_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/</div>
+      </div>
+    </header>
+
+    <div class="synthesis">
+      <p>Discovery spines are honest and well-aligned with the four coached journeys, but they are <strong>not yet a clean source-extract contract</strong> for architecture or story-dev. Token <code>{path}</code> references resolve and calendar/lesson behavior is largely committed; load-bearing lesson chrome (chat bubble, mic, listening card visuals), contrast targets, NFR-3 connectivity error UX, and Progress/Settings/Living-plan journeys still force inventing. Treat as a strong coaching snapshot with labeled gaps — lock the thin slots before downstream build.</p>
+    </div>
+
+    <div class="dimension-summary">
+      <div class="dim-card">
+        <div class="dim-name">Flow coverage</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Token completeness</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Component coverage</div>
+        <div class="dim-verdict" style="color: var(--verdict-thin)">thin</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">State coverage</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Visual reference coverage</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Bloat &amp; overspecification</div>
+        <div class="dim-verdict" style="color: var(--verdict-strong)">strong</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Inheritance discipline</div>
+        <div class="dim-verdict" style="color: var(--verdict-strong)">strong</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Shape fit</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+    </div>
+
+    <!-- 1. Flow coverage -->
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Flow coverage</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Checked PRD named journeys from sources/extract (<code>Onboarding</code>, <code>Plan and lessons</code>, <code>Voice</code>, <code>Between lessons and Telegram</code>, <code>Progress</code>, three Lesson templates) plus coached Incomplete-resume against EXPERIENCE.md Key Flows 1–4 for protagonist, numbered steps, climax, and failure path.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Progress journey has IA but no Key Flow</h3>
+              <span class="finding-location">EXPERIENCE.md Key Flows; IA Progress row</span>
+            </header>
+            <div class="finding-note">Progress (FR-15 / PRD Progress journey) has IA + Component Patterns but no Key Flow with climax.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add Flow 5 — open Progress after a lesson/micro-lesson; climax = diagnosis + Living-plan CTA.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">NFR-3 connectivity failure un-narrated</h3>
+              <span class="finding-location">PRD NFR-3; EXPERIENCE.md Open</span>
+            </header>
+            <div class="finding-note">NFR-3 connectivity/API failure during a lesson has no Key Flow or failure beat. Open lists offline only.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Narrate retry → explicit error with next step (retry / «Пауза») inside Flow 2 or a short failure appendix.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">First-run failure paths un-narrated</h3>
+              <span class="finding-location">EXPERIENCE.md Flow 1 Open; Accessibility Floor</span>
+            </header>
+            <div class="finding-note">Mid-wizard exit, consent refusal, mic deny, and speaking timeout are explicitly un-narrated.</div>
+            <div class="finding-fix"><strong>Fix:</strong> At least one failure beat per gate (consent refuse; mic deny) so story-dev does not invent.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Voice and Lesson-template climaxes collapsed</h3>
+              <span class="finding-location">extract-prd journeys; Flow 2 step 6</span>
+            </header>
+            <div class="finding-note">Voice and Lesson-template journeys (study-heavy / oral / transfer) collapse to “run by Lesson template” with no template-specific climax.</div>
+            <div class="finding-fix"><strong>Fix:</strong> One short beat table per template (stage order + listening-card vs dialogue emphasis) or cite addendum bands as normative.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Living plan and Settings lack Key Flows</h3>
+              <span class="finding-location">EXPERIENCE.md IA + Component Patterns</span>
+            </header>
+            <div class="finding-note">Living plan replan (FR-5) and Settings (NFR-4) are IA/components only — no Key Flow.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Optional short flows: see «план обновлён»; save Settings / «Привязать».</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Incomplete-resume exceeds PRD named UJs</h3>
+              <span class="finding-location">EXPERIENCE.md Flow 4</span>
+            </header>
+            <div class="finding-note">Incomplete-resume (Flow 4) is stronger than PRD named UJs (extra coverage).</div>
+            <div class="finding-fix"><strong>Fix:</strong> None — keep.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <!-- 2. Token completeness -->
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Token completeness</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Extracted DESIGN.md YAML tokens and every <code>{path.to.token}</code> in DESIGN.md + EXPERIENCE.md; verified definition, hex (and light/dark pairs), and contrast targets for load-bearing pairs.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">No contrast targets for load-bearing pairs</h3>
+              <span class="finding-location">DESIGN.md Colors</span>
+            </header>
+            <div class="finding-note">No contrast targets for <code>ink</code>/<code>bg</code>, <code>muted</code>/<code>surface</code>, <code>on-coral</code>/<code>coral</code>, <code>missed</code>/<code>surface</code>, or dark counterparts. A11y deferred note does not waive token-intent contrast.</div>
+            <div class="finding-fix"><strong>Fix:</strong> State WCAG AA ratios (or measured ratios) for those pairs in both modes.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">chat-bubble and mic-control are comment stubs</h3>
+              <span class="finding-location">DESIGN.md frontmatter components; Components section NOTES</span>
+            </header>
+            <div class="finding-note"><code>chat-bubble</code> and <code>mic-control</code> frontmatter entries are comment stubs — no fill/radius/state colors.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Commit minimal visual tokens (fill, radius, resting/active) or mark inherited-platform with an inheritance note.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Typography tokens lack size/weight/lineHeight</h3>
+              <span class="finding-location">DESIGN.md Typography NOTE</span>
+            </header>
+            <div class="finding-note">Typography tokens lack <code>fontSize</code> / <code>fontWeight</code> / <code>lineHeight</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Lock a minimal ramp or explicit “platform default sizes” inheritance table.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">spacing.density is qualitative only</h3>
+              <span class="finding-location">DESIGN.md Layout &amp; Spacing</span>
+            </header>
+            <div class="finding-note"><code>{spacing.density}: outlook-dense</code> is qualitative only — no numeric scale.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Define a dense tool scale (<code>1</code>–<code>6</code> or gutter/margin) before implementation stories.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">today-tint has no dark pair</h3>
+              <span class="finding-location">DESIGN.md Colors</span>
+            </header>
+            <div class="finding-note"><code>{colors.today-tint}</code> has no dark pair (table shows —).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Document dark today treatment (omit tint / use <code>coral-soft-dark</code>) so dark mode does not invent.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">All prose token refs resolve</h3>
+              <span class="finding-location">DESIGN.md + EXPERIENCE.md</span>
+            </header>
+            <div class="finding-note">All <code>{colors.*}</code>, <code>{typography.*}</code>, <code>{rounded.*}</code>, <code>{spacing.density}</code> prose refs resolve to frontmatter.</div>
+            <div class="finding-fix"><strong>Fix:</strong> None.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <!-- 3. Component coverage — thin: open by default -->
+    <section class="dimension">
+      <details open>
+        <summary>
+          <h2>Component coverage</h2>
+          <span class="verdict-pill verdict-thin">thin</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Extracted component names from DESIGN.md Components, EXPERIENCE.md Component Patterns, and in-flow usage; checked dual presence with real visual + behavioral rules.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-critical">critical</span>
+              <h3 class="finding-title">Listening card missing DESIGN visual row</h3>
+              <span class="finding-location">EXPERIENCE.md Component Patterns; Flow 2 / listening-check</span>
+            </header>
+            <div class="finding-note"><code>Listening card</code> has strong behavioral rules but <strong>no</strong> DESIGN.md Components row.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add visual anatomy (choice card, player chrome, hidden-then-reveal transcript).</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">EXPERIENCE-only components lack DESIGN visuals</h3>
+              <span class="finding-location">EXPERIENCE.md Component Patterns vs DESIGN.md Components</span>
+            </header>
+            <div class="finding-note">Missing DESIGN visual rows: <code>Week / month switcher</code>, <code>Inline pronunciation feedback</code>, <code>History bottom bar</code>, <code>Onboarding step</code>, <code>Living plan document</code>, <code>Progress sections</code>, <code>Settings sections</code>, <code>Telegram result card</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add DESIGN rows (or explicit “behavior-only / platform chrome” inheritance).</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Chat bubble / Mic control visuals unfinished</h3>
+              <span class="finding-location">DESIGN.md Components; EXPERIENCE.md Component Patterns</span>
+            </header>
+            <div class="finding-note"><code>Chat bubble</code> / <code>Mic control</code> exist on both spines but DESIGN visual rules are unfinished NOTES; EXPERIENCE has behavior.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Commit visual states so lesson stories are not free-form.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Component name drift across spines</h3>
+              <span class="finding-location">DESIGN.md vs EXPERIENCE.md</span>
+            </header>
+            <div class="finding-note">Name drift: <code>CTA button (coral)</code> vs <code>CTA buttons</code>; <code>Numbered step circle</code> vs <code>Numbered plan steps</code>; <code>Chat bubble(s)</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Align canonical names for extractors.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Accent rule is DESIGN-only</h3>
+              <span class="finding-location">DESIGN.md Components</span>
+            </header>
+            <div class="finding-note"><code>Accent rule</code> is DESIGN-only (motif under Numbered plan steps in EXPERIENCE).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add EXPERIENCE behavioral row (when/where rules appear) or fold into Numbered plan steps explicitly.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Calendar event block + Side panel dual-covered</h3>
+              <span class="finding-location">DESIGN.md Components; EXPERIENCE.md Component Patterns</span>
+            </header>
+            <div class="finding-note">Calendar event block + Side panel are dual-covered with real rules.</div>
+            <div class="finding-fix"><strong>Fix:</strong> None.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <!-- 4. State coverage -->
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>State coverage</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Walked every IA surface; expected empty / cold-load / focus / error / offline / permission-denied where applicable. Offline out of v1; full a11y deferred — not invented.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Lesson connectivity/API error absent from State Patterns</h3>
+              <span class="finding-location">PRD NFR-3; EXPERIENCE.md State Patterns / Open</span>
+            </header>
+            <div class="finding-note">Lesson connectivity/API error (NFR-3) absent from State Patterns.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add Lesson row: retry → explicit error + retry/«Пауза» — distinct from offline-out.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Cold-load / skeleton missing for full-screen surfaces</h3>
+              <span class="finding-location">EXPERIENCE.md State Patterns</span>
+            </header>
+            <div class="finding-note">Cold-load / skeleton missing for Calendar home, Lesson, Living plan, Progress, Settings.</div>
+            <div class="finding-fix"><strong>Fix:</strong> One cold-load treatment per full-screen surface.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Empty states unspecified for key surfaces</h3>
+              <span class="finding-location">IA surfaces; Empty side panel only</span>
+            </header>
+            <div class="finding-note">Empty Progress / empty Living plan / empty calendar (no lessons) not specified; only Empty side panel covered.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Short empty copy + next action per surface.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Mic deny and consent refusal still Open</h3>
+              <span class="finding-location">EXPERIENCE.md Accessibility Floor; Open</span>
+            </header>
+            <div class="finding-note">Mic/permission-denied and First-run consent refusal called out as Open, not State Patterns.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Promote to State Patterns when locked.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Focus states omitted under deferred a11y</h3>
+              <span class="finding-location">EXPERIENCE.md Accessibility Floor</span>
+            </header>
+            <div class="finding-note">Focus states omitted — acceptable under deferred a11y.</div>
+            <div class="finding-fix"><strong>Fix:</strong> None for Discovery.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Calendar and lesson interaction states are strong</h3>
+              <span class="finding-location">EXPERIENCE.md State Patterns</span>
+            </header>
+            <div class="finding-note">Calendar selection / gates / pause / history / Telegram day-window states are strong.</div>
+            <div class="finding-fix"><strong>Fix:</strong> None.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <!-- 5. Visual reference coverage -->
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Visual reference coverage</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Listed <code>mockups/</code> (absent), <code>wireframes/</code> (absent), <code>imports/</code> (<code>template.psd</code>), and <code>.working/</code> artifacts; checked inline spine links and spines-win statement.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Spines link only pre-promote .working flows</h3>
+              <span class="finding-location">EXPERIENCE.md IA; DESIGN.md Brand &amp; Style</span>
+            </header>
+            <div class="finding-note">Spines link only <code>.working/flow-calendar-home-2026-09-22.excalidraw</code> and <code>.working/flow-lesson-screen-2026-09-22.excalidraw</code>; <code>imports/template.psd</code> cited in DESIGN.md Brand &amp; Style.</div>
+            <div class="finding-fix"><strong>Fix:</strong> After promote, point to <code>wireframes/</code> / <code>mockups/</code> paths; keep spines-win.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Orphan .working artifacts not inline-linked</h3>
+              <span class="finding-location">.working/</span>
+            </header>
+            <div class="finding-note">Orphans (pre-promote): direction HTML ×5 + index, <code>color-themes-hybrid-1-3.html</code>, PSD jpeg/slice/composite renders, capture-*.md — not inline-linked.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Promote winners into <code>mockups/</code>/<code>wireframes/</code> and link; leave rejects unlinked or archive.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">mockups/ and wireframes/ directories absent</h3>
+              <span class="finding-location">doc workspace root</span>
+            </header>
+            <div class="finding-note"><code>mockups/</code> and <code>wireframes/</code> directories do not exist yet (expected until promote).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Create on promote.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Spines-win-on-conflict stated</h3>
+              <span class="finding-location">DESIGN.md Brand &amp; Style; EXPERIENCE.md lead + IA</span>
+            </header>
+            <div class="finding-note">Spines-win-on-conflict stated.</div>
+            <div class="finding-fix"><strong>Fix:</strong> None.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Unspecific direction HTML reference</h3>
+              <span class="finding-location">DESIGN.md Brand &amp; Style</span>
+            </header>
+            <div class="finding-note">Unspecific “direction HTML” reference without paths.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Name locked hybrid artifacts or drop after promote.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <!-- 6. Bloat & overspecification -->
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Bloat &amp; overspecification</h2>
+          <span class="verdict-pill verdict-strong">strong</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Checked for redundant restatement, pixel theater, and premature implementation detail vs Discovery status.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Honest deferrals; complementary dual state lists</h3>
+              <span class="finding-location">DESIGN.md / EXPERIENCE.md</span>
+            </header>
+            <div class="finding-note">Honest <code>[NOTE FOR UX]</code> deferrals reduce fake precision; calendar state rules repeat across DESIGN/EXPERIENCE but stay complementary (visual vs behavioral).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Optional single cross-ref instead of dual state lists if length becomes a problem.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <!-- 7. Inheritance discipline -->
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Inheritance discipline</h2>
+          <span class="verdict-pill verdict-strong">strong</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Checked for false UI-library inheritance, platform notes, and delta-only discipline.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">No false UI-library inheritance</h3>
+              <span class="finding-location">EXPERIENCE.md Foundation; DESIGN.md</span>
+            </header>
+            <div class="finding-note">Correctly declares no named component library; Electron desktop + Russian chrome; does not invent shadcn/MUI tokens.</div>
+            <div class="finding-fix"><strong>Fix:</strong> None.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Platform defaults lack inheritance table</h3>
+              <span class="finding-location">DESIGN.md Typography / Spacing NOTES</span>
+            </header>
+            <div class="finding-note">“Platform-sensible defaults” for type size/spacing without an inheritance table leaves a hole.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Name the default owner (Electron/Chromium form controls vs custom) so consumers do not fork.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <!-- 8. Shape fit -->
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Shape fit</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body">
+          <div class="dim-judgment">
+            <p>Compared spine shape to examples (Quill/Drift) and to product form-factor: Discovery coaching pair, calendar-first desktop + Telegram companion.</p>
+          </div>
+        </div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Discovery status with open NOTES fails implementation-contract bar</h3>
+              <span class="finding-location">DESIGN.md / EXPERIENCE.md frontmatter status: discovery; memlog Finalize</span>
+            </header>
+            <div class="finding-note">Status <code>discovery</code> with many open NOTES means load-bearing decisions are <strong>not</strong> all committed — fails the “implementation contract” bar while fitting Discovery shape.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Close chat/mic/listening visual, contrast, NFR-3, and Progress flow before architecture extract.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">DESIGN omits numeric spacing/type typical of examples</h3>
+              <span class="finding-location">DESIGN.md vs design-md-spec.md</span>
+            </header>
+            <div class="finding-note">EXPERIENCE matches example section order; DESIGN includes <code>status</code>/<code>sources</code> beyond design.md-spec frontmatter (harmless) but omits numeric spacing/type typical of examples.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Either lock scales or keep explicit inheritance stubs.</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Product shape fits IA and flows</h3>
+              <span class="finding-location">EXPERIENCE.md IA + Key Flows</span>
+            </header>
+            <div class="finding-note">Product shape (calendar home, gates, lesson, Telegram companion) fits IA and flows.</div>
+            <div class="finding-fix"><strong>Fix:</strong> None.</div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <div class="mechanical">
+      <h3>Mechanical notes</h3>
+      <ul>
+        <li>Source paths in frontmatter resolve (<code>prd.md</code>, <code>addendum.md</code>).</li>
+        <li>No Mermaid in either spine.</li>
+        <li>Component naming inconsistencies: CTA button(s); Numbered step circle vs Numbered plan steps; Chat bubble(s).</li>
+        <li>EXPERIENCE Component Patterns cites <code>{colors.coral}</code> for next emphasis; DESIGN specifies <code>{colors.coral-soft}</code> (+ bold) for next — soft conflict consumers may mis-resolve (EXPERIENCE.md Calendar event block row vs DESIGN.md calendar-event-block / Components).</li>
+        <li>DESIGN frontmatter <code>components.chat-bubble</code> / <code>mic-control</code> are non-machine-token stubs (comments only).</li>
+        <li><code>spacing.density: outlook-dense</code> is not a CSS dimension token.</li>
+        <li>Spines correctly state spines-win; composition refs still under <code>.working/</code> (pre-promote).</li>
+        <li>Frontmatter complete for Discovery (<code>name</code>, <code>status</code>, <code>updated</code>, <code>sources</code>); DESIGN also has <code>description</code> + tokens.</li>
+        <li>Incomplete («Не завершен») event fill still explicitly unlocked — consumers must not invent a new brand hue (DESIGN.md Colors NOTE).</li>
+      </ul>
+    </div>
+
+    <footer class="report-footer">
+      <div class="meta">
+        <span>Rubric: _bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/review-rubric.md</span>
+        <span>Generated: 2026-09-23T09:30:00Z</span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

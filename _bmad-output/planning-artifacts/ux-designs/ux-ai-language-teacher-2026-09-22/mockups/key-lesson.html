@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Key screen — Урок</title>
+<style>
+/*
+  KEY SCREEN: lesson
+  Spine sections governing this screen:
+    DESIGN.md — Brand & Style; Colors; Typography; Layout & Spacing; Elevation & Depth; Shapes;
+                Components (numbered-step-circle, accent-rule, chat-bubble, inline-pronunciation-feedback,
+                mic-control, listening-card, cta-button-coral); Do's and Don'ts
+    EXPERIENCE.md — Foundation; Information Architecture (Lesson);
+                    Voice and Tone; Component Patterns (Numbered plan steps, Accent rule, Chat bubble,
+                    Inline pronunciation feedback, Mic control, Listening card, CTA);
+                    State Patterns (Mid-lesson); Interaction Primitives (Voice, Listening player);
+                    Key Flows (Flow 2 — Typical lesson)
+  Tokens locked from DESIGN.md neutral-cool-lines (light).
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: #E5E7EB;
+  color: #1A1C1E;
+  padding: 24px;
+  line-height: 1.35;
+}
+.window {
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  background: #F7F8F9;
+  border: 1px solid #D1D5DB;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.titlebar {
+  height: 28px;
+  background: #1A1C1E;
+  color: #E8EAED;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.titlebar .dots span {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 1px;
+  background: #6B7280;
+  margin-right: 4px;
+}
+.app { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+
+/* Lesson header */
+.header {
+  height: 48px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #D1D5DB;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.header .topic {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1C1E;
+}
+.header .meta {
+  font-size: 12px;
+  color: #6B7280;
+}
+.header .spacer { flex: 1; }
+.header .actions { display: flex; gap: 8px; }
+.btn-secondary {
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1C1E;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.btn-secondary.danger-ish {
+  color: #1A1C1E;
+}
+
+.stage {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Left plan sidebar */
+.plan {
+  width: 220px;
+  background: #F3F4F6;
+  border-right: 1px solid #D1D5DB;
+  padding: 16px 14px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.plan .label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #6B7280;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.plan .label::before {
+  content: "";
+  width: 16px;
+  height: 3px;
+  background: #FF8161;
+}
+.steps { list-style: none; }
+.steps li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: #1A1C1E;
+}
+.steps li.done { color: #6B7280; }
+.steps li.done .num {
+  background: #5A5A5A;
+}
+.steps li.current .txt { font-weight: 700; }
+.steps li.upcoming { color: #6B7280; }
+.num {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  background: #B75C45;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.steps li.upcoming .num {
+  background: #FFFFFF;
+  color: #6B7280;
+  border: 1px solid #D1D5DB;
+}
+
+/* Dialogue tape */
+.tape-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #F7F8F9;
+}
+.tape {
+  flex: 1;
+  overflow: hidden;
+  padding: 18px 28px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.row {
+  display: flex;
+  flex-direction: column;
+  max-width: 640px;
+}
+.row.learner { align-self: flex-end; align-items: flex-end; }
+.row.teacher { align-self: flex-start; align-items: flex-start; }
+.who {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6B7280;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.bubble {
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1A1C1E;
+  max-width: 520px;
+}
+.bubble.teacher {
+  background: #F3F4F6;
+}
+.bubble.learner {
+  background: #FFE8E2;
+}
+.tts {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+  color: #6B7280;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  padding: 1px 6px;
+  vertical-align: middle;
+}
+.feedback {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6B7280;
+  max-width: 520px;
+  padding: 0 2px;
+}
+.feedback .issue { color: #1A1C1E; }
+.feedback .fix span {
+  color: #FF8161;
+  font-weight: 600;
+}
+
+/* Listening card in tape */
+.listening-card {
+  align-self: stretch;
+  max-width: 560px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+.listening-card .card-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #6B7280;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.listening-card .card-label::before {
+  content: "";
+  width: 16px;
+  height: 3px;
+  background: #FF8161;
+}
+.player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #D1D5DB;
+}
+.player .play {
+  width: 32px; height: 32px;
+  border-radius: 9999px;
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #1A1C1E;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.scrubber {
+  flex: 1;
+  height: 4px;
+  background: #D1D5DB;
+  border-radius: 4px;
+  position: relative;
+}
+.scrubber .fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 38%;
+  background: #1A1C1E;
+  border-radius: 4px;
+}
+.scrubber .knob {
+  position: absolute;
+  left: 38%;
+  top: 50%;
+  width: 10px; height: 10px;
+  margin: -5px 0 0 -5px;
+  background: #1A1C1E;
+  border-radius: 9999px;
+}
+.player .time {
+  font-size: 11px;
+  color: #6B7280;
+  white-space: nowrap;
+}
+.player .pause-icon {
+  font-size: 11px;
+  color: #6B7280;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+.prompt {
+  font-size: 13px;
+  color: #1A1C1E;
+  margin-bottom: 10px;
+}
+.options { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #1A1C1E;
+  background: #FFFFFF;
+}
+.opt .letter {
+  font-weight: 700;
+  color: #6B7280;
+  width: 16px;
+}
+.opt.selected {
+  background: #FFE8E2;
+  border-color: #FF8161;
+}
+.opt.selected .letter { color: #1A1C1E; }
+
+/* Mic bar */
+.mic-bar {
+  height: 88px;
+  background: #FFFFFF;
+  border-top: 1px solid #D1D5DB;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.mic {
+  width: 52px; height: 52px;
+  border-radius: 9999px;
+  border: 2px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mic svg { width: 22px; height: 22px; fill: currentColor; }
+.mic-hint {
+  font-size: 11px;
+  color: #6B7280;
+}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <div class="dots"><span></span><span></span><span></span></div>
+    AI Language Teacher — Урок
+  </div>
+  <div class="app">
+    <div class="header">
+      <div class="topic">Travel / В аэропорту</div>
+      <div class="meta">Шаг 3 · Объявления в аэропорту</div>
+      <span class="spacer"></span>
+      <div class="actions">
+        <a class="btn-secondary" href="#">Пауза</a>
+        <a class="btn-secondary danger-ish" href="#">Завершить урок</a>
+      </div>
+    </div>
+    <div class="stage">
+      <aside class="plan">
+        <div class="label">План урока</div>
+        <ul class="steps">
+          <li class="done"><span class="num">1</span><span class="txt">Регистрация и паспортный контроль</span></li>
+          <li class="done"><span class="num">2</span><span class="txt">Диалог у стойки информации</span></li>
+          <li class="current"><span class="num">3</span><span class="txt">Объявления в аэропорту</span></li>
+          <li class="upcoming"><span class="num">4</span><span class="txt">Разбор ошибок</span></li>
+        </ul>
+      </aside>
+      <div class="tape-wrap">
+        <div class="tape">
+          <div class="row teacher">
+            <div class="who">Учитель</div>
+            <div class="bubble teacher">
+              Good. Now listen to the gate announcement and choose the correct answer.
+              <span class="tts">▶</span>
+            </div>
+          </div>
+
+          <div class="listening-card">
+            <div class="card-label">Прослушивание</div>
+            <div class="player">
+              <div class="play">▶</div>
+              <div class="scrubber"><div class="fill"></div><div class="knob"></div></div>
+              <div class="time">0:18 / 0:47</div>
+              <div class="pause-icon">Пауза</div>
+            </div>
+            <div class="prompt">Where should passengers for flight BA-214 go?</div>
+            <div class="options">
+              <div class="opt selected"><span class="letter">A</span><span>Gate 12 — boarding starts now</span></div>
+              <div class="opt"><span class="letter">B</span><span>Baggage claim on level 1</span></div>
+              <div class="opt"><span class="letter">C</span><span>Security checkpoint B</span></div>
+            </div>
+          </div>
+
+          <div class="row learner">
+            <div class="who">Вы</div>
+            <div class="bubble learner">Gate twelve — boarding starts now.</div>
+            <div class="feedback">
+              <div class="issue">Произношение: «twelve» звучало как «twelf».</div>
+              <div class="fix">Модель: <span>twelve</span> /twelv/</div>
+            </div>
+          </div>
+
+          <div class="row teacher">
+            <div class="who">Учитель</div>
+            <div class="bubble teacher">
+              Yes — Gate 12. Nice catch. Say it once more clearly: “boarding starts now.”
+              <span class="tts">▶</span>
+            </div>
+          </div>
+        </div>
+        <div class="mic-bar">
+          <div class="mic" title="Микрофон">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+            </svg>
+          </div>
+          <div class="mic-hint">Удерживайте, чтобы говорить</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

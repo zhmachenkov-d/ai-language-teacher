@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Design Directions — Calendar Home</title>
+<style>
+/*
+  Index for 5 visual directions · AI Language Teacher
+  Shared brand anchors: coral #FF8161 · white · light grey · charcoal
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #E8E6E4;
+  color: #1A1A1A;
+  padding: 28px 24px 48px;
+}
+header {
+  max-width: 1400px;
+  margin: 0 auto 24px;
+}
+header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+header h1 span { color: #FF8161; }
+header p {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #555;
+  max-width: 720px;
+  line-height: 1.45;
+}
+.meta {
+  margin-top: 12px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #888;
+}
+.links {
+  max-width: 1400px;
+  margin: 0 auto 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.links a {
+  display: inline-block;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #CCC;
+  color: #1A1A1A;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+}
+.links a:hover {
+  border-color: #FF8161;
+  color: #FF8161;
+}
+.grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.card {
+  background: #fff;
+  border: 1px solid #CFCFCF;
+  overflow: hidden;
+}
+.card .head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #E4E4E4;
+  background: #FAFAFA;
+}
+.card .head h2 {
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.card .head h2 em {
+  font-style: normal;
+  color: #FF8161;
+  margin-right: 6px;
+}
+.card .head .one {
+  font-size: 13px;
+  color: #555;
+  flex: 1;
+}
+.card .head a {
+  font-size: 12px;
+  color: #FF8161;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.frame-wrap {
+  background: #D8D8D8;
+  padding: 12px;
+  overflow: auto;
+}
+iframe {
+  display: block;
+  width: 1320px;
+  height: 1100px;
+  border: 0;
+  background: #fff;
+}
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto 32px;
+}
+@media (max-width: 1100px) {
+  .pair { grid-template-columns: 1fr; }
+}
+.pair .mini {
+  background: #fff;
+  border: 1px solid #CFCFCF;
+}
+.pair .mini .head {
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #E4E4E4;
+  background: #FAFAFA;
+}
+.pair .mini .head a { color: #FF8161; text-decoration: none; float: right; font-size: 11px; }
+.pair iframe {
+  width: 100%;
+  height: 520px;
+  transform-origin: top left;
+}
+.note {
+  max-width: 1400px;
+  margin: 8px auto 0;
+  font-size: 12px;
+  color: #777;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Design Directions · <span>Calendar Home</span></h1>
+  <p>Пять визуальных личностей одного экрана: недельный календарь Outlook-like + боковая панель урока. Палитра Language Center (коралл #FF8161). Light mode primary.</p>
+  <div class="meta">Hero screen · Календарь · ~1280×800 · RU copy</div>
+</header>
+
+<nav class="links">
+  <a href="direction-coral-accent-tool.html">1 · Coral Accent Tool</a>
+  <a href="direction-coral-block-warm.html">2 · Coral Block Warm</a>
+  <a href="direction-numbered-coach.html">3 · Numbered Coach</a>
+  <a href="direction-soft-adult-edu.html">4 · Soft Adult Edu</a>
+  <a href="direction-charcoal-studio.html">5 · Charcoal Studio</a>
+</nav>
+
+<div class="grid">
+  <section class="card" id="coral-accent-tool">
+    <div class="head">
+      <h2><em>01</em> Coral Accent Tool</h2>
+      <span class="one">Максимальная Outlook-плотность; коралл только как искра (CTA / next / today).</span>
+      <a href="direction-coral-accent-tool.html">Открыть →</a>
+    </div>
+    <div class="frame-wrap"><iframe src="direction-coral-accent-tool.html" title="Coral Accent Tool"></iframe></div>
+  </section>
+
+  <section class="card" id="coral-block-warm">
+    <div class="head">
+      <h2><em>02</em> Coral Block Warm</h2>
+      <span class="one">Крупные коралловые плоскости как в брошюре; всё ещё рабочий календарь.</span>
+      <a href="direction-coral-block-warm.html">Открыть →</a>
+    </div>
+    <div class="frame-wrap"><iframe src="direction-coral-block-warm.html" title="Coral Block Warm"></iframe></div>
+  </section>
+
+  <section class="card" id="numbered-coach">
+    <div class="head">
+      <h2><em>03</em> Numbered Coach</h2>
+      <span class="one">Нумерованные коралловые круги и accent-rules в панели плана; коучинговый тон.</span>
+      <a href="direction-numbered-coach.html">Открыть →</a>
+    </div>
+    <div class="frame-wrap"><iframe src="direction-numbered-coach.html" title="Numbered Coach"></iframe></div>
+  </section>
+
+  <section class="card" id="soft-adult-edu">
+    <div class="head">
+      <h2><em>04</em> Soft Adult Edu</h2>
+      <span class="one">Мягкие радиусы, светлые серые, только sentence case — дружеский без детского.</span>
+      <a href="direction-soft-adult-edu.html">Открыть →</a>
+    </div>
+    <div class="frame-wrap"><iframe src="direction-soft-adult-edu.html" title="Soft Adult Edu"></iframe></div>
+  </section>
+
+  <section class="card" id="charcoal-studio">
+    <div class="head">
+      <h2><em>05</em> Charcoal Studio</h2>
+      <span class="one">Угольный студийный хром; коралл — редкие искры; ALL CAPS ярлыки.</span>
+      <a href="direction-charcoal-studio.html">Открыть →</a>
+    </div>
+    <div class="frame-wrap"><iframe src="direction-charcoal-studio.html" title="Charcoal Studio"></iframe></div>
+  </section>
+</div>
+
+<p class="note">Полные макеты выше в iframe; для сравнения без прокрутки откройте отдельные файлы в соседних вкладках.</p>
+</body>
+</html>

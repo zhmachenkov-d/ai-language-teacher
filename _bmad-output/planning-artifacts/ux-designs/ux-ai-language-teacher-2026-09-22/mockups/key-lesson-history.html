@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Key screen — История урока</title>
+<style>
+/*
+  KEY SCREEN: lesson-history
+  Spine sections governing this screen:
+    DESIGN.md — Brand & Style; Colors; Typography; Layout & Spacing; Elevation & Depth; Shapes;
+                Components (numbered-step-circle, accent-rule, chat-bubble, inline-pronunciation-feedback,
+                listening-card, history-bottom-bar, cta-button-coral); Do's and Don'ts
+    EXPERIENCE.md — Foundation; Information Architecture (Lesson history);
+                    Voice and Tone; Component Patterns (Numbered plan steps, Accent rule, Chat bubble,
+                    Inline pronunciation feedback, Listening card, History bottom bar, CTA);
+                    State Patterns (History mode); Interaction Primitives (Voice replay, Listening player);
+                    Key Flows (Flow 2 — Typical lesson → history transition)
+  Tokens locked from DESIGN.md neutral-cool-lines (light).
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: #E5E7EB;
+  color: #1A1C1E;
+  padding: 24px;
+  line-height: 1.35;
+}
+.window {
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  background: #F7F8F9;
+  border: 1px solid #D1D5DB;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.titlebar {
+  height: 28px;
+  background: #1A1C1E;
+  color: #E8EAED;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.titlebar .dots span {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 1px;
+  background: #6B7280;
+  margin-right: 4px;
+}
+.app { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+
+.header {
+  height: 48px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #D1D5DB;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.header .back {
+  width: 28px; height: 28px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: #1A1C1E;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.header .topic {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1C1E;
+}
+.header .meta {
+  font-size: 12px;
+  color: #6B7280;
+}
+.header .spacer { flex: 1; }
+.header .actions { display: flex; gap: 8px; align-items: center; }
+.btn-secondary {
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1C1E;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.btn-close {
+  width: 28px; height: 28px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: #6B7280;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.stage {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.plan {
+  width: 220px;
+  background: #F3F4F6;
+  border-right: 1px solid #D1D5DB;
+  padding: 16px 14px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.plan .label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #6B7280;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.plan .label::before {
+  content: "";
+  width: 16px;
+  height: 3px;
+  background: #FF8161;
+}
+.steps { list-style: none; }
+.steps li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: #6B7280;
+}
+.num {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  background: #5A5A5A;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tape-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #F7F8F9;
+}
+.tape {
+  flex: 1;
+  overflow: hidden;
+  padding: 18px 28px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.row {
+  display: flex;
+  flex-direction: column;
+  max-width: 640px;
+}
+.row.learner { align-self: flex-end; align-items: flex-end; }
+.row.teacher { align-self: flex-start; align-items: flex-start; }
+.who {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6B7280;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.bubble {
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1A1C1E;
+  max-width: 520px;
+}
+.bubble.teacher { background: #F3F4F6; }
+.bubble.learner { background: #FFE8E2; }
+.tts {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+  color: #6B7280;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  padding: 1px 6px;
+  vertical-align: middle;
+}
+.replay-row {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #6B7280;
+}
+.replay-row .play-mini {
+  width: 22px; height: 22px;
+  border-radius: 9999px;
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #1A1C1E;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.replay-row .scrub {
+  width: 120px;
+  height: 3px;
+  background: #D1D5DB;
+  border-radius: 4px;
+  position: relative;
+}
+.replay-row .scrub .fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 45%;
+  background: #1A1C1E;
+  border-radius: 4px;
+}
+.feedback {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6B7280;
+  max-width: 520px;
+  padding: 0 2px;
+}
+.feedback .issue { color: #1A1C1E; }
+.feedback .fix span {
+  color: #FF8161;
+  font-weight: 600;
+}
+
+.listening-card {
+  align-self: stretch;
+  max-width: 560px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+.listening-card .card-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #6B7280;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.listening-card .card-label::before {
+  content: "";
+  width: 16px;
+  height: 3px;
+  background: #FF8161;
+}
+.player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #D1D5DB;
+}
+.player .play {
+  width: 32px; height: 32px;
+  border-radius: 9999px;
+  border: 1px solid #D1D5DB;
+  background: #FFFFFF;
+  color: #1A1C1E;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.scrubber {
+  flex: 1;
+  height: 4px;
+  background: #D1D5DB;
+  border-radius: 4px;
+  position: relative;
+}
+.scrubber .fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 100%;
+  background: #1A1C1E;
+  border-radius: 4px;
+}
+.scrubber .knob {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  width: 10px; height: 10px;
+  margin: -5px 0 0 -5px;
+  background: #1A1C1E;
+  border-radius: 9999px;
+}
+.player .time {
+  font-size: 11px;
+  color: #6B7280;
+  white-space: nowrap;
+}
+.player .pause-icon {
+  font-size: 11px;
+  color: #6B7280;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+.prompt {
+  font-size: 13px;
+  color: #1A1C1E;
+  margin-bottom: 10px;
+}
+.options { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #1A1C1E;
+  background: #FFFFFF;
+}
+.opt .letter {
+  font-weight: 700;
+  color: #6B7280;
+  width: 16px;
+}
+.opt.selected {
+  background: #FFE8E2;
+  border-color: #FF8161;
+}
+.opt.selected .letter { color: #1A1C1E; }
+.opt .mark {
+  margin-left: auto;
+  font-size: 11px;
+  color: #5A5A5A;
+  font-weight: 600;
+}
+
+/* History bottom bar — replaces mic */
+.history-bar {
+  min-height: 88px;
+  background: #FFFFFF;
+  border-top: 1px solid #D1D5DB;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex-shrink: 0;
+  padding: 0;
+}
+.history-bar .col {
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.history-bar .col.outcome {
+  flex: 1.4;
+  border-right: 1px solid #D1D5DB;
+}
+.history-bar .col.decision {
+  flex: 1;
+}
+.history-bar .sec-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.history-bar .sec-label::before {
+  content: "";
+  width: 12px;
+  height: 2px;
+  background: #FF8161;
+}
+.history-bar .summary {
+  font-size: 13px;
+  color: #1A1C1E;
+  line-height: 1.4;
+}
+.history-bar .summary .muted { color: #6B7280; }
+.template-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.template-pill .name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A1C1E;
+}
+.template-pill .tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1A1C1E;
+  background: #FFE8E2;
+  border: 1px solid #FF8161;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+.template-pill .why {
+  font-size: 12px;
+  color: #6B7280;
+}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <div class="dots"><span></span><span></span><span></span></div>
+    AI Language Teacher — История урока
+  </div>
+  <div class="app">
+    <div class="header">
+      <a class="back" href="#" title="Назад">‹</a>
+      <div class="topic">Travel / В аэропорту</div>
+      <div class="meta">Завершён · 23 сен · История</div>
+      <span class="spacer"></span>
+      <div class="actions">
+        <a class="btn-secondary" href="#">Закончить</a>
+        <a class="btn-close" href="#" title="Закрыть">✕</a>
+      </div>
+    </div>
+    <div class="stage">
+      <aside class="plan">
+        <div class="label">План урока</div>
+        <ul class="steps">
+          <li class="done"><span class="num">1</span><span class="txt">Регистрация и паспортный контроль</span></li>
+          <li class="done"><span class="num">2</span><span class="txt">Диалог у стойки информации</span></li>
+          <li class="done"><span class="num">3</span><span class="txt">Объявления в аэропорту</span></li>
+          <li class="done"><span class="num">4</span><span class="txt">Разбор ошибок</span></li>
+        </ul>
+      </aside>
+      <div class="tape-wrap">
+        <div class="tape">
+          <div class="row teacher">
+            <div class="who">Учитель</div>
+            <div class="bubble teacher">
+              Good. Now listen to the gate announcement and choose the correct answer.
+              <span class="tts" title="Повторить">▶</span>
+            </div>
+          </div>
+
+          <div class="listening-card">
+            <div class="card-label">Прослушивание</div>
+            <div class="player">
+              <div class="play" title="Повторить">▶</div>
+              <div class="scrubber"><div class="fill"></div><div class="knob"></div></div>
+              <div class="time">0:47 / 0:47</div>
+              <div class="pause-icon">Повтор</div>
+            </div>
+            <div class="prompt">Where should passengers for flight BA-214 go?</div>
+            <div class="options">
+              <div class="opt selected"><span class="letter">A</span><span>Gate 12 — boarding starts now</span><span class="mark">Верно</span></div>
+              <div class="opt"><span class="letter">B</span><span>Baggage claim on level 1</span></div>
+              <div class="opt"><span class="letter">C</span><span>Security checkpoint B</span></div>
+            </div>
+          </div>
+
+          <div class="row learner">
+            <div class="who">Вы</div>
+            <div class="bubble learner">Gate twelve — boarding starts now.</div>
+            <div class="replay-row">
+              <div class="play-mini">▶</div>
+              <div class="scrub"><div class="fill"></div></div>
+              <span>Ваша запись · 0:04</span>
+            </div>
+            <div class="feedback">
+              <div class="issue">Произношение: «twelve» звучало как «twelf».</div>
+              <div class="fix">Модель: <span>twelve</span> /twelv/</div>
+            </div>
+          </div>
+
+          <div class="row teacher">
+            <div class="who">Учитель</div>
+            <div class="bubble teacher">
+              Yes — Gate 12. Nice catch. Say it once more clearly: “boarding starts now.”
+              <span class="tts" title="Повторить">▶</span>
+            </div>
+          </div>
+
+          <div class="row learner">
+            <div class="who">Вы</div>
+            <div class="bubble learner">Boarding starts now.</div>
+            <div class="replay-row">
+              <div class="play-mini">▶</div>
+              <div class="scrub"><div class="fill"></div></div>
+              <span>Ваша запись · 0:02</span>
+            </div>
+            <div class="feedback">
+              <div class="issue">Чище. Ударение на <span style="color:#FF8161;font-weight:600">board</span>-ing — хорошо.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="history-bar">
+          <div class="col outcome">
+            <div class="sec-label">Итог урока</div>
+            <div class="summary">
+              Объявления в аэропорту — уверенно. Слабое место: числительные и /θ/ в «twelve / thirteenth».
+              <span class="muted">Кратко от учителя.</span>
+            </div>
+          </div>
+          <div class="col decision">
+            <div class="sec-label">Шаблон урока</div>
+            <div class="template-pill">
+              <span class="name">Oral</span>
+              <span class="tag">устный</span>
+              <span class="why">· study · oral · transfer</span>
+            </div>
+            <div class="summary muted" style="font-size:12px;">Выбран за диалог и произношение, не за письменный разбор.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
