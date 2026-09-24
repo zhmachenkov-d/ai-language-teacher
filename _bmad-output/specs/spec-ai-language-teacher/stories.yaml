@@ -1,0 +1,58 @@
+- id: "1"
+  title: Desktop teacher substrate
+  description: >-
+    Ship the personal desktop shell, local teacher API, persistence, documented
+    settings (NFR-4), PII-safe LLM rail (NFR-1), and continuity error UX (NFR-3)
+    per adopted ARCHITECTURE-SPINE — substrate for all CAP-* work.
+  spec_checkpoint: true
+  done_checkpoint: true
+- id: "2"
+  title: Onboarding goals, schedule, and Living plan
+  description: >-
+    CAP-1 preference/schedule intake and CAP-3 Living plan creation with path
+    options and viewable revisable plan into lesson one.
+  spec_checkpoint: true
+  done_checkpoint: true
+- id: "3"
+  title: Voice TTS for lesson materials
+  description: >-
+    CAP-10 play controls for lesson text and new vocabulary TTS, with failure
+    handling under the continuity constraint and voice-quality bar.
+  spec_checkpoint: true
+  done_checkpoint: true
+- id: "4"
+  title: Speaking and listening placement
+  description: >-
+    CAP-2 placement with spoken and listening tasks that seed Living plan
+    difficulty; text-only placement must not finish onboarding.
+  spec_checkpoint: true
+  done_checkpoint: true
+- id: "5"
+  title: Lesson engine templates, topic, vocab, errors
+  description: >-
+    CAP-4 adaptive Lesson templates with visible decision summary, CAP-6
+    per-lesson topic/activities/vocab, and CAP-7 error explanation plus
+    categorized stats feeding plan and Progress.
+  spec_checkpoint: true
+  done_checkpoint: true
+- id: "6"
+  title: Oral teaching loop
+  description: >-
+    CAP-8 spoken dialogue/role-play, CAP-9 listening with comprehension check,
+    and CAP-11 pronunciation/intonation feedback with corrected model.
+  spec_checkpoint: true
+  done_checkpoint: true
+- id: "7"
+  title: Replan and Progress dashboards
+  description: >-
+    CAP-5 Living plan replan with visible change summary, and CAP-15 mastery
+    and error dashboards on desktop without requiring Telegram.
+  spec_checkpoint: true
+  done_checkpoint: true
+- id: "8"
+  title: Telegram cadence micro-lessons and reminders
+  description: >-
+    CAP-12 Micro-lesson translate/spelling content, CAP-13 Telegram delivery
+    with link/unlink and Progress sync, and CAP-14 schedule-based lesson reminders.
+  spec_checkpoint: true
+  done_checkpoint: true
