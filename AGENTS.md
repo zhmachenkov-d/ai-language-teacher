@@ -34,12 +34,23 @@ npm run preview      # start (preview production build)
 
 ### Teacher (`services/teacher/`)
 
-Installable + testable in Story 1.1. A listening HTTP server is Story 1.2 — do not treat `uv run` as starting an API.
+Loopback HTTP API with Bearer local auth (Story 1.2 API slice). Electron spawn/attach/preload and window-close host-survival remain deferred — do not treat desktop start as the teacher listen path.
 
 ```bash
 cd services/teacher
 uv sync
 uv run pytest
+
+# Listen on 127.0.0.1:8765 (token from env — never commit it):
+export TEACHER_AUTH_TOKEN="$(openssl rand -hex 32)"
+uv run teacher-api
+# or: uv run python -m teacher_service.adapters.api
+
+# Smoke:
+curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" http://127.0.0.1:8765/health
+# expect 200 snake_case JSON, e.g. {"status":"ok"}
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8765/health
+# expect 401 with {"code","message","retryable"}
 ```
 
 ## Conventions that differ from defaults

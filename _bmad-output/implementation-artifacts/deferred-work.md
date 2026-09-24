@@ -12,3 +12,23 @@
   summary: Party-mode memlog changes mixed into the 1.1 working tree
   evidence: `_bmad-output/party-mode/memories/installed/.memlog.md` is outside the story Code Map; keep memory, do not treat as scaffold deliverable when committing
 
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
+  summary: Electron host-survival UX when the UI window closes (tray and/or hide-without-tray reopen/attach; teacher must not stop solely because the window closed)
+  evidence: Split from 1.2 to keep the draft under the token budget; core loopback API + auth + spawn remains in-spec; AD-2 window-close gate moves here with the visible host model choice
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
+  summary: Learner-visible stopped/error/retry chrome (copy language and UI) when teacher start/attach fails
+  evidence: Split from 1.2 with host-survival UX; narrowed 1.2 proves lifecycle status + health over HTTP without polished status chrome (Story 1.4 may also own Russian chrome)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
+  summary: Electron thin-host spawn/attach/stop/status, userData token mint/load bridge, preload token/base_url surface, and Vue GET /health smoke when running
+  evidence: Second split from 1.2 to fit the token budget; narrowed spec ships teacher loopback FastAPI + Bearer auth + health + pytest only
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
+  summary: Strengthen AGENTS.md unauthenticated health smoke to assert error JSON body shape `{code,message,retryable}` not only HTTP status
+  evidence: Review triage deferred because the fix edits agent-context AGENTS.md
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
+  summary: When Electron token bridge lands, explicitly cover remint/rotate and invalidate-on-clear of prior Bearer tokens (epic Story 1.2 AC)
+  evidence: Review found remint/rotation not parked beyond userData mint/load in deferred Electron spawn entry
