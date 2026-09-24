@@ -5,8 +5,8 @@ from __future__ import annotations
 import secrets
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from teacher_service.adapters.api.app import LOOPBACK_HOST, create_app
 from teacher_service.adapters.api.auth import AUTH_TOKEN_ENV, tokens_match
 from teacher_service.adapters.api.cli import main as cli_main
@@ -23,9 +23,7 @@ def client(auth_token: str) -> TestClient:
 
 
 def test_health_with_valid_bearer(client: TestClient, auth_token: str) -> None:
-    response = client.get(
-        "/health", headers={"Authorization": f"Bearer {auth_token}"}
-    )
+    response = client.get("/health", headers={"Authorization": f"Bearer {auth_token}"})
     assert response.status_code == 200
     body = response.json()
     assert body == {"status": "ok"}
@@ -48,9 +46,7 @@ def test_health_without_token_rejected(client: TestClient, auth_token: str) -> N
 
 def test_health_wrong_token_rejected(client: TestClient, auth_token: str) -> None:
     wrong = secrets.token_urlsafe(32)
-    response = client.get(
-        "/health", headers={"Authorization": f"Bearer {wrong}"}
-    )
+    response = client.get("/health", headers={"Authorization": f"Bearer {wrong}"})
     assert response.status_code == 401
     body = response.json()
     assert set(body) == {"code", "message", "retryable"}
@@ -72,9 +68,7 @@ def test_create_app_reads_env_token(monkeypatch: pytest.MonkeyPatch) -> None:
     token = secrets.token_urlsafe(24)
     monkeypatch.setenv(AUTH_TOKEN_ENV, token)
     with TestClient(create_app()) as env_client:
-        ok = env_client.get(
-            "/health", headers={"Authorization": f"Bearer {token}"}
-        )
+        ok = env_client.get("/health", headers={"Authorization": f"Bearer {token}"})
         assert ok.status_code == 200
         denied = env_client.get("/health")
         assert denied.status_code == 401
@@ -104,9 +98,7 @@ def test_unauthenticated_non_health_rejected(
 def test_authenticated_unknown_path_shaped_404(
     client: TestClient, auth_token: str
 ) -> None:
-    response = client.get(
-        "/nope", headers={"Authorization": f"Bearer {auth_token}"}
-    )
+    response = client.get("/nope", headers={"Authorization": f"Bearer {auth_token}"})
     assert response.status_code == 404
     body = response.json()
     assert set(body) == {"code", "message", "retryable"}
@@ -147,13 +139,20 @@ def test_cli_binds_loopback_fixed_port(
     def fake_run(app: object, **kwargs: object) -> None:
         calls.append({"app": app, **kwargs})
 
-    monkeypatch.setattr(
-        "teacher_service.adapters.api.cli.uvicorn.run", fake_run
-    )
+    monkeypatch.setattr("teacher_service.adapters.api.cli.uvicorn.run", fake_run)
     cli_main([])
     assert len(calls) == 1
     assert calls[0]["host"] == "127.0.0.1"
     assert calls[0]["port"] == 8765
+    served_app = calls[0]["app"]
+    assert isinstance(served_app, FastAPI)
+    served = TestClient(served_app)
+    denied = served.get("/health")
+    assert denied.status_code == 401
+    assert set(denied.json()) == {"code", "message", "retryable"}
+    ok = served.get("/health", headers={"Authorization": f"Bearer {auth_token}"})
+    assert ok.status_code == 200
+    assert ok.json() == {"status": "ok"}
 
 
 def test_cli_requires_env_token(monkeypatch: pytest.MonkeyPatch) -> None:
