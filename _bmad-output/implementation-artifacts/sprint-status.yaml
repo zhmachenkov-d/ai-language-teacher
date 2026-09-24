@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-24-2026 10:16
-last_updated: 09-24-2026 13:45
+last_updated: 09-24-2026 15:05
 project: ai-language-teacher
 project_key: NOKEY
 tracking_system: file-system
@@ -37,7 +37,7 @@ story_location: "/workspaces/ai-language-teacher/_bmad-output/implementation-art
 development_status:
   epic-1: in-progress
   1-1-scaffold-electron-vue-desktop-and-python-teacher-package: done
-  1-2-loopback-http-api-with-local-auth-and-electron-service-lifec: review
+  1-2-loopback-http-api-with-local-auth-and-electron-service-lifec: done
   1-3-config-port-secrets-layout-and-sqlite-app-data-store: backlog
   1-4-design-tokens-dark-mode-and-russian-app-chrome-shell: backlog
   1-5-calendar-home-empty-chrome-with-side-panel: backlog

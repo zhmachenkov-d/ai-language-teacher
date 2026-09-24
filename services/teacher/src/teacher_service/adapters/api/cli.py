@@ -24,7 +24,7 @@ def main(argv: list[str] | None = None) -> None:
         "--port",
         type=int,
         default=DEFAULT_PORT,
-        help=f"Bind port (default {DEFAULT_PORT})",
+        help=f"Bind port (must be {DEFAULT_PORT}; other ports are rejected)",
     )
     args = parser.parse_args(argv)
 

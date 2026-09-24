@@ -12,7 +12,6 @@
   summary: Party-mode memlog changes mixed into the 1.1 working tree
   evidence: `_bmad-output/party-mode/memories/installed/.memlog.md` is outside the story Code Map; keep memory, do not treat as scaffold deliverable when committing
 
-
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
   summary: Electron host-survival UX when the UI window closes (tray and/or hide-without-tray reopen/attach; teacher must not stop solely because the window closed)
   evidence: Split from 1.2 to keep the draft under the token budget; core loopback API + auth + spawn remains in-spec; AD-2 window-close gate moves here with the visible host model choice
@@ -32,3 +31,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
   summary: When Electron token bridge lands, explicitly cover remint/rotate and invalidate-on-clear of prior Bearer tokens (epic Story 1.2 AC)
   evidence: Review found remint/rotation not parked beyond userData mint/load in deferred Electron spawn entry
+
+## Deferred from: code review of spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md (2026-09-24)
+
+- Align older deferred-work evidence strings that still say Electron spawn / “lifecycle status” remains in-spec with the frozen Intent (API-auth only; Electron deferred)
+- Add pytest (or install-time) resolution of `teacher-api` console script and/or `python -m teacher_service.adapters.api` so miswired entrypoints cannot stay green while direct `cli.main` tests pass
+- CLI: catch `OSError` from `uvicorn.run` (e.g. port busy) and exit controlled with stderr instead of a raw traceback

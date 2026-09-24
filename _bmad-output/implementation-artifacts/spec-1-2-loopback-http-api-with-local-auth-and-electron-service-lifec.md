@@ -125,3 +125,24 @@ context:
 **Manual checks:**
 
 - Electron GUI out of scope for this narrowed slice; do not treat desktop start as a Done gate here
+
+### Review Findings
+
+- [x] [Review][Patch] CLI success test never asserts the secured app is what uvicorn serves [`services/teacher/tests/test_api_auth_health.py:141`] — `test_cli_binds_loopback_fixed_port` only checks host/port; a CLI that passes `FastAPI()` without Bearer middleware would still pass pytest. Assert `TestClient(calls[0]["app"])` health 401 without token / 200 with Bearer.
+- [x] [Review][Patch] CLI `--port` help omits hard reject [`services/teacher/src/teacher_service/adapters/api/cli.py:23`] — help says only “default 8765” while non-8765 exits 2; align help with `--host` (state refused values).
+- [x] [Review][Defer] AGENTS unauthenticated smoke drops error JSON body [`AGENTS.md`] — deferred: fix edits agent-context AGENTS.md (already tracked in deferred-work.md)
+- [x] [Review][Defer] deferred-work evidence still says spawn / lifecycle status “remains in-spec” [`deferred-work.md`] — deferred: editorial honesty vs frozen Intent; not a runtime defect in this API slice
+- [x] [Review][Defer] Packaged `teacher-api` / `__main__` entrypoints never resolved by pytest [`services/teacher/pyproject.toml`] — deferred: AGENTS listen smoke exercises them when run; packaging-entrypoint tests outsized for this slice
+- [x] [Review][Defer] uvicorn bind OSError (port busy) yields traceback not SystemExit [`services/teacher/src/teacher_service/adapters/api/cli.py:52`] — deferred: operational polish; not an AC for this slice
+
+**Rejected**
+
+- false — Sprint `review` vs Implementation Notes `in-progress`: BMad `review` is correct for this code-review gate; Electron ACs stay open via deferred-work. Fixing the notes would only edit this spec.
+- false — README omits unauth curl: AGENTS is the required runbook; README is not an AC.
+- false — Empty Spec Change Log / `review_loop_iteration: 0`: process metadata; fix would only edit this spec.
+- false — No CI/Make listen+curl smoke: Verification is the documented manual gate; pytest covers the I/O matrix via TestClient.
+- false — Authenticated `/openapi.json` untested: `openapi_url=None`; authenticated unknown-path shape already covered by `/nope`.
+- false — Presented Bearer whitespace vs stripped env secret: everyday clients do not pad Bearer material; reject is correct auth failure.
+- false — CLI ValueError if env cleared between preload and `create_app`: unreachable TOCTOU in this single-threaded entrypoint.
+- false — `tokens_match` UTF-8 encode → unshaped 500: ASGI `Authorization` is latin-1; encode cannot raise for header-derived strings.
+- low (rejected) — Same deferred-work “spawn remains in-spec” wording as prior loop: already deferred above as tracking honesty, not a product code patch.
