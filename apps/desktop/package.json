@@ -1,0 +1,25 @@
+{
+  "name": "ai-language-teacher-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron + Vue desktop client for ai-language-teacher",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json --composite false && vue-tsc --noEmit -p tsconfig.web.json --composite false"
+  },
+  "dependencies": {
+    "vue": "3.5.43"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6",
+    "@vitejs/plugin-vue": "6.0.9",
+    "electron": "44.4.5",
+    "electron-vite": "5.0.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.6",
+    "vue-tsc": "3.2.2"
+  }
+}
