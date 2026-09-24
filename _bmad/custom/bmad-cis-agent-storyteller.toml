@@ -1,0 +1,10 @@
+# Team override: use central TOML config merge for identity/language.
+# Stock SKILL.md may still mention module config.yaml — ignore that for these keys.
+
+[agent]
+activation_steps_prepend = [
+  "CONFIG OVERRIDE: Do not load user_name or communication_language from module `_bmad/*/config.yaml` or legacy `_bmad/config.yaml`. Run `uv run {project-root}/_bmad/scripts/resolve_config.py --project-root {project-root}` (merges `_bmad/config.toml`, `_bmad/config.user.toml`, `_bmad/custom/config.toml`, `_bmad/custom/config.user.toml`). From the JSON take user_name, communication_language, document_output_language, project_name, output_folder from `core`; module paths from `modules.*` as needed; date from system datetime. Prefer these values over any later yaml-based config step. If the script fails, address the user neutrally in English — do not invent a name or language.",
+]
+persistent_facts = [
+  "Identity and communication language always come from resolve_config.py four-layer merge (including `_bmad/custom/config.user.toml`), never from module config.yaml alone.",
+]
