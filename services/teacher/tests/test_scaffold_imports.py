@@ -22,7 +22,8 @@ FORBIDDEN = frozenset(
     }
 )
 
-ADAPTER_FORBIDDEN = frozenset({"fastapi", "uvicorn"})
+# FastAPI/uvicorn are allowed only under adapters/api/ (Story 1.2).
+ADAPTER_FORBIDDEN_OUTSIDE_API = frozenset({"fastapi", "uvicorn"})
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 TEACHER_ROOT = Path(__file__).resolve().parents[1]
@@ -85,7 +86,8 @@ def test_domain_has_no_forbidden_imports() -> None:
     assert not hits, "forbidden imports in domain:\n" + "\n".join(hits)
 
 
-def test_adapters_have_no_fastapi_app() -> None:
+def test_fastapi_only_under_adapters_api() -> None:
+    """FastAPI/uvicorn may live under adapters/api/ only; other adapters stay clean."""
     adapters_root = PACKAGE_ROOT / "adapters"
     assert adapters_root.is_dir(), f"missing adapters package at {adapters_root}"
 
@@ -94,12 +96,15 @@ def test_adapters_have_no_fastapi_app() -> None:
         source = path.read_text(encoding="utf-8")
         tree = ast.parse(source, filename=str(path))
         rel = path.relative_to(adapters_root)
-        for name in sorted(_top_level_imports(tree) & ADAPTER_FORBIDDEN):
+        under_api = rel.parts and rel.parts[0] == "api"
+        if under_api:
+            continue
+        for name in sorted(_top_level_imports(tree) & ADAPTER_FORBIDDEN_OUTSIDE_API):
             hits.append(f"{rel}: forbidden import {name}")
         if _has_fastapi_app_assignment(tree):
             hits.append(f"{rel}: app = FastAPI(...)")
 
-    assert not hits, "adapter FastAPI stubs not allowed in 1.1:\n" + "\n".join(hits)
+    assert not hits, "FastAPI outside adapters/api/:\n" + "\n".join(hits)
 
 
 def test_hexagonal_stub_layout_complete() -> None:
