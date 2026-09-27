@@ -50,3 +50,7 @@
 
 - AGENTS Config `bearer_token` bootstrap still undocumented (agent-context AGENTS.md; already tracked above for the same source_spec)
 - Epic Story 1.3 in `epics.md` still presents authenticated learner/profile HTTP AC without a deferral cross-reference to deferred-work / narrowed 1.3 Intent
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-4-design-tokens-dark-mode-and-russian-app-chrome-shell.md`
+  summary: Russian working-tool app chrome shell (nav Календарь/План/Прогресс/Настройки, vue-router placeholder routes, reduce-motion route transitions)
+  evidence: Split from 1.4 to fit the token budget; narrowed 1.4 ships design tokens + dark mode (OS + manual) on the existing renderer surface — epic Story 1.4 Russian shell / UX-DR20 nav AC remains open here (needed before 1.5/1.6)
