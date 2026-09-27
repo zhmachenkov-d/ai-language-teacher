@@ -125,7 +125,9 @@ def test_bearer_via_config_health(data_dir: Path) -> None:
     assert set(body) == {"code", "message", "retryable"}
 
 
-def test_env_overrides_config_bearer(data_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_env_overrides_config_bearer(
+    data_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     config = FileConfig(data_dir)
     config.ensure_layout()
     config_token = secrets.token_urlsafe(16)
@@ -139,7 +141,9 @@ def test_env_overrides_config_bearer(data_dir: Path, monkeypatch: pytest.MonkeyP
     app = create_app(config=config)
     client = TestClient(app)
     assert (
-        client.get("/health", headers={"Authorization": f"Bearer {env_token}"}).status_code
+        client.get(
+            "/health", headers={"Authorization": f"Bearer {env_token}"}
+        ).status_code
         == 200
     )
     assert (
@@ -162,7 +166,9 @@ def test_explicit_arg_wins_over_env_and_config(
     app = create_app(auth_token=arg_token, config=config)
     client = TestClient(app)
     assert (
-        client.get("/health", headers={"Authorization": f"Bearer {arg_token}"}).status_code
+        client.get(
+            "/health", headers={"Authorization": f"Bearer {arg_token}"}
+        ).status_code
         == 200
     )
 
@@ -257,10 +263,15 @@ def test_create_app_loads_bearer_from_data_dir_env(
 def test_cli_ensure_layout_failure_exits_1(
     data_dir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    def boom(self: FileConfig) -> None:
-        raise RuntimeError("failed to create learner data layout")
+    """Real OSError inside ensure_layout must wrap to RuntimeError → CLI exit 1."""
 
-    monkeypatch.setattr(FileConfig, "ensure_layout", boom)
+    def boom_mkdir(self: Path, *args: object, **kwargs: object) -> None:
+        raise OSError("permission denied (test)")
+
+    monkeypatch.setattr(Path, "mkdir", boom_mkdir)
+    config = FileConfig(data_dir)
+    with pytest.raises(RuntimeError, match="failed to create learner data layout"):
+        config.ensure_layout()
     with pytest.raises(SystemExit) as excinfo:
         cli_main([])
     assert excinfo.value.code == 1
@@ -288,3 +299,68 @@ def test_layout_dir_modes_0700(data_dir: Path) -> None:
         return
     for path in (config.data_dir(), config.secrets_dir(), config.voice_models_dir()):
         assert stat.S_IMODE(path.stat().st_mode) == 0o700
+
+
+def test_load_learner_rejects_multiple_rows(data_dir: Path) -> None:
+    config = FileConfig(data_dir)
+    config.ensure_layout()
+    store = SqliteStore(config.sqlite_path())
+    import sqlite3
+
+    with sqlite3.connect(config.sqlite_path()) as conn:
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS learner (
+                id TEXT PRIMARY KEY NOT NULL,
+                target_language TEXT NOT NULL,
+                l1 TEXT NOT NULL,
+                timezone TEXT NOT NULL
+            );
+            INSERT INTO learner (id, target_language, l1, timezone)
+            VALUES ('a', 'en', 'ru', 'UTC'), ('b', 'en', 'ru', 'UTC');
+            """
+        )
+        conn.commit()
+    with pytest.raises(RuntimeError, match="at most one learner"):
+        store.load_learner()
+
+
+def test_secret_symlink_escape_rejected(data_dir: Path, tmp_path: Path) -> None:
+    config = FileConfig(data_dir)
+    config.ensure_layout()
+    outside = tmp_path / "outside-secret"
+    outside.write_text("leaked\n", encoding="utf-8")
+    link = config.secrets_dir() / SECRET_BEARER_TOKEN
+    link.symlink_to(outside)
+    with pytest.raises(ValueError, match="escapes"):
+        config.get_secret(SECRET_BEARER_TOKEN)
+    with pytest.raises(ValueError, match="escapes"):
+        config.set_secret(SECRET_BEARER_TOKEN, "new-value")
+
+
+def test_secret_non_utf8_raises_and_cli_exits(
+    data_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = FileConfig(data_dir)
+    config.ensure_layout()
+    path = config.secrets_dir() / SECRET_BEARER_TOKEN
+    path.write_bytes(b"\xff\xfe not utf-8")
+    with pytest.raises(RuntimeError, match="failed to read secret"):
+        config.get_secret(SECRET_BEARER_TOKEN)
+    monkeypatch.delenv(AUTH_TOKEN_ENV, raising=False)
+    with pytest.raises(SystemExit) as excinfo:
+        cli_main([])
+    assert excinfo.value.code == 1
+
+
+def test_explicit_empty_auth_token_arg_fails_closed(
+    data_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = FileConfig(data_dir)
+    config.ensure_layout()
+    config.set_secret(SECRET_BEARER_TOKEN, "config-should-not-win")
+    monkeypatch.setenv(AUTH_TOKEN_ENV, "env-should-not-win")
+    with pytest.raises(ValueError, match=AUTH_TOKEN_ENV):
+        resolve_auth_token("", config=config)
+    with pytest.raises(ValueError, match=AUTH_TOKEN_ENV):
+        resolve_auth_token("   \t", config=config)

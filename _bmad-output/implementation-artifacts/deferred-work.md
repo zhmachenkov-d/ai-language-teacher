@@ -45,3 +45,8 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-3-config-port-secrets-layout-and-sqlite-app-data-store.md`
   summary: Document an operable AGENTS.md bootstrap to create Config `bearer_token` without Settings UI or TEACHER_AUTH_TOKEN-only path
   evidence: Review found Config-backed listen documented but no step to mint/write bearer_token under app-data before Story 1.6; fix edits agent-context AGENTS.md
+
+## Deferred from: code review of spec-1-3-config-port-secrets-layout-and-sqlite-app-data-store.md (2026-09-27)
+
+- AGENTS Config `bearer_token` bootstrap still undocumented (agent-context AGENTS.md; already tracked above for the same source_spec)
+- Epic Story 1.3 in `epics.md` still presents authenticated learner/profile HTTP AC without a deferral cross-reference to deferred-work / narrowed 1.3 Intent

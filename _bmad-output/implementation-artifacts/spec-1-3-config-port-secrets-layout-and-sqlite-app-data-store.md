@@ -100,12 +100,32 @@ context:
 - Given CLI listen, when only Config/env Bearer is available, then `/health` starts without requiring SQLite/Learner init
 - Given this slice reaches Done, when sprint status is updated, then the HTTP learner/profile projection AC from epics Story 1.3 remains open via deferred-work — not satisfied by this Done
 
+### Review Findings
+
+- [x] [Review][Patch] Multi-row `load_learner` RuntimeError untested [`services/teacher/src/teacher_service/adapters/persistence/sqlite.py:58`]
+- [x] [Review][Patch] Secret symlink-escape rejection untested [`services/teacher/src/teacher_service/adapters/config/layout.py:126`]
+- [x] [Review][Patch] Secret-read `UnicodeDecodeError`/`OSError` → `RuntimeError` (and CLI exit 1) untested [`services/teacher/src/teacher_service/adapters/config/layout.py:92`]
+- [x] [Review][Patch] CLI layout-failure test mocks away real `OSError`→`RuntimeError` wrap in `ensure_layout` [`services/teacher/tests/test_config_persistence.py:257`]
+- [x] [Review][Patch] Empty/whitespace explicit `auth_token` arg fail-closed path untested [`services/teacher/src/teacher_service/adapters/api/auth.py:49`]
+- [x] [Review][Defer] AGENTS Config `bearer_token` bootstrap still undocumented — deferred: agent-context AGENTS.md (already tracked in deferred-work.md)
+- [x] [Review][Defer] Epic Story 1.3 in `epics.md` still reads HTTP projection AC as in-scope without deferral cross-ref — deferred: planning doc update outside this code slice
+
+**Rejected**
+
+- false — Spec `done` vs sprint `review` status mismatch — BMAD present intentionally leaves sprint at `review` until code-review completion sync
+- false — “Secrets never appear in logs” unproven — CLI/auth paths do not log secret values; failure messages use names/generic text only
+- false — Windows secrets never get 0600 — Design Notes/tests intentionally skip `nt`; ACL model differs
+- false — Empty Spec Change Log / stale triage “route patch” / missing Done-Not-Done banner / “30 passed” note — fixes would only edit the spec under review
+- low — Concurrent get_or_create / dual INSERT race — v1 single-process desktop; unlikely everyday; fix adds complexity
+- low — Symlink TOCTOU after escape check — personal desktop threat model; fix adds complexity
+- low — `create_learner` without UUID validation — domain always mints UUID; no everyday caller path demonstrated
+
 ## Implementation Notes
 
 - Implemented ConfigPort + FileConfig (`platformdirs==4.12.0`, `TEACHER_DATA_DIR` override): layout `teacher.sqlite`, `secrets/{bearer_token,llm_api_key,telegram_bot_token}` (0600), `voice-models/`.
 - PersistencePort + SqliteStore (stdlib sqlite3); domain `Learner` + `get_or_create_learner` with defaults en/ru/UTC.
 - `resolve_auth_token`: arg (if not None) → non-empty stripped env → Config `bearer_token` → ValueError; whitespace env = unset. CLI ensure_layout for Bearer only; no Learner init required for listen.
-- Tests: `test_config_persistence.py` covers I/O matrix; existing auth tests updated for Config fall-through + data-dir isolation. `uv run pytest` → 30 passed.
+- Tests: `test_config_persistence.py` covers I/O matrix + review patches (multi-row load, symlink escape, non-UTF-8 secret, real ensure_layout OSError wrap, empty auth_token arg). `uv run pytest` → 39 passed.
 - HTTP learner/profile projection remains deferred (`deferred-work.md`).
 
 ## Spec Change Log
