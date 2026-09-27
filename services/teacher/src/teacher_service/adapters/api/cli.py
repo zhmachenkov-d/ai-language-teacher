@@ -8,7 +8,8 @@ import sys
 import uvicorn
 
 from teacher_service.adapters.api.app import DEFAULT_PORT, LOOPBACK_HOST, create_app
-from teacher_service.adapters.api.auth import load_auth_token_from_env
+from teacher_service.adapters.api.auth import resolve_auth_token
+from teacher_service.adapters.config import FileConfig
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -42,13 +43,16 @@ def main(argv: list[str] | None = None) -> None:
         )
         raise SystemExit(2)
 
+    # Config for Bearer resolve only — do not require SQLite/Learner init to listen.
+    config = FileConfig()
     try:
-        load_auth_token_from_env()
-    except ValueError as exc:
+        config.ensure_layout()
+        token = resolve_auth_token(config=config)
+    except (ValueError, RuntimeError) as exc:
         print(str(exc), file=sys.stderr)
         raise SystemExit(1) from exc
 
-    app = create_app()
+    app = create_app(auth_token=token, config=config)
     uvicorn.run(app, host=LOOPBACK_HOST, port=DEFAULT_PORT, log_level="info")
 
 

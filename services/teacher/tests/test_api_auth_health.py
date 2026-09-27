@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import secrets
+from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
@@ -75,8 +76,11 @@ def test_create_app_reads_env_token(monkeypatch: pytest.MonkeyPatch) -> None:
         assert token not in denied.text
 
 
-def test_create_app_requires_token(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_create_app_requires_token(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.delenv(AUTH_TOKEN_ENV, raising=False)
+    monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "empty-data"))
     with pytest.raises(ValueError, match=AUTH_TOKEN_ENV):
         create_app()
 
@@ -106,34 +110,41 @@ def test_authenticated_unknown_path_shaped_404(
     assert auth_token not in response.text
 
 
-def test_whitespace_env_token_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_whitespace_env_falls_through_without_config_token(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Whitespace-only env is unset; with no Config bearer, fail closed."""
     monkeypatch.setenv(AUTH_TOKEN_ENV, "   \t\n")
+    monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "empty-data"))
     with pytest.raises(ValueError, match=AUTH_TOKEN_ENV):
         create_app()
 
 
 def test_cli_rejects_non_loopback_host(
-    monkeypatch: pytest.MonkeyPatch, auth_token: str
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, auth_token: str
 ) -> None:
     monkeypatch.setenv(AUTH_TOKEN_ENV, auth_token)
+    monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "cli-data"))
     with pytest.raises(SystemExit) as excinfo:
         cli_main(["--host", "0.0.0.0"])
     assert excinfo.value.code == 2
 
 
 def test_cli_rejects_non_default_port(
-    monkeypatch: pytest.MonkeyPatch, auth_token: str
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, auth_token: str
 ) -> None:
     monkeypatch.setenv(AUTH_TOKEN_ENV, auth_token)
+    monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "cli-data"))
     with pytest.raises(SystemExit) as excinfo:
         cli_main(["--port", "9000"])
     assert excinfo.value.code == 2
 
 
 def test_cli_binds_loopback_fixed_port(
-    monkeypatch: pytest.MonkeyPatch, auth_token: str
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, auth_token: str
 ) -> None:
     monkeypatch.setenv(AUTH_TOKEN_ENV, auth_token)
+    monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "cli-data"))
     calls: list[dict[str, object]] = []
 
     def fake_run(app: object, **kwargs: object) -> None:
@@ -155,8 +166,11 @@ def test_cli_binds_loopback_fixed_port(
     assert ok.json() == {"status": "ok"}
 
 
-def test_cli_requires_env_token(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_cli_requires_token(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.delenv(AUTH_TOKEN_ENV, raising=False)
+    monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "empty-data"))
     with pytest.raises(SystemExit) as excinfo:
         cli_main([])
     assert excinfo.value.code == 1
