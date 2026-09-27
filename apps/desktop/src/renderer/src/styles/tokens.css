@@ -1,0 +1,62 @@
+/* neutral-cool-lines — locked DESIGN.md pairs. Effective theme via document.documentElement.dataset.theme. */
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f7f8f9;
+  --color-surface: #ffffff;
+  --color-sidebar: #f3f4f6;
+  --color-ink: #1a1c1e;
+  --color-muted: #6b7280;
+  --color-line: #d1d5db;
+  --color-coral: #ff8161;
+  --color-coral-cta: #b75c45;
+  --color-coral-soft: #ffe8e2;
+  --color-missed: #c44b3a;
+  --color-done: #5a5a5a;
+  --color-on-coral: #ffffff;
+  --color-today-tint: #fff9f7;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #16181a;
+  --color-surface: #1e2124;
+  --color-sidebar: #1a1d20;
+  --color-ink: #e8eaed;
+  --color-muted: #9aa0a8;
+  --color-line: #343a40;
+  --color-coral: #ff8161;
+  --color-coral-cta: #b75c45;
+  --color-coral-soft: #352622;
+  --color-missed: #e07060;
+  --color-done: #8e949a;
+  --color-on-coral: #ffffff;
+  --color-today-tint: #352622;
+}
+
+:root {
+  --font-sans: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --radius-md: 4px;
+}
+
+html {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+body {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
