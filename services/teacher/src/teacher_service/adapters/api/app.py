@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -12,9 +14,12 @@ from starlette.types import ASGIApp
 
 from teacher_service.adapters.api.auth import (
     AuthSettings,
-    load_auth_token_from_env,
+    resolve_auth_token,
     tokens_match,
 )
+
+if TYPE_CHECKING:
+    from teacher_service.ports.config import ConfigPort
 
 LOOPBACK_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
@@ -45,9 +50,13 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
-def create_app(*, auth_token: str | None = None) -> FastAPI:
-    """Build the API app. Token from arg (tests) or TEACHER_AUTH_TOKEN env."""
-    token = auth_token if auth_token is not None else load_auth_token_from_env()
+def create_app(
+    *,
+    auth_token: str | None = None,
+    config: ConfigPort | None = None,
+) -> FastAPI:
+    """Build the API app. Token: arg → env → Config bearer (fail closed)."""
+    token = resolve_auth_token(auth_token, config=config)
     settings = AuthSettings(token)
     app = FastAPI(
         title="teacher-service",

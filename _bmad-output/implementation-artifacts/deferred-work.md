@@ -37,3 +37,11 @@
 - Align older deferred-work evidence strings that still say Electron spawn / “lifecycle status” remains in-spec with the frozen Intent (API-auth only; Electron deferred)
 - Add pytest (or install-time) resolution of `teacher-api` console script and/or `python -m teacher_service.adapters.api` so miswired entrypoints cannot stay green while direct `cli.main` tests pass
 - CLI: catch `OSError` from `uvicorn.run` (e.g. port busy) and exit controlled with stderr instead of a raw traceback
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-3-config-port-secrets-layout-and-sqlite-app-data-store.md`
+  summary: Authenticated HTTP snake_case learner/profile (or config-status) read projection over SQLite/Config
+  evidence: Split from 1.3 to fit the token budget; narrowed 1.3 proves Config app-data layout, secrets (incl. Bearer via Config), and SQLite Learner create/load via ports/tests — epic Story 1.3 API projection AC remains open here
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-3-config-port-secrets-layout-and-sqlite-app-data-store.md`
+  summary: Document an operable AGENTS.md bootstrap to create Config `bearer_token` without Settings UI or TEACHER_AUTH_TOKEN-only path
+  evidence: Review found Config-backed listen documented but no step to mint/write bearer_token under app-data before Story 1.6; fix edits agent-context AGENTS.md

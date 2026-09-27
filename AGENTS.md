@@ -34,15 +34,20 @@ npm run preview      # start (preview production build)
 
 ### Teacher (`services/teacher/`)
 
-Loopback HTTP API with Bearer local auth (Story 1.2 API slice). Electron spawn/attach/preload and window-close host-survival remain deferred — do not treat desktop start as the teacher listen path.
+Loopback HTTP API with Bearer local auth (Story 1.2 API slice) plus Config/SQLite under OS app-data (Story 1.3). Electron spawn/attach/preload and window-close host-survival remain deferred — do not treat desktop start as the teacher listen path. Authenticated HTTP learner/profile projection is also deferred.
+
+Data directory: OS app-data via `platformdirs` (`ai-language-teacher`), containing `teacher.sqlite`, `secrets/` (`bearer_token`, `llm_api_key`, `telegram_bot_token`), and `voice-models/`. Override for tests/dev with `TEACHER_DATA_DIR`.
+
+Bearer resolve order for listen/`create_app`: explicit `auth_token` arg (when not `None`) → non-empty stripped `TEACHER_AUTH_TOKEN` → Config `bearer_token` secret → fail closed (CLI exit 1). Whitespace-only env counts as unset. CLI listen resolves Config for Bearer only — SQLite/Learner init is not required to start `/health`. Prove layout + Learner get-or-create with `uv run pytest` (temp `TEACHER_DATA_DIR`).
 
 ```bash
 cd services/teacher
 uv sync
 uv run pytest
 
-# Listen on 127.0.0.1:8765 (token from env — never commit it):
+# Listen on 127.0.0.1:8765 — token from env (bootstrap/override) or Config bearer_token:
 export TEACHER_AUTH_TOKEN="$(openssl rand -hex 32)"
+# optional: export TEACHER_DATA_DIR=/tmp/teacher-data-dev
 uv run teacher-api
 # or: uv run python -m teacher_service.adapters.api
 
