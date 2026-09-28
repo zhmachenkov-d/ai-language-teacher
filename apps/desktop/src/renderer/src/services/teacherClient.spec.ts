@@ -2,10 +2,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   fetchLearner,
   fetchLlmConfigStatus,
+  generatePlacementItems,
   getTeacherAuth,
   patchLearner,
   saveLlmApiKey,
+  synthesizeListeningAudio,
   TeacherApiError,
+  transcribeSpeakingAudio,
   type TeacherAuth,
 } from "./teacherClient";
 
@@ -199,6 +202,92 @@ describe("teacherClient", () => {
         age: 28,
         intake_step: "goals",
       }),
+    );
+  });
+
+  it("generatePlacementItems POSTs and returns the public item set", async () => {
+    const items = {
+      written: [{ prompt: "Q", options: ["a", "b", "c"] }],
+      listening: { questions: [{ prompt: "L", options: ["a", "b"] }] },
+      speaking_prompts: ["Tell me about your day."],
+    };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, items));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(generatePlacementItems(RUNNING)).resolves.toEqual(items);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("http://127.0.0.1:8765/placement/items");
+    expect(init.method).toBe("POST");
+  });
+
+  it("generatePlacementItems surfaces llm_config_missing as retryable", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(422, {
+          code: "llm_config_missing",
+          message: "LLM API key is not configured",
+          retryable: true,
+        }),
+      ),
+    );
+    await expect(generatePlacementItems(RUNNING)).rejects.toMatchObject({
+      code: "llm_config_missing",
+      retryable: true,
+    });
+  });
+
+  it("synthesizeListeningAudio POSTs and returns base64 audio", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(200, { audio_base64: "abc123", mime_type: "audio/wav" }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(synthesizeListeningAudio(RUNNING)).resolves.toEqual({
+      audio_base64: "abc123",
+      mime_type: "audio/wav",
+    });
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("http://127.0.0.1:8765/placement/listening/audio");
+    expect(init.method).toBe("POST");
+  });
+
+  it("synthesizeListeningAudio surfaces voice_unavailable as retryable", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(422, {
+          code: "voice_unavailable",
+          message: "local TTS engine not found",
+          retryable: true,
+        }),
+      ),
+    );
+    await expect(synthesizeListeningAudio(RUNNING)).rejects.toMatchObject({
+      code: "voice_unavailable",
+      retryable: true,
+    });
+  });
+
+  it("transcribeSpeakingAudio POSTs base64 audio and resolves to the updated learner", async () => {
+    const learner = {
+      id: "abc",
+      placement_speaking_transcript: "hello world",
+      placement_speaking_score: 0.5,
+    };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, learner));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(
+      transcribeSpeakingAudio(RUNNING, {
+        audio_base64: "abc",
+        mime_type: "audio/webm",
+      }),
+    ).resolves.toEqual(learner);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("http://127.0.0.1:8765/placement/speaking/transcribe");
+    expect(init.method).toBe("POST");
+    expect(init.body).toBe(
+      JSON.stringify({ audio_base64: "abc", mime_type: "audio/webm" }),
     );
   });
 });

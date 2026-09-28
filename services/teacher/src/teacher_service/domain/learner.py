@@ -7,6 +7,18 @@ from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any
 
+from teacher_service.domain.placement import (
+    PLACEMENT_STAGE_BRIEFING,
+    PLACEMENT_STAGE_COMPLETE,
+    PLACEMENT_STAGE_LISTENING,
+    PLACEMENT_STAGE_SPEAKING,
+    PLACEMENT_STAGE_WRITTEN,
+    PLACEMENT_STAGES,
+    PlacementItemsError,
+    parse_placement_items,
+    score_choice_answers,
+)
+
 if TYPE_CHECKING:
     from teacher_service.ports.persistence import PersistencePort
 
@@ -75,6 +87,17 @@ class Learner:
     consent_ai: bool = False
     consent_privacy: bool = False
     consent_complete: bool = False
+    placement_stage: str = PLACEMENT_STAGE_BRIEFING
+    placement_items: dict[str, Any] | None = None
+    placement_written_answers: tuple[int, ...] = ()
+    placement_written_score: float | None = None
+    placement_listening_generated: bool = False
+    placement_listening_played: bool = False
+    placement_listening_answers: tuple[int, ...] = ()
+    placement_listening_score: float | None = None
+    placement_speaking_transcript: str | None = None
+    placement_speaking_score: float | None = None
+    placement_complete: bool = False
 
 
 def _coerce_str_list(value: Sequence[str]) -> tuple[str, ...]:
@@ -85,6 +108,24 @@ def _coerce_bool(value: Any, *, field: str) -> bool:
     if isinstance(value, bool):
         return value
     raise ValueError(f"{field} must be a boolean")
+
+
+def _coerce_int_list(value: Any, *, field: str) -> tuple[int, ...]:
+    if not isinstance(value, (list, tuple)) or not all(
+        isinstance(v, int) and not isinstance(v, bool) for v in value
+    ):
+        raise ValueError(f"{field} must be a list of integers")
+    return tuple(value)
+
+
+def _placement_items_or_raise(raw_items: Any) -> Any:
+    """Parse the persisted/incoming `placement_items` dict, or raise if absent/invalid."""
+    if raw_items is None:
+        raise ValueError("placement_items must be generated before submitting answers")
+    try:
+        return parse_placement_items(raw_items)
+    except PlacementItemsError as exc:
+        raise ValueError(str(exc)) from exc
 
 
 def coalesce_weekly_slots(slots: Sequence[WeeklySlot]) -> tuple[WeeklySlot, ...]:
@@ -175,6 +216,61 @@ def _require_consent_complete(learner: Learner) -> None:
         )
 
 
+def _require_placement_prereqs(updated: Learner, *, up_to_stage: str) -> None:
+    """Reject a placement stage/complete value unless earlier stage results are present.
+
+    `up_to_stage` is the furthest stage being requested (READ from
+    `updated.placement_stage`, or forced to `complete` for the explicit
+    `placement_complete=True` gate) — mirrors 2.2's `_require_consent_complete`.
+    """
+    if up_to_stage == PLACEMENT_STAGE_BRIEFING:
+        return
+    if not updated.consent_complete:
+        raise LearnerValidationError(
+            "placement_requires_consent",
+            "placement requires consent_complete",
+        )
+    if up_to_stage == PLACEMENT_STAGE_WRITTEN:
+        return
+    if updated.placement_written_score is None:
+        raise LearnerValidationError(
+            "placement_written_incomplete",
+            "written result is required before advancing placement",
+        )
+    if up_to_stage == PLACEMENT_STAGE_LISTENING:
+        return
+    if (
+        not updated.placement_listening_generated
+        or not updated.placement_listening_played
+        or updated.placement_listening_score is None
+    ):
+        raise LearnerValidationError(
+            "placement_listening_incomplete",
+            "listening result is required before advancing placement",
+        )
+    if up_to_stage == PLACEMENT_STAGE_SPEAKING:
+        return
+    if not updated.placement_speaking_transcript:
+        raise LearnerValidationError(
+            "placement_speaking_incomplete",
+            "speaking result is required before placement_complete",
+        )
+
+
+def _require_placement_stage(updated: Learner) -> None:
+    _require_placement_prereqs(updated, up_to_stage=updated.placement_stage)
+
+
+def _require_placement_complete(updated: Learner) -> None:
+    """Reject `placement_complete=true` unless listening+speaking are seedable.
+
+    Checked regardless of the concurrent `placement_stage` value so a bare
+    `PATCH {"placement_complete": true}` cannot bypass gaps (text-only complete
+    matrix row) — mirrors 2.2's consent_complete FLAG rigor.
+    """
+    _require_placement_prereqs(updated, up_to_stage=PLACEMENT_STAGE_COMPLETE)
+
+
 def get_or_create_learner(store: PersistencePort) -> Learner:
     """Return the existing Learner or create one with v1 defaults."""
     existing = store.load_learner()
@@ -207,6 +303,15 @@ def update_learner(
     consent_ai: Any = _UNSET,
     consent_privacy: Any = _UNSET,
     consent_complete: Any = _UNSET,
+    placement_stage: Any = _UNSET,
+    placement_items: Any = _UNSET,
+    placement_written_answers: Any = _UNSET,
+    placement_listening_generated: Any = _UNSET,
+    placement_listening_played: Any = _UNSET,
+    placement_listening_answers: Any = _UNSET,
+    placement_speaking_transcript: Any = _UNSET,
+    placement_speaking_score: Any = _UNSET,
+    placement_complete: Any = _UNSET,
 ) -> Learner:
     """Patch the single Learner. Omitted kwargs leave the current value unchanged."""
     current = get_or_create_learner(store)
@@ -280,6 +385,76 @@ def update_learner(
             consent_complete, field="consent_complete"
         )
 
+    if placement_stage is not _UNSET:
+        if placement_stage not in PLACEMENT_STAGES:
+            raise ValueError(f"placement_stage must be one of {PLACEMENT_STAGES}")
+        updates["placement_stage"] = placement_stage
+
+    if placement_items is not _UNSET:
+        if not isinstance(placement_items, dict):
+            raise ValueError("placement_items must be an object")
+        updates["placement_items"] = placement_items
+
+    if placement_written_answers is not _UNSET:
+        answers = _coerce_int_list(
+            placement_written_answers, field="placement_written_answers"
+        )
+        items = _placement_items_or_raise(
+            placement_items if placement_items is not _UNSET else current.placement_items
+        )
+        try:
+            score = score_choice_answers(items.written, answers)
+        except ValueError as exc:
+            raise ValueError(f"placement_written_answers: {exc}") from exc
+        updates["placement_written_answers"] = answers
+        updates["placement_written_score"] = score
+
+    if placement_listening_generated is not _UNSET:
+        updates["placement_listening_generated"] = _coerce_bool(
+            placement_listening_generated, field="placement_listening_generated"
+        )
+
+    if placement_listening_played is not _UNSET:
+        updates["placement_listening_played"] = _coerce_bool(
+            placement_listening_played, field="placement_listening_played"
+        )
+
+    if placement_listening_answers is not _UNSET:
+        answers = _coerce_int_list(
+            placement_listening_answers, field="placement_listening_answers"
+        )
+        items = _placement_items_or_raise(
+            placement_items if placement_items is not _UNSET else current.placement_items
+        )
+        try:
+            score = score_choice_answers(items.listening.questions, answers)
+        except ValueError as exc:
+            raise ValueError(f"placement_listening_answers: {exc}") from exc
+        updates["placement_listening_answers"] = answers
+        updates["placement_listening_score"] = score
+
+    if placement_speaking_transcript is not _UNSET:
+        if (
+            not isinstance(placement_speaking_transcript, str)
+            or not placement_speaking_transcript.strip()
+        ):
+            raise ValueError("placement_speaking_transcript must be a non-empty string")
+        updates["placement_speaking_transcript"] = placement_speaking_transcript.strip()
+
+    if placement_speaking_score is not _UNSET:
+        if (
+            isinstance(placement_speaking_score, bool)
+            or not isinstance(placement_speaking_score, (int, float))
+            or not (0 <= placement_speaking_score <= 1)
+        ):
+            raise ValueError("placement_speaking_score must be a number 0–1")
+        updates["placement_speaking_score"] = float(placement_speaking_score)
+
+    if placement_complete is not _UNSET:
+        updates["placement_complete"] = _coerce_bool(
+            placement_complete, field="placement_complete"
+        )
+
     if not updates:
         return current
     updated = replace(current, **updates)
@@ -287,4 +462,7 @@ def update_learner(
         _require_intake_complete(updated)
     if updated.consent_complete:
         _require_consent_complete(updated)
+    _require_placement_stage(updated)
+    if updated.placement_complete:
+        _require_placement_complete(updated)
     return store.update_learner(updated)

@@ -30,6 +30,25 @@ export type IntakeStep =
   | "schedule"
   | "complete";
 
+export type PlacementStage =
+  | "briefing"
+  | "written"
+  | "listening"
+  | "speaking"
+  | "complete";
+
+/** Client-safe item projection — `correct_index` never leaves the server. */
+export interface PlacementChoiceItemPublic {
+  prompt: string;
+  options: string[];
+}
+
+export interface PlacementItemsPublic {
+  written: PlacementChoiceItemPublic[];
+  listening: { questions: PlacementChoiceItemPublic[] };
+  speaking_prompts: string[];
+}
+
 export interface LearnerProfile {
   id: string;
   target_language: string;
@@ -49,6 +68,17 @@ export interface LearnerProfile {
   consent_ai: boolean;
   consent_privacy: boolean;
   consent_complete: boolean;
+  placement_stage: PlacementStage;
+  placement_items: PlacementItemsPublic | null;
+  placement_written_answers: number[];
+  placement_written_score: number | null;
+  placement_listening_generated: boolean;
+  placement_listening_played: boolean;
+  placement_listening_answers: number[];
+  placement_listening_score: number | null;
+  placement_speaking_transcript: string | null;
+  placement_speaking_score: number | null;
+  placement_complete: boolean;
 }
 
 export type LearnerPatch = Partial<{
@@ -67,6 +97,11 @@ export type LearnerPatch = Partial<{
   consent_ai: boolean;
   consent_privacy: boolean;
   consent_complete: boolean;
+  placement_stage: PlacementStage;
+  placement_written_answers: number[];
+  placement_listening_played: boolean;
+  placement_listening_answers: number[];
+  placement_complete: boolean;
 }>;
 
 const UNAVAILABLE_AUTH: TeacherAuth = {
@@ -230,6 +265,60 @@ export async function patchLearner(
 ): Promise<LearnerProfile> {
   const response = await authorizedFetch(auth, "/learner", {
     method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+  return parseSuccessJson<LearnerProfile>(response);
+}
+
+/**
+ * Generate (or fetch the already-cached) one-per-run placement item set.
+ * 422 `llm_config_missing` / `llm_generation_failed` are retryable — the
+ * caller must show a Settings path + retry, never fabricate items.
+ */
+export async function generatePlacementItems(
+  auth: TeacherAuth,
+): Promise<PlacementItemsPublic> {
+  const response = await authorizedFetch(auth, "/placement/items", {
+    method: "POST",
+  });
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+  return parseSuccessJson<PlacementItemsPublic>(response);
+}
+
+export interface ListeningAudio {
+  audio_base64: string;
+  mime_type: string;
+}
+
+/** Synthesize the listening script via local TTS. 422 `voice_unavailable` is retryable. */
+export async function synthesizeListeningAudio(
+  auth: TeacherAuth,
+): Promise<ListeningAudio> {
+  const response = await authorizedFetch(auth, "/placement/listening/audio", {
+    method: "POST",
+  });
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+  return parseSuccessJson<ListeningAudio>(response);
+}
+
+/**
+ * Transcribe a local mic capture via local STT and persist transcript+score.
+ * 422 `voice_unavailable` is retryable — no fake transcript/pass on failure.
+ */
+export async function transcribeSpeakingAudio(
+  auth: TeacherAuth,
+  body: { audio_base64: string; mime_type: string },
+): Promise<LearnerProfile> {
+  const response = await authorizedFetch(auth, "/placement/speaking/transcribe", {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });

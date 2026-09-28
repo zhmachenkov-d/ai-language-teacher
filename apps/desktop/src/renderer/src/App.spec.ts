@@ -26,6 +26,17 @@ const BASE_LEARNER: LearnerProfile = {
   consent_ai: false,
   consent_privacy: false,
   consent_complete: false,
+  placement_stage: 'briefing',
+  placement_items: null,
+  placement_written_answers: [],
+  placement_written_score: null,
+  placement_listening_generated: false,
+  placement_listening_played: false,
+  placement_listening_answers: [],
+  placement_listening_score: null,
+  placement_speaking_transcript: null,
+  placement_speaking_score: null,
+  placement_complete: false,
 }
 
 type MediaListener = (event: MediaQueryListEvent) => void
@@ -181,7 +192,7 @@ describe('App shell + onboarding GATE', () => {
       consent_complete: true,
     })
     expect(router.currentRoute.value.name).toBe('onboarding-placement')
-    expect(wrapper.find('[data-testid="onboarding-placement-stub"]').exists()).toBe(
+    expect(wrapper.find('[data-testid="onboarding-placement"]').exists()).toBe(
       true,
     )
     expect(wrapper.find('nav.nav').exists()).toBe(false)
@@ -197,7 +208,7 @@ describe('App shell + onboarding GATE', () => {
       consent_complete: true,
     })
     expect(router.currentRoute.value.name).toBe('onboarding-placement')
-    expect(wrapper.find('[data-testid="onboarding-placement-stub"]').exists()).toBe(
+    expect(wrapper.find('[data-testid="onboarding-placement"]').exists()).toBe(
       true,
     )
     wrapper.unmount()
@@ -212,7 +223,7 @@ describe('App shell + onboarding GATE', () => {
       consent_complete: true,
     })
     expect(router.currentRoute.value.name).toBe('onboarding-placement')
-    expect(wrapper.find('[data-testid="onboarding-placement-stub"]').exists()).toBe(
+    expect(wrapper.find('[data-testid="onboarding-placement"]').exists()).toBe(
       true,
     )
     wrapper.unmount()
@@ -227,6 +238,48 @@ describe('App shell + onboarding GATE', () => {
       consent_complete: true,
     })
     expect(router.currentRoute.value.name).toBe('onboarding-placement')
+    wrapper.unmount()
+  })
+
+  it('placement_complete opens plan stub, not calendar', async () => {
+    const { wrapper, router } = await mountApp('#/', {
+      ...BASE_LEARNER,
+      intake_step: 'complete',
+      address_as: 'Саша',
+      age: 30,
+      consent_complete: true,
+      placement_complete: true,
+    })
+    expect(router.currentRoute.value.name).toBe('onboarding-plan')
+    expect(wrapper.find('[data-testid="onboarding-plan-stub"]').exists()).toBe(true)
+    expect(wrapper.find('nav.nav').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('RESUME: #/onboarding/placement with placement_complete → plan stub', async () => {
+    const { wrapper, router } = await mountApp('#/onboarding/placement', {
+      ...BASE_LEARNER,
+      intake_step: 'complete',
+      address_as: 'Саша',
+      age: 30,
+      consent_complete: true,
+      placement_complete: true,
+    })
+    expect(router.currentRoute.value.name).toBe('onboarding-plan')
+    expect(wrapper.find('[data-testid="onboarding-plan-stub"]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('calendar and / navigate to plan stub when placement_complete', async () => {
+    const { wrapper, router } = await mountApp('#/calendar', {
+      ...BASE_LEARNER,
+      intake_step: 'complete',
+      address_as: 'Саша',
+      age: 30,
+      consent_complete: true,
+      placement_complete: true,
+    })
+    expect(router.currentRoute.value.name).toBe('onboarding-plan')
     wrapper.unmount()
   })
 
