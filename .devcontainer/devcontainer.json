@@ -24,6 +24,7 @@
   "containerEnv": {
     "ELECTRON_DISABLE_SANDBOX": "1"
   },
+  "runArgs": ["--env-file", "${localWorkspaceFolder}/.env"],
   "forwardPorts": [3000, 8000, 5173, 6080, 5901],
   "portsAttributes": {
     "3000": {
