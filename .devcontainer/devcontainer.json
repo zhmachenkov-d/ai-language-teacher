@@ -12,11 +12,19 @@
     "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "latest"
     },
+    "ghcr.io/devcontainers/features/desktop-lite:1": {
+      "password": "vscode",
+      "webPort": "6080",
+      "vncPort": "5901"
+    },
     "./features/uv": {
       "version": "latest"
     }
   },
-  "forwardPorts": [3000, 8000, 5173],
+  "containerEnv": {
+    "ELECTRON_DISABLE_SANDBOX": "1"
+  },
+  "forwardPorts": [3000, 8000, 5173, 6080, 5901],
   "portsAttributes": {
     "3000": {
       "label": "Web App",
@@ -29,10 +37,18 @@
     "5173": {
       "label": "Vite Dev Server",
       "onAutoForward": "silent"
+    },
+    "6080": {
+      "label": "Desktop (noVNC)",
+      "onAutoForward": "notify"
+    },
+    "5901": {
+      "label": "Desktop (VNC)",
+      "onAutoForward": "silent"
     }
   },
   "mounts": [
-      "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached,readonly=true"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached,readonly=true"
   ],
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
