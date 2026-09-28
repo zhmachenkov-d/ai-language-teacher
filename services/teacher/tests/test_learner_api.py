@@ -75,9 +75,7 @@ def test_get_learner_creates_defaults(
     assert store.load_learner() is not None
 
 
-def test_patch_greeting_and_advance(
-    client: TestClient, auth_token: str
-) -> None:
+def test_patch_greeting_and_advance(client: TestClient, auth_token: str) -> None:
     response = client.patch(
         "/learner",
         json={
@@ -170,9 +168,7 @@ def test_patch_prefs_duration_schedule_complete(
 def test_patch_rejects_invalid_fields(
     client: TestClient, auth_token: str, payload: dict
 ) -> None:
-    response = client.patch(
-        "/learner", json=payload, headers=_auth_header(auth_token)
-    )
+    response = client.patch("/learner", json=payload, headers=_auth_header(auth_token))
     assert response.status_code == 422
     body = response.json()
     assert set(body) == {"code", "message", "retryable"}
