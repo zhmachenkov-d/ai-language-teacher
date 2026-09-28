@@ -145,6 +145,11 @@ describe("teacherClient", () => {
       lesson_duration_minutes: null,
       weekly_slots: [],
       intake_step: "greeting",
+      consent_mic: false,
+      consent_telegram: false,
+      consent_ai: false,
+      consent_privacy: false,
+      consent_complete: false,
     };
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, profile));
     vi.stubGlobal("fetch", fetchMock);
@@ -173,6 +178,11 @@ describe("teacherClient", () => {
         lesson_duration_minutes: null,
         weekly_slots: [],
         intake_step: "goals",
+        consent_mic: false,
+        consent_telegram: false,
+        consent_ai: false,
+        consent_privacy: false,
+        consent_complete: false,
       }),
     );
     vi.stubGlobal("fetch", fetchMock);

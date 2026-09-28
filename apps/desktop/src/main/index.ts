@@ -1,12 +1,14 @@
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import { join } from "path";
 import {
+  beginExplicitQuit,
   quitTeacherAction,
   shouldQuitOnWindowAllClosed,
   windowCloseAction,
 } from "./hostSurvival";
 import { TeacherHost, type TeacherStatus } from "./teacherHost";
 import {
+  DESKTOP_QUIT_CHANNEL,
   TEACHER_GET_AUTH_CHANNEL,
   TEACHER_RETRY_CHANNEL,
   TEACHER_STATUS_CHANNEL,
@@ -103,6 +105,12 @@ function showMainWindow(): void {
   });
 }
 
+function requestQuit(): void {
+  beginExplicitQuit(() => {
+    isQuitting = true;
+  }, () => app.quit());
+}
+
 function createTray(): void {
   const icon = nativeImage.createFromDataURL(TRAY_ICON_DATA_URL);
   tray = new Tray(icon);
@@ -113,10 +121,7 @@ function createTray(): void {
       { type: "separator" },
       {
         label: "Выход",
-        click: () => {
-          isQuitting = true;
-          app.quit();
-        },
+        click: () => requestQuit(),
       },
     ]),
   );
@@ -125,6 +130,9 @@ function createTray(): void {
 
 ipcMain.handle(TEACHER_GET_AUTH_CHANNEL, () => teacherHost.getStatus());
 ipcMain.handle(TEACHER_RETRY_CHANNEL, () => teacherHost.start());
+ipcMain.handle(DESKTOP_QUIT_CHANNEL, () => {
+  requestQuit();
+});
 
 app.whenReady().then(async () => {
   createTray();

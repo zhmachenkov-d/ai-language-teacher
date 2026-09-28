@@ -69,6 +69,11 @@ def test_get_learner_creates_defaults(
     assert body["lesson_duration_minutes"] is None
     assert body["weekly_slots"] == []
     assert body["intake_step"] == INTAKE_STEP_GREETING
+    assert body["consent_mic"] is False
+    assert body["consent_telegram"] is False
+    assert body["consent_ai"] is False
+    assert body["consent_privacy"] is False
+    assert body["consent_complete"] is False
     assert body["id"]
 
     store = SqliteStore(config.sqlite_path())
@@ -294,6 +299,8 @@ def test_legacy_four_column_learner_migrates_intake_defaults(
     assert loaded.lesson_duration_minutes is None
     assert loaded.weekly_slots == ()
     assert loaded.intake_step == INTAKE_STEP_GREETING
+    assert loaded.consent_mic is False
+    assert loaded.consent_complete is False
 
     client = TestClient(create_app(auth_token=auth_token, config=config, store=store))
     response = client.get("/learner", headers=_auth_header(auth_token))
@@ -303,6 +310,7 @@ def test_legacy_four_column_learner_migrates_intake_defaults(
     assert body["intake_step"] == INTAKE_STEP_GREETING
     assert body["goals"] == []
     assert body["weekly_slots"] == []
+    assert body["consent_complete"] is False
 
 
 def test_patch_rejects_complete_without_step_complete_fields(
@@ -320,3 +328,200 @@ def test_patch_rejects_complete_without_step_complete_fields(
     assert response.status_code == 422
     body = response.json()
     assert body["code"] == "validation_error"
+
+
+def _seed_intake_complete(client: TestClient, auth_token: str, *, age: int = 30) -> None:
+    response = client.patch(
+        "/learner",
+        json={
+            "address_as": "Саша",
+            "age": age,
+            "goals": ["Учёба"],
+            "desired_outcome": ["Уверенный разговор"],
+            "interests": ["Технологии"],
+            "emphasis": ["Говорение"],
+            "lesson_duration_minutes": 45,
+            "timezone": "Europe/Moscow",
+            "weekly_slots": [{"weekday": 0, "start_minute": 540}],
+            "intake_step": INTAKE_STEP_COMPLETE,
+        },
+        headers=_auth_header(auth_token),
+    )
+    assert response.status_code == 200
+
+
+def test_patch_consent_complete_happy_path(
+    client: TestClient, auth_token: str
+) -> None:
+    _seed_intake_complete(client, auth_token, age=28)
+    response = client.patch(
+        "/learner",
+        json={
+            "consent_mic": True,
+            "consent_telegram": False,
+            "consent_ai": True,
+            "consent_privacy": True,
+            "consent_complete": True,
+        },
+        headers=_auth_header(auth_token),
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["consent_mic"] is True
+    assert body["consent_telegram"] is False
+    assert body["consent_ai"] is True
+    assert body["consent_privacy"] is True
+    assert body["consent_complete"] is True
+
+
+def test_patch_consent_complete_age_16_boundary(
+    client: TestClient, auth_token: str
+) -> None:
+    _seed_intake_complete(client, auth_token, age=16)
+    response = client.patch(
+        "/learner",
+        json={
+            "consent_mic": True,
+            "consent_ai": True,
+            "consent_privacy": True,
+            "consent_complete": True,
+        },
+        headers=_auth_header(auth_token),
+    )
+    assert response.status_code == 200
+    assert response.json()["consent_complete"] is True
+    assert response.json()["age"] == 16
+
+
+def test_patch_rejects_consent_complete_under_16(
+    client: TestClient, auth_token: str
+) -> None:
+    _seed_intake_complete(client, auth_token, age=15)
+    response = client.patch(
+        "/learner",
+        json={
+            "consent_mic": True,
+            "consent_ai": True,
+            "consent_privacy": True,
+            "consent_complete": True,
+        },
+        headers=_auth_header(auth_token),
+    )
+    assert response.status_code == 422
+    body = response.json()
+    assert set(body) == {"code", "message", "retryable"}
+    assert body["code"] == "age_restricted"
+    assert body["retryable"] is False
+    stored = client.get("/learner", headers=_auth_header(auth_token)).json()
+    assert stored["consent_complete"] is False
+
+
+def test_patch_rejects_consent_complete_missing_required(
+    client: TestClient, auth_token: str
+) -> None:
+    _seed_intake_complete(client, auth_token, age=30)
+    response = client.patch(
+        "/learner",
+        json={
+            "consent_mic": True,
+            "consent_telegram": True,
+            "consent_ai": False,
+            "consent_privacy": True,
+            "consent_complete": True,
+        },
+        headers=_auth_header(auth_token),
+    )
+    assert response.status_code == 422
+    body = response.json()
+    assert body["code"] == "consent_incomplete"
+    assert body["retryable"] is False
+    stored = client.get("/learner", headers=_auth_header(auth_token)).json()
+    assert stored["consent_complete"] is False
+
+
+def test_patch_rejects_consent_complete_before_intake(
+    client: TestClient, auth_token: str
+) -> None:
+    mid = client.patch(
+        "/learner",
+        json={
+            "address_as": "Саша",
+            "age": 30,
+            "intake_step": INTAKE_STEP_GOALS,
+        },
+        headers=_auth_header(auth_token),
+    )
+    assert mid.status_code == 200
+    assert mid.json()["intake_step"] == INTAKE_STEP_GOALS
+
+    response = client.patch(
+        "/learner",
+        json={
+            "consent_mic": True,
+            "consent_ai": True,
+            "consent_privacy": True,
+            "consent_complete": True,
+        },
+        headers=_auth_header(auth_token),
+    )
+    assert response.status_code == 422
+    body = response.json()
+    assert set(body) == {"code", "message", "retryable"}
+    assert body["code"] == "consent_before_intake"
+    assert body["retryable"] is False
+    stored = client.get("/learner", headers=_auth_header(auth_token)).json()
+    assert stored["consent_complete"] is False
+    assert stored["intake_step"] == INTAKE_STEP_GOALS
+
+
+def test_legacy_learner_migrates_consent_defaults(
+    data_dir: Path, auth_token: str
+) -> None:
+    """Pre-2.2 learner tables gain consent columns with false defaults on open."""
+    import sqlite3
+
+    config = FileConfig(data_dir)
+    config.ensure_layout()
+    db_path = config.sqlite_path()
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("DROP TABLE IF EXISTS learner")
+        conn.execute(
+            """
+            CREATE TABLE learner (
+                id TEXT PRIMARY KEY NOT NULL,
+                target_language TEXT NOT NULL,
+                l1 TEXT NOT NULL,
+                timezone TEXT NOT NULL,
+                address_as TEXT,
+                age INTEGER,
+                goals_json TEXT NOT NULL DEFAULT '[]',
+                desired_outcome_json TEXT NOT NULL DEFAULT '[]',
+                interests_json TEXT NOT NULL DEFAULT '[]',
+                emphasis_json TEXT NOT NULL DEFAULT '[]',
+                lesson_duration_minutes INTEGER,
+                weekly_slots_json TEXT NOT NULL DEFAULT '[]',
+                intake_step TEXT NOT NULL DEFAULT 'greeting'
+            )
+            """
+        )
+        conn.execute(
+            "INSERT INTO learner (id, target_language, l1, timezone, intake_step) "
+            "VALUES ('legacy-consent', 'en', 'ru', 'UTC', 'greeting')"
+        )
+        conn.commit()
+
+    store = SqliteStore(db_path)
+    loaded = store.load_learner()
+    assert loaded is not None
+    assert loaded.consent_mic is False
+    assert loaded.consent_telegram is False
+    assert loaded.consent_ai is False
+    assert loaded.consent_privacy is False
+    assert loaded.consent_complete is False
+
+    client = TestClient(create_app(auth_token=auth_token, config=config, store=store))
+    response = client.get("/learner", headers=_auth_header(auth_token))
+    assert response.status_code == 200
+    body = response.json()
+    assert body["consent_complete"] is False
+    assert body["consent_mic"] is False

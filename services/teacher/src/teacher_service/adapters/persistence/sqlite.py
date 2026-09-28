@@ -27,7 +27,12 @@ CREATE TABLE IF NOT EXISTS learner (
     emphasis_json TEXT NOT NULL DEFAULT '[]',
     lesson_duration_minutes INTEGER,
     weekly_slots_json TEXT NOT NULL DEFAULT '[]',
-    intake_step TEXT NOT NULL DEFAULT 'greeting'
+    intake_step TEXT NOT NULL DEFAULT 'greeting',
+    consent_mic INTEGER NOT NULL DEFAULT 0,
+    consent_telegram INTEGER NOT NULL DEFAULT 0,
+    consent_ai INTEGER NOT NULL DEFAULT 0,
+    consent_privacy INTEGER NOT NULL DEFAULT 0,
+    consent_complete INTEGER NOT NULL DEFAULT 0
 );
 """
 
@@ -43,10 +48,19 @@ _INTAKE_COLUMNS: tuple[tuple[str, str], ...] = (
     ("intake_step", "TEXT NOT NULL DEFAULT 'greeting'"),
 )
 
+_CONSENT_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("consent_mic", "INTEGER NOT NULL DEFAULT 0"),
+    ("consent_telegram", "INTEGER NOT NULL DEFAULT 0"),
+    ("consent_ai", "INTEGER NOT NULL DEFAULT 0"),
+    ("consent_privacy", "INTEGER NOT NULL DEFAULT 0"),
+    ("consent_complete", "INTEGER NOT NULL DEFAULT 0"),
+)
+
 _SELECT_COLS = (
     "id, target_language, l1, timezone, address_as, age, "
     "goals_json, desired_outcome_json, interests_json, emphasis_json, "
-    "lesson_duration_minutes, weekly_slots_json, intake_step"
+    "lesson_duration_minutes, weekly_slots_json, intake_step, "
+    "consent_mic, consent_telegram, consent_ai, consent_privacy, consent_complete"
 )
 
 
@@ -102,6 +116,12 @@ def _loads_slots(raw: str | None) -> tuple[WeeklySlot, ...]:
     return tuple(out)
 
 
+def _bool_from_row(row: sqlite3.Row, keys: set[str], name: str) -> bool:
+    if name not in keys:
+        return False
+    return bool(row[name])
+
+
 def _row_to_learner(row: sqlite3.Row) -> Learner:
     keys = set(row.keys())
     return Learner(
@@ -134,6 +154,11 @@ def _row_to_learner(row: sqlite3.Row) -> Learner:
             if "intake_step" in keys and row["intake_step"]
             else INTAKE_STEP_GREETING
         ),
+        consent_mic=_bool_from_row(row, keys, "consent_mic"),
+        consent_telegram=_bool_from_row(row, keys, "consent_telegram"),
+        consent_ai=_bool_from_row(row, keys, "consent_ai"),
+        consent_privacy=_bool_from_row(row, keys, "consent_privacy"),
+        consent_complete=_bool_from_row(row, keys, "consent_complete"),
     )
 
 
@@ -157,7 +182,7 @@ class SqliteStore:
                 row[1]
                 for row in conn.execute("PRAGMA table_info(learner)").fetchall()
             }
-            for name, decl in _INTAKE_COLUMNS:
+            for name, decl in (*_INTAKE_COLUMNS, *_CONSENT_COLUMNS):
                 if name not in existing:
                     conn.execute(f"ALTER TABLE learner ADD COLUMN {name} {decl}")
             conn.commit()
@@ -171,8 +196,10 @@ class SqliteStore:
                 "INSERT INTO learner ("
                 "id, target_language, l1, timezone, address_as, age, "
                 "goals_json, desired_outcome_json, interests_json, emphasis_json, "
-                "lesson_duration_minutes, weekly_slots_json, intake_step"
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "lesson_duration_minutes, weekly_slots_json, intake_step, "
+                "consent_mic, consent_telegram, consent_ai, consent_privacy, "
+                "consent_complete"
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     learner.id,
                     learner.target_language,
@@ -187,6 +214,11 @@ class SqliteStore:
                     learner.lesson_duration_minutes,
                     _dumps_slots(learner.weekly_slots),
                     learner.intake_step,
+                    int(learner.consent_mic),
+                    int(learner.consent_telegram),
+                    int(learner.consent_ai),
+                    int(learner.consent_privacy),
+                    int(learner.consent_complete),
                 ),
             )
             conn.commit()
@@ -220,7 +252,9 @@ class SqliteStore:
                 "goals_json = ?, desired_outcome_json = ?, "
                 "interests_json = ?, emphasis_json = ?, "
                 "lesson_duration_minutes = ?, weekly_slots_json = ?, "
-                "intake_step = ? "
+                "intake_step = ?, "
+                "consent_mic = ?, consent_telegram = ?, consent_ai = ?, "
+                "consent_privacy = ?, consent_complete = ? "
                 "WHERE id = ?",
                 (
                     learner.target_language,
@@ -235,6 +269,11 @@ class SqliteStore:
                     learner.lesson_duration_minutes,
                     _dumps_slots(learner.weekly_slots),
                     learner.intake_step,
+                    int(learner.consent_mic),
+                    int(learner.consent_telegram),
+                    int(learner.consent_ai),
+                    int(learner.consent_privacy),
+                    int(learner.consent_complete),
                     learner.id,
                 ),
             )

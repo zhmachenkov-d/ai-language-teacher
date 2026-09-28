@@ -11,6 +11,7 @@ declare global {
   interface Window {
     desktop: {
       scaffold: string
+      quit: () => Promise<void>
     }
     teacher: {
       getAuth: () => Promise<TeacherStatus>

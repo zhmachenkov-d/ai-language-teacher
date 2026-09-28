@@ -4,7 +4,7 @@ import { nextTick } from "vue";
 import { createRouter, createWebHashHistory, type Router } from "vue-router";
 import { RouterView } from "vue-router";
 import OnboardingWizard from "./OnboardingWizard.vue";
-import OnboardingConsentStub from "./OnboardingConsentStub.vue";
+import OnboardingConsent from "./OnboardingConsent.vue";
 import type { LearnerProfile } from "../services/teacherClient";
 
 const RUNNING_AUTH = {
@@ -27,6 +27,11 @@ const FRESH_LEARNER: LearnerProfile = {
   lesson_duration_minutes: null,
   weekly_slots: [],
   intake_step: "greeting",
+  consent_mic: false,
+  consent_telegram: false,
+  consent_ai: false,
+  consent_privacy: false,
+  consent_complete: false,
 };
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -53,6 +58,7 @@ async function mountWizard(fetchImpl: ReturnType<typeof vi.fn>): Promise<{
   fetchMock: ReturnType<typeof vi.fn>;
 }> {
   vi.stubGlobal("fetch", fetchImpl);
+  window.location.hash = "#/onboarding";
   const router = createRouter({
     history: createWebHashHistory(),
     routes: [
@@ -61,11 +67,10 @@ async function mountWizard(fetchImpl: ReturnType<typeof vi.fn>): Promise<{
       {
         path: "/onboarding/consent",
         name: "onboarding-consent",
-        component: OnboardingConsentStub,
+        component: OnboardingConsent,
       },
     ],
   });
-  window.location.hash = "#/onboarding";
   const wrapper = mount(RouterView, {
     global: { plugins: [router] },
   });
@@ -173,7 +178,16 @@ describe("OnboardingWizard", () => {
     wrapper.unmount();
   });
 
-  it("schedule save hands off to consent stub", async () => {
+  it("schedule save hands off to consent", async () => {
+    const completed = {
+      ...FRESH_LEARNER,
+      address_as: "Саша",
+      age: 30,
+      intake_step: "complete" as const,
+      lesson_duration_minutes: 45,
+      timezone: "Europe/Moscow",
+      weekly_slots: [{ weekday: 0, start_minute: 540 }],
+    };
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -187,17 +201,8 @@ describe("OnboardingWizard", () => {
           weekly_slots: [],
         }),
       )
-      .mockResolvedValueOnce(
-        jsonResponse(200, {
-          ...FRESH_LEARNER,
-          address_as: "Саша",
-          age: 30,
-          intake_step: "complete",
-          lesson_duration_minutes: 45,
-          timezone: "Europe/Moscow",
-          weekly_slots: [{ weekday: 0, start_minute: 540 }],
-        }),
-      );
+      .mockResolvedValueOnce(jsonResponse(200, completed))
+      .mockResolvedValue(jsonResponse(200, completed));
     const { wrapper, router } = await mountWizard(fetchMock);
     await wrapper.get("[data-testid=\"add-slot\"]").trigger("click");
     await wrapper.get("[data-testid=\"next-button\"]").trigger("click");
@@ -211,7 +216,7 @@ describe("OnboardingWizard", () => {
       intake_step: "complete",
     });
     expect(router.currentRoute.value.name).toBe("onboarding-consent");
-    expect(wrapper.find("[data-testid=\"onboarding-consent-stub\"]").exists()).toBe(
+    expect(wrapper.find("[data-testid=\"onboarding-consent\"]").exists()).toBe(
       true,
     );
     wrapper.unmount();

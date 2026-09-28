@@ -31,9 +31,18 @@ INTAKE_STEPS: tuple[str, ...] = (
 )
 
 ALLOWED_LESSON_DURATIONS: frozenset[int] = frozenset({30, 45, 60})
+MIN_CONSENT_AGE = 16
 
 # Sentinel: keyword omitted from update_learner → leave field unchanged.
 _UNSET: Any = object()
+
+
+class LearnerValidationError(ValueError):
+    """Domain validation failure with a stable wire `code` for 422 envelopes."""
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
 
 
 @dataclass(frozen=True)
@@ -46,7 +55,7 @@ class WeeklySlot:
 
 @dataclass(frozen=True)
 class Learner:
-    """Learner profile persisted in SQLite (prefs + intake progress)."""
+    """Learner profile persisted in SQLite (prefs + intake + consent)."""
 
     id: str
     target_language: str
@@ -61,10 +70,21 @@ class Learner:
     lesson_duration_minutes: int | None = None
     weekly_slots: tuple[WeeklySlot, ...] = ()
     intake_step: str = INTAKE_STEP_GREETING
+    consent_mic: bool = False
+    consent_telegram: bool = False
+    consent_ai: bool = False
+    consent_privacy: bool = False
+    consent_complete: bool = False
 
 
 def _coerce_str_list(value: Sequence[str]) -> tuple[str, ...]:
     return tuple(str(item) for item in value)
+
+
+def _coerce_bool(value: Any, *, field: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    raise ValueError(f"{field} must be a boolean")
 
 
 def coalesce_weekly_slots(slots: Sequence[WeeklySlot]) -> tuple[WeeklySlot, ...]:
@@ -125,6 +145,36 @@ def _require_intake_complete(learner: Learner) -> None:
         )
 
 
+def _require_consent_complete(learner: Learner) -> None:
+    """Reject consent_complete=true unless intake done, age≥16, and required consents."""
+    if learner.intake_step != INTAKE_STEP_COMPLETE:
+        raise LearnerValidationError(
+            "consent_before_intake",
+            "consent_complete requires intake_step complete",
+        )
+    if (
+        not isinstance(learner.age, int)
+        or isinstance(learner.age, bool)
+        or learner.age < MIN_CONSENT_AGE
+    ):
+        raise LearnerValidationError(
+            "age_restricted",
+            "consent_complete requires age 16 or older",
+        )
+    missing: list[str] = []
+    if not learner.consent_mic:
+        missing.append("consent_mic")
+    if not learner.consent_ai:
+        missing.append("consent_ai")
+    if not learner.consent_privacy:
+        missing.append("consent_privacy")
+    if missing:
+        raise LearnerValidationError(
+            "consent_incomplete",
+            "consent_complete requires " + ", ".join(missing),
+        )
+
+
 def get_or_create_learner(store: PersistencePort) -> Learner:
     """Return the existing Learner or create one with v1 defaults."""
     existing = store.load_learner()
@@ -152,6 +202,11 @@ def update_learner(
     timezone: Any = _UNSET,
     weekly_slots: Any = _UNSET,
     intake_step: Any = _UNSET,
+    consent_mic: Any = _UNSET,
+    consent_telegram: Any = _UNSET,
+    consent_ai: Any = _UNSET,
+    consent_privacy: Any = _UNSET,
+    consent_complete: Any = _UNSET,
 ) -> Learner:
     """Patch the single Learner. Omitted kwargs leave the current value unchanged."""
     current = get_or_create_learner(store)
@@ -208,9 +263,28 @@ def update_learner(
             raise ValueError(f"intake_step must be one of {INTAKE_STEPS}")
         updates["intake_step"] = intake_step
 
+    if consent_mic is not _UNSET:
+        updates["consent_mic"] = _coerce_bool(consent_mic, field="consent_mic")
+    if consent_telegram is not _UNSET:
+        updates["consent_telegram"] = _coerce_bool(
+            consent_telegram, field="consent_telegram"
+        )
+    if consent_ai is not _UNSET:
+        updates["consent_ai"] = _coerce_bool(consent_ai, field="consent_ai")
+    if consent_privacy is not _UNSET:
+        updates["consent_privacy"] = _coerce_bool(
+            consent_privacy, field="consent_privacy"
+        )
+    if consent_complete is not _UNSET:
+        updates["consent_complete"] = _coerce_bool(
+            consent_complete, field="consent_complete"
+        )
+
     if not updates:
         return current
     updated = replace(current, **updates)
     if updated.intake_step == INTAKE_STEP_COMPLETE:
         _require_intake_complete(updated)
+    if updated.consent_complete:
+        _require_consent_complete(updated)
     return store.update_learner(updated)

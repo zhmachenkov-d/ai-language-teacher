@@ -1,25 +1,25 @@
 <script setup lang="ts">
 /**
- * Stub consent route for Story 2.2 handoff. Intake-complete learners land here;
- * calendar stays gated until the 2.6 climax.
+ * Chrome-only placement handoff stub for Story 2.3. Consent-complete learners
+ * land here; calendar stays gated until the 2.6 climax. No briefing/tasks.
  */
 </script>
 
 <template>
-  <main class="consent-stub" data-testid="onboarding-consent-stub">
+  <main class="placement-stub" data-testid="onboarding-placement-stub">
     <section class="surface">
       <span class="accent-rule" aria-hidden="true" />
-      <h1>Согласие</h1>
+      <h1>Проверка уровня</h1>
       <p class="hint">
-        Экран согласия появится в следующем шаге. Расписание уже сохранено —
-        вернитесь позже, чтобы продолжить онбординг.
+        Следующий шаг — placement: письменная часть, слушание и говорение.
+        Экран заданий появится в следующем шаге онбординга.
       </p>
     </section>
   </main>
 </template>
 
 <style scoped>
-.consent-stub {
+.placement-stub {
   flex: 1;
   display: flex;
   align-items: flex-start;

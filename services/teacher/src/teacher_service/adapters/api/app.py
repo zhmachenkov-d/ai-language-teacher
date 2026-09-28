@@ -24,6 +24,7 @@ from teacher_service.adapters.persistence import SqliteStore
 from teacher_service.domain.learner import (
     ALLOWED_LESSON_DURATIONS,
     INTAKE_STEPS,
+    LearnerValidationError,
     WeeklySlot,
     get_or_create_learner,
     update_learner,
@@ -94,6 +95,11 @@ class LearnerPatch(BaseModel):
     timezone: str | None = None
     weekly_slots: list[WeeklySlotIn] | None = None
     intake_step: str | None = None
+    consent_mic: bool | None = None
+    consent_telegram: bool | None = None
+    consent_ai: bool | None = None
+    consent_privacy: bool | None = None
+    consent_complete: bool | None = None
 
     @field_validator("address_as")
     @classmethod
@@ -181,6 +187,11 @@ def _learner_to_dict(learner: Any) -> dict[str, Any]:
             for s in learner.weekly_slots
         ],
         "intake_step": learner.intake_step,
+        "consent_mic": learner.consent_mic,
+        "consent_telegram": learner.consent_telegram,
+        "consent_ai": learner.consent_ai,
+        "consent_privacy": learner.consent_privacy,
+        "consent_complete": learner.consent_complete,
     }
 
 
@@ -318,6 +329,15 @@ def create_app(
                 kwargs[key] = value
         try:
             learner = update_learner(persistence, **kwargs)
+        except LearnerValidationError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": exc.code,
+                    "message": str(exc),
+                    "retryable": False,
+                },
+            ) from exc
         except ValueError as exc:
             raise HTTPException(
                 status_code=422,
