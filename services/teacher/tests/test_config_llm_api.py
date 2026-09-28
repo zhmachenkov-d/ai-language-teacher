@@ -9,7 +9,11 @@ import pytest
 from fastapi.testclient import TestClient
 from teacher_service.adapters.api.app import create_app
 from teacher_service.adapters.api.auth import AUTH_TOKEN_ENV
-from teacher_service.adapters.config import SECRET_BEARER_TOKEN, SECRET_LLM_API_KEY, FileConfig
+from teacher_service.adapters.config import (
+    SECRET_BEARER_TOKEN,
+    SECRET_LLM_API_KEY,
+    FileConfig,
+)
 
 
 @pytest.fixture
@@ -93,9 +97,7 @@ def test_put_llm_config_rejects_blank_key(
 def test_put_llm_config_missing_field_is_422(
     client: TestClient, auth_token: str
 ) -> None:
-    response = client.put(
-        "/config/llm", json={}, headers=_auth_header(auth_token)
-    )
+    response = client.put("/config/llm", json={}, headers=_auth_header(auth_token))
     assert response.status_code == 422
     body = response.json()
     assert set(body) == {"code", "message", "retryable"}
@@ -152,3 +154,21 @@ def test_bearer_remint_rejects_prior_token_on_config_llm(
     assert rejected.status_code == 401
     accepted = new_app_client.get("/config/llm", headers=_auth_header(new_bearer))
     assert accepted.status_code == 200
+
+
+def test_config_runtime_error_returns_shaped_500(
+    client: TestClient,
+    auth_token: str,
+    config: FileConfig,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def boom(_name: str) -> None:
+        raise RuntimeError("failed to read secret 'llm_api_key'")
+
+    monkeypatch.setattr(config, "get_secret", boom)
+    response = client.get("/config/llm", headers=_auth_header(auth_token))
+    assert response.status_code == 500
+    body = response.json()
+    assert body["code"] == "config_error"
+    assert body["retryable"] is True
+    assert "failed to read secret" in body["message"]

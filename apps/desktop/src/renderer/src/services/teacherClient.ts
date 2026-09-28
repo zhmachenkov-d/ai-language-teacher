@@ -29,7 +29,12 @@ export class TeacherApiError extends Error {
   readonly retryable: boolean;
   readonly status: number;
 
-  constructor(code: string, message: string, retryable: boolean, status: number) {
+  constructor(
+    code: string,
+    message: string,
+    retryable: boolean,
+    status: number,
+  ) {
     super(message);
     this.code = code;
     this.retryable = retryable;
@@ -82,13 +87,23 @@ async function toApiError(response: Response): Promise<TeacherApiError> {
       response.status,
     );
   } catch {
-    return new TeacherApiError("network_error", "Network error", true, response.status);
+    return new TeacherApiError(
+      "network_error",
+      "Network error",
+      true,
+      response.status,
+    );
   }
 }
 
 function requireRunningAuth(auth: TeacherAuth): void {
   if (auth.state !== "running" || !auth.bearer || !auth.base_url) {
-    throw new TeacherApiError("teacher_unavailable", "Учитель не запущен", true, 0);
+    throw new TeacherApiError(
+      "teacher_unavailable",
+      "Учитель не запущен",
+      true,
+      0,
+    );
   }
 }
 
@@ -98,20 +113,35 @@ async function authorizedFetch(
   init: RequestInit = {},
 ): Promise<Response> {
   requireRunningAuth(auth);
+  const timeoutMs = 8000;
   try {
     return await fetch(`${auth.base_url}${path}`, {
       ...init,
+      signal: init.signal ?? AbortSignal.timeout(timeoutMs),
       headers: {
         ...init.headers,
         Authorization: `Bearer ${auth.bearer}`,
       },
     });
-  } catch {
+  } catch (err) {
+    if (
+      err instanceof DOMException &&
+      (err.name === "TimeoutError" || err.name === "AbortError")
+    ) {
+      throw new TeacherApiError(
+        "timeout",
+        "Учитель не ответил вовремя",
+        true,
+        0,
+      );
+    }
     throw new TeacherApiError("network_error", "Нет связи с учителем", true, 0);
   }
 }
 
-export async function fetchLlmConfigStatus(auth: TeacherAuth): Promise<LlmConfigStatus> {
+export async function fetchLlmConfigStatus(
+  auth: TeacherAuth,
+): Promise<LlmConfigStatus> {
   const response = await authorizedFetch(auth, "/config/llm");
   if (!response.ok) {
     throw await toApiError(response);

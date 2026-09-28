@@ -3,6 +3,9 @@ set -euo pipefail
 
 echo "==> Dev container post-create"
 
+# Safety net if initializeCommand was skipped (e.g. non-Dev-Containers workflows).
+bash "$(dirname "${BASH_SOURCE[0]}")/ensure-env.sh"
+
 # Install Python deps (prefer uv when available)
 if command -v uv >/dev/null 2>&1; then
   if [[ -f "uv.lock" ]]; then

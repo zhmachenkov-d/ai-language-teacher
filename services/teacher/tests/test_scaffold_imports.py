@@ -56,9 +56,7 @@ def _has_fastapi_app_assignment(tree: ast.AST) -> bool:
     for node in ast.walk(tree):
         if not isinstance(node, ast.Assign):
             continue
-        if not any(
-            isinstance(t, ast.Name) and t.id == "app" for t in node.targets
-        ):
+        if not any(isinstance(t, ast.Name) and t.id == "app" for t in node.targets):
             continue
         value = node.value
         if isinstance(value, ast.Call):
@@ -130,6 +128,10 @@ def test_hexagonal_stub_layout_complete() -> None:
 def _unexpected_env_files(root: Path) -> list[Path]:
     if not root.is_dir():
         return []
+    # Repo-root `.env` is the intentional local secrets file created by
+    # `.devcontainer/ensure-env.sh` (gitignored; never commit). Nested `.env*`
+    # under apps/services still fail this check.
+    allowed = {REPO_ROOT / ".env"}
     found: list[Path] = []
     for path in root.rglob(".env*"):
         if not path.is_file():
@@ -137,6 +139,8 @@ def _unexpected_env_files(root: Path) -> list[Path]:
         if any(part in SKIP_DIR_NAMES for part in path.parts):
             continue
         if path.name == ".env.example":
+            continue
+        if path in allowed:
             continue
         if path.name == ".env" or path.name.startswith(".env."):
             found.append(path)
