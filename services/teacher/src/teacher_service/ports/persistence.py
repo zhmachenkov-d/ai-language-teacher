@@ -1,4 +1,4 @@
-"""Persistence port: Learner create/load."""
+"""Persistence port: Learner create/load/update."""
 
 from __future__ import annotations
 
@@ -18,4 +18,8 @@ class PersistencePort(Protocol):
 
     def load_learner(self) -> Learner | None:
         """Load the single Learner row, or None if none exists yet."""
+        ...
+
+    def update_learner(self, learner: Learner) -> Learner:
+        """Replace the single Learner row and return it."""
         ...

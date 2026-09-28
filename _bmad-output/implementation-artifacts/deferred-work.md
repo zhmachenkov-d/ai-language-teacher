@@ -45,6 +45,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-3-config-port-secrets-layout-and-sqlite-app-data-store.md`
   summary: Authenticated HTTP snake_case learner/profile (or config-status) read projection over SQLite/Config
   evidence: Split from 1.3 to fit the token budget; narrowed 1.3 proves Config app-data layout, secrets (incl. Bearer via Config), and SQLite Learner create/load via ports/tests — epic Story 1.3 API projection AC remains open here
+  resolved_by: spec-2-1-onboarding-wizard-greeting-goals-interests-duration-schedule.md (partial — intake subset GET/PATCH /learner only; broader profile/config-status projection may still expand later)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-3-config-port-secrets-layout-and-sqlite-app-data-store.md`
   summary: Document an operable AGENTS.md bootstrap to create Config `bearer_token` without Settings UI or TEACHER_AUTH_TOKEN-only path
@@ -79,3 +80,7 @@
 - AUTH_BRIDGE main/preload IPC handlers never executed in tests — same Electron-host harness cost; Vue/HTTP covered against mock contract
 - AGENTS.md still says Electron spawn/host-survival remain deferred — fix edits agent-context AGENTS.md
   resolved_by: epic-1-retro-2026-09-28.md (action item 2 — Running section updated 2026-09-28)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-1-onboarding-wizard-greeting-goals-interests-duration-schedule.md`
+  summary: Outlook-like week-grid schedule UI (visual week chrome / click-to-add slots) reusable for Settings «изменить» mini-wizard
+  evidence: Split from 2.1 to fit the token budget; narrowed 2.1 ships intake wizard with a compact weekday+time slot list editor and the same slot persistence model — epic Outlook week-grid chrome AC remains open here (needed before/with 2.7 Settings schedule edit)

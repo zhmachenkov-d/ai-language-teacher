@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -20,9 +20,18 @@ from teacher_service.adapters.api.auth import (
     tokens_match,
 )
 from teacher_service.adapters.config import SECRET_LLM_API_KEY
+from teacher_service.adapters.persistence import SqliteStore
+from teacher_service.domain.learner import (
+    ALLOWED_LESSON_DURATIONS,
+    INTAKE_STEPS,
+    WeeklySlot,
+    get_or_create_learner,
+    update_learner,
+)
 
 if TYPE_CHECKING:
     from teacher_service.ports.config import ConfigPort
+    from teacher_service.ports.persistence import PersistencePort
 
 LOOPBACK_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
@@ -53,6 +62,85 @@ class LlmConfigUpdate(BaseModel):
         return value
 
 
+class WeeklySlotIn(BaseModel):
+    weekday: int
+    start_minute: int
+
+    @field_validator("weekday")
+    @classmethod
+    def _weekday_range(cls, value: int) -> int:
+        if not (0 <= value <= 6):
+            raise ValueError("weekday must be 0–6")
+        return value
+
+    @field_validator("start_minute")
+    @classmethod
+    def _start_minute_range(cls, value: int) -> int:
+        if not (0 <= value <= 1439):
+            raise ValueError("start_minute must be 0–1439")
+        return value
+
+
+class LearnerPatch(BaseModel):
+    """PATCH /learner — all fields optional; omitted keys are unchanged."""
+
+    address_as: str | None = None
+    age: int | None = None
+    goals: list[str] | None = None
+    desired_outcome: list[str] | None = None
+    interests: list[str] | None = None
+    emphasis: list[str] | None = None
+    lesson_duration_minutes: int | None = None
+    timezone: str | None = None
+    weekly_slots: list[WeeklySlotIn] | None = None
+    intake_step: str | None = None
+
+    @field_validator("address_as")
+    @classmethod
+    def _address_as_nonblank(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if not value.strip():
+            raise ValueError("address_as must be a non-empty string")
+        return value
+
+    @field_validator("age")
+    @classmethod
+    def _age_range(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
+        if not (1 <= value <= 120):
+            raise ValueError("age must be 1–120")
+        return value
+
+    @field_validator("lesson_duration_minutes")
+    @classmethod
+    def _duration_allowed(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
+        if value not in ALLOWED_LESSON_DURATIONS:
+            raise ValueError("lesson_duration_minutes must be 30, 45, or 60")
+        return value
+
+    @field_validator("timezone")
+    @classmethod
+    def _timezone_nonblank(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if not value.strip():
+            raise ValueError("timezone must be a non-empty string")
+        return value
+
+    @field_validator("intake_step")
+    @classmethod
+    def _intake_step_allowed(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if value not in INTAKE_STEPS:
+            raise ValueError("invalid intake_step")
+        return value
+
+
 class BearerAuthMiddleware(BaseHTTPMiddleware):
     """Reject every request without a valid Bearer token (including unmatched routes)."""
 
@@ -75,10 +163,32 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
+def _learner_to_dict(learner: Any) -> dict[str, Any]:
+    return {
+        "id": learner.id,
+        "target_language": learner.target_language,
+        "l1": learner.l1,
+        "timezone": learner.timezone,
+        "address_as": learner.address_as,
+        "age": learner.age,
+        "goals": list(learner.goals),
+        "desired_outcome": list(learner.desired_outcome),
+        "interests": list(learner.interests),
+        "emphasis": list(learner.emphasis),
+        "lesson_duration_minutes": learner.lesson_duration_minutes,
+        "weekly_slots": [
+            {"weekday": s.weekday, "start_minute": s.start_minute}
+            for s in learner.weekly_slots
+        ],
+        "intake_step": learner.intake_step,
+    }
+
+
 def create_app(
     *,
     auth_token: str | None = None,
     config: ConfigPort | None = None,
+    store: PersistencePort | None = None,
 ) -> FastAPI:
     """Build the API app. Token: arg → env → Config bearer (fail closed)."""
     if config is None:
@@ -87,6 +197,8 @@ def create_app(
         config = FileConfig()
     token = resolve_auth_token(auth_token, config=config)
     settings = AuthSettings(token)
+    if store is None:
+        store = SqliteStore(config.sqlite_path())
     app = FastAPI(
         title="teacher-service",
         docs_url=None,
@@ -95,6 +207,7 @@ def create_app(
     )
     app.state.auth = settings
     app.state.config = config
+    app.state.store = store
     # Middleware order: last added runs first. CORS must wrap Bearer so preflight
     # is answered before auth; Bearer still skips OPTIONS defensively.
     app.add_middleware(BearerAuthMiddleware, token=settings.token)
@@ -181,5 +294,39 @@ def create_app(
                 },
             ) from exc
         return {"configured": True}
+
+    @app.get("/learner")
+    async def get_learner(request: Request) -> dict[str, Any]:
+        persistence: PersistencePort = request.app.state.store
+        learner = get_or_create_learner(persistence)
+        return _learner_to_dict(learner)
+
+    @app.patch("/learner")
+    async def patch_learner(
+        payload: LearnerPatch, request: Request
+    ) -> dict[str, Any]:
+        persistence: PersistencePort = request.app.state.store
+        raw = payload.model_dump(exclude_unset=True)
+        kwargs: dict[str, Any] = {}
+        for key, value in raw.items():
+            if key == "weekly_slots" and value is not None:
+                kwargs[key] = [
+                    WeeklySlot(weekday=s["weekday"], start_minute=s["start_minute"])
+                    for s in value
+                ]
+            else:
+                kwargs[key] = value
+        try:
+            learner = update_learner(persistence, **kwargs)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "validation_error",
+                    "message": str(exc),
+                    "retryable": False,
+                },
+            ) from exc
+        return _learner_to_dict(learner)
 
     return app

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import ThemeControl from './components/ThemeControl.vue'
 
 const route = useRoute()
+
+const hideNav = computed(() => Boolean(route.meta.hideNav))
 
 const navItems = [
   { name: 'calendar', label: 'Календарь' },
@@ -14,7 +17,7 @@ const navItems = [
 
 <template>
   <div class="app-shell">
-    <nav class="nav" aria-label="Основная навигация">
+    <nav v-if="!hideNav" class="nav" aria-label="Основная навигация">
       <div class="brand">
         <span class="mark" aria-hidden="true" />
         <span class="brand-text">Учитель</span>
