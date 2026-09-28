@@ -54,8 +54,13 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-4-design-tokens-dark-mode-and-russian-app-chrome-shell.md`
   summary: Russian working-tool app chrome shell (nav Календарь/План/Прогресс/Настройки, vue-router placeholder routes, reduce-motion route transitions)
   evidence: Split from 1.4 to fit the token budget; narrowed 1.4 ships design tokens + dark mode (OS + manual) on the existing renderer surface — epic Story 1.4 Russian shell / UX-DR20 nav AC remains open here (needed before 1.5/1.6)
+  resolved_by: spec-1-5-calendar-home-empty-chrome-with-side-panel.md
 
 ## Deferred from: code review of spec-1-4-design-tokens-dark-mode-and-russian-app-chrome-shell.md (2026-09-27)
 
 - Epic Story 1.4 in `epics.md` still presents Russian chrome / UX-DR20 ACs without a deferral cross-reference to deferred-work / narrowed 1.4 Intent
 - AGENTS.md desktop verify path still omits `npm test` / Vitest after the first renderer test harness (agent-context AGENTS.md)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-5-calendar-home-empty-chrome-with-side-panel.md`
+  summary: Production `main.ts` hash-router `.use(createAppRouter())` install is not executed by vitest (App.spec injects its own router)
+  evidence: Verification-gap review; removing `.use(router)` from main would leave all App.spec suites green; low-leverage entry smoke for this chrome story
