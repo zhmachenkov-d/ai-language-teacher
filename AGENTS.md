@@ -67,3 +67,7 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8765/health
 - Wire JSON is `snake_case` everywhere (HTTP and SSE), including from the Vue client.
 
 <!-- /bmad:context -->
+
+## Dev Container GUI (Electron)
+
+This environment includes `desktop-lite` (noVNC). After rebuild: open forwarded port **6080** (password `vscode`), then `cd apps/desktop && npm run dev`. `ELECTRON_DISABLE_SANDBOX=1` is set via `containerEnv`. Headless smoke without VNC: `npm run preview:xvfb`.
