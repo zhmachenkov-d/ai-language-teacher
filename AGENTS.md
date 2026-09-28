@@ -27,18 +27,18 @@ Personal desktop AI English teacher (v1): Electron + Vue UI client, Python teach
 cd apps/desktop
 npm install
 npm run build
-npm run dev          # start (dev): placeholder Electron window; teacher not required
+npm run dev          # start (dev): Electron window + tray host; teacher spawn/attach on ready
 # or after build:
 npm run preview      # start (preview production build)
 ```
 
 ### Teacher (`services/teacher/`)
 
-Loopback HTTP API with Bearer local auth (Story 1.2 API slice) plus Config/SQLite under OS app-data (Story 1.3). Electron spawn/attach/preload and window-close host-survival remain deferred — do not treat desktop start as the teacher listen path. Authenticated HTTP learner/profile projection is also deferred.
+Loopback HTTP API with Bearer local auth (Story 1.2) plus Config/SQLite under OS app-data (Story 1.3). Electron main spawn/attach/preload and window-close host-survival (tray-first) shipped in Story 1.6 — desktop start **is** the normal teacher listen path via `TeacherHost`. Authenticated HTTP learner/profile projection remains deferred (only `/health` and `/config/llm` in Epic 1). Renderer→teacher HTTP needs CSP `connect-src` for `:8765` and CORS on the API (loopback Origin / `null` for `file://`).
 
-Data directory: OS app-data via `platformdirs` (`ai-language-teacher`), containing `teacher.sqlite`, `secrets/` (`bearer_token`, `llm_api_key`, `telegram_bot_token`), and `voice-models/`. Override for tests/dev with `TEACHER_DATA_DIR`.
+Data directory: OS app-data via `platformdirs` (`ai-language-teacher`), containing `teacher.sqlite`, `secrets/` (`bearer_token`, `llm_api_key`, `telegram_bot_token`), and `voice-models/`. Override for tests/dev with `TEACHER_DATA_DIR`. Host and CLI share the same layout (host may set `TEACHER_DATA_DIR` when spawning).
 
-Bearer resolve order for listen/`create_app`: explicit `auth_token` arg (when not `None`) → non-empty stripped `TEACHER_AUTH_TOKEN` → Config `bearer_token` secret → fail closed (CLI exit 1). Whitespace-only env counts as unset. CLI listen resolves Config for Bearer only — SQLite/Learner init is not required to start `/health`. Prove layout + Learner get-or-create with `uv run pytest` (temp `TEACHER_DATA_DIR`).
+Bearer resolve order for listen/`create_app`: explicit `auth_token` arg (when not `None`) → non-empty stripped `TEACHER_AUTH_TOKEN` → Config `bearer_token` secret → fail closed (CLI exit 1). Whitespace-only env counts as unset. Electron mints/loads Config `bearer_token` and passes it to the child via env on spawn. CLI listen resolves Config for Bearer only — SQLite/Learner init is not required to start `/health`. Prove layout + Learner get-or-create with `uv run pytest` (temp `TEACHER_DATA_DIR`).
 
 ```bash
 cd services/teacher
@@ -54,9 +54,11 @@ uv run teacher-api
 # Smoke:
 curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" http://127.0.0.1:8765/health
 # expect 200 snake_case JSON, e.g. {"status":"ok"}
-curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8765/health
+curl -sS http://127.0.0.1:8765/health
 # expect 401 with {"code","message","retryable"}
 ```
+
+Desktop verify (after `npm install` in `apps/desktop/`): `npm test` (Vitest) and `npm run build`.
 
 ## Conventions that differ from defaults
 

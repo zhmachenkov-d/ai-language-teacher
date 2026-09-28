@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { useTheme, type ThemePreference } from '../composables/useTheme'
+import { useTheme, type ThemePreference } from "../composables/useTheme";
 
-const { preference, setPreference } = useTheme()
+const { preference, setPreference } = useTheme();
 
 const options: { value: ThemePreference; label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' }
-]
+  { value: "system", label: "Система" },
+  { value: "light", label: "Светлая" },
+  { value: "dark", label: "Тёмная" },
+];
 </script>
 
 <template>
-  <div class="theme-control" role="radiogroup" aria-label="Theme preference">
+  <div class="theme-control" role="radiogroup" aria-label="Тема оформления">
     <button
       v-for="option in options"
       :key="option.value"

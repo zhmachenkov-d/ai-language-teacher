@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-24-2026 10:16
-last_updated: 09-28-2026 11:31
+last_updated: 09-28-2026 11:54
 project: ai-language-teacher
 project_key: NOKEY
 tracking_system: file-system
@@ -42,7 +42,7 @@ development_status:
   1-4-design-tokens-dark-mode-and-russian-app-chrome-shell: done
   1-5-calendar-home-empty-chrome-with-side-panel: done
   1-6-settings-sections-shell-with-explicit-save: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   epic-2: backlog
   2-1-onboarding-wizard-greeting-goals-interests-duration-schedule: backlog
@@ -75,3 +75,39 @@ development_status:
   4-5-progress-dashboard-mastery-errors-words: backlog
   4-6-living-plan-replan-banner-change-history: backlog
   epic-4-retrospective: optional
+action_items:
+  - id: "epic-1-retro-item-1-fix-settings-teacher-http-csp-connect-sr"
+    epic: 1
+    action: "Fix Settings↔teacher HTTP: CSP connect-src for loopback :8765 and CORS
+      on teacher (OPTIONS exempt from Bearer; tight Origin/null allowlist); do not
+      proxy domain traffic through Electron main"
+    owner: "Dev"
+    status: done
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-28.md"
+  - id: "epic-1-retro-item-2-update-agents-md-running-section-spawn-a"
+    epic: 1
+    action: "Update AGENTS.md Running section: spawn/attach/preload/host-survival
+      shipped in 1.6; keep learner/profile projection marked deferred"
+    owner: "Dev"
+    status: done
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-28.md"
+  - id: "epic-1-retro-item-3-localize-themecontrol-labels-to-russian"
+    epic: 1
+    action: "Localize ThemeControl labels to Russian (UX-DR20)"
+    owner: "Dev"
+    status: done
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-28.md"
+  - id: "epic-1-retro-item-4-assert-bearer-header-in-teacherhost-chec"
+    epic: 1
+    action: "Assert Bearer header in teacherHost checkHealth / attach-spawn health
+      tests"
+    owner: "Dev"
+    status: done
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-28.md"
+  - id: "epic-1-retro-item-5-prefer-story-id-in-commit-pr-subjects-fo"
+    epic: 1
+    action: "Prefer story id in commit/PR subjects for evidence scripts; assign cross-cutting
+      wire seams (CSP/CORS) to an explicit story AC in later epics"
+    owner: "Team"
+    status: done
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-28.md"

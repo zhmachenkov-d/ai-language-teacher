@@ -166,9 +166,7 @@ def test_cli_binds_loopback_fixed_port(
     assert ok.json() == {"status": "ok"}
 
 
-def test_cli_requires_token(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_cli_requires_token(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv(AUTH_TOKEN_ENV, raising=False)
     monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "empty-data"))
     with pytest.raises(SystemExit) as excinfo:
@@ -178,3 +176,60 @@ def test_cli_requires_token(
 
 def test_loopback_host_constant() -> None:
     assert LOOPBACK_HOST == "127.0.0.1"
+
+
+def test_options_preflight_allowed_without_bearer(client: TestClient) -> None:
+    response = client.options(
+        "/health",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "authorization",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:5173"
+    allow_headers = response.headers.get("access-control-allow-headers", "").lower()
+    assert "authorization" in allow_headers
+
+
+def test_cors_allows_loopback_origin_on_authenticated_get(
+    client: TestClient, auth_token: str
+) -> None:
+    response = client.get(
+        "/health",
+        headers={
+            "Authorization": f"Bearer {auth_token}",
+            "Origin": "http://127.0.0.1:5173",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
+
+
+def test_cors_allows_null_origin_for_file_protocol(
+    client: TestClient, auth_token: str
+) -> None:
+    response = client.get(
+        "/health",
+        headers={
+            "Authorization": f"Bearer {auth_token}",
+            "Origin": "null",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "null"
+
+
+def test_cors_omits_allow_origin_for_non_loopback(
+    client: TestClient, auth_token: str
+) -> None:
+    response = client.get(
+        "/health",
+        headers={
+            "Authorization": f"Bearer {auth_token}",
+            "Origin": "https://evil.example",
+        },
+    )
+    assert response.status_code == 200
+    assert "access-control-allow-origin" not in response.headers

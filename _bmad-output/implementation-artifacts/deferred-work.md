@@ -78,3 +78,4 @@
 - HOST_SURVIVAL Electron main wiring untested beyond hostSurvival helpers — needs Electron main harness (already ledgered above; reconfirmed this review)
 - AUTH_BRIDGE main/preload IPC handlers never executed in tests — same Electron-host harness cost; Vue/HTTP covered against mock contract
 - AGENTS.md still says Electron spawn/host-survival remain deferred — fix edits agent-context AGENTS.md
+  resolved_by: epic-1-retro-2026-09-28.md (action item 2 — Running section updated 2026-09-28)

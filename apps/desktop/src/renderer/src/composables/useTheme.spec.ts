@@ -210,6 +210,13 @@ describe("theme preference matrix", () => {
     const mainSrc = readFileSync(resolve(__dirname, "../main.ts"), "utf8");
     expect(mainSrc).toMatch(/import\s+['"]\.\/styles\/tokens\.css['"]/);
 
+    const indexHtml = readFileSync(
+      resolve(__dirname, "../../index.html"),
+      "utf8",
+    );
+    expect(indexHtml).toMatch(/connect-src[^"]*http:\/\/127\.0\.0\.1:8765/);
+    expect(indexHtml).toMatch(/connect-src[^"]*http:\/\/localhost:8765/);
+
     // Inject the shipped stylesheet intact (including the @media gate) — do not strip the wrapper.
     const css = readFileSync(
       resolve(__dirname, "../styles/tokens.css"),
