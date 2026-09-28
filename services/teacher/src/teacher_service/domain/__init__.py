@@ -1,17 +1,37 @@
 """Domain: pedagogy and scheduling use cases (no vendor adapters)."""
 
 from teacher_service.domain.learner import (
+    ALLOWED_LESSON_DURATIONS,
     DEFAULT_L1,
     DEFAULT_TARGET_LANGUAGE,
     DEFAULT_TIMEZONE,
+    INTAKE_STEP_COMPLETE,
+    INTAKE_STEP_DURATION,
+    INTAKE_STEP_GOALS,
+    INTAKE_STEP_GREETING,
+    INTAKE_STEP_INTERESTS,
+    INTAKE_STEP_SCHEDULE,
+    INTAKE_STEPS,
     Learner,
+    WeeklySlot,
     get_or_create_learner,
+    update_learner,
 )
 
 __all__ = [
+    "ALLOWED_LESSON_DURATIONS",
     "DEFAULT_L1",
     "DEFAULT_TARGET_LANGUAGE",
     "DEFAULT_TIMEZONE",
+    "INTAKE_STEP_COMPLETE",
+    "INTAKE_STEP_DURATION",
+    "INTAKE_STEP_GOALS",
+    "INTAKE_STEP_GREETING",
+    "INTAKE_STEP_INTERESTS",
+    "INTAKE_STEP_SCHEDULE",
+    "INTAKE_STEPS",
     "Learner",
+    "WeeklySlot",
     "get_or_create_learner",
+    "update_learner",
 ]

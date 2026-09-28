@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  fetchLearner,
   fetchLlmConfigStatus,
   getTeacherAuth,
+  patchLearner,
   saveLlmApiKey,
   TeacherApiError,
   type TeacherAuth,
@@ -126,5 +128,67 @@ describe("teacherClient", () => {
       code: "timeout",
       retryable: true,
     });
+  });
+
+  it("fetchLearner GETs /learner with Bearer auth", async () => {
+    const profile = {
+      id: "abc",
+      target_language: "en",
+      l1: "ru",
+      timezone: "UTC",
+      address_as: null,
+      age: null,
+      goals: [],
+      desired_outcome: [],
+      interests: [],
+      emphasis: [],
+      lesson_duration_minutes: null,
+      weekly_slots: [],
+      intake_step: "greeting",
+    };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, profile));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(fetchLearner(RUNNING)).resolves.toEqual(profile);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://127.0.0.1:8765/learner",
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: "Bearer tok-123" }),
+      }),
+    );
+  });
+
+  it("patchLearner PATCHes snake_case body", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        id: "abc",
+        target_language: "en",
+        l1: "ru",
+        timezone: "UTC",
+        address_as: "Алекс",
+        age: 28,
+        goals: [],
+        desired_outcome: [],
+        interests: [],
+        emphasis: [],
+        lesson_duration_minutes: null,
+        weekly_slots: [],
+        intake_step: "goals",
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    await patchLearner(RUNNING, {
+      address_as: "Алекс",
+      age: 28,
+      intake_step: "goals",
+    });
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.method).toBe("PATCH");
+    expect(init.body).toBe(
+      JSON.stringify({
+        address_as: "Алекс",
+        age: 28,
+        intake_step: "goals",
+      }),
+    );
   });
 });

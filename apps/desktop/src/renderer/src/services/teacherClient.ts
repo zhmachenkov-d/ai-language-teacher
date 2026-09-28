@@ -17,6 +17,48 @@ export interface LlmConfigStatus {
   configured: boolean;
 }
 
+export interface WeeklySlot {
+  weekday: number;
+  start_minute: number;
+}
+
+export type IntakeStep =
+  | "greeting"
+  | "goals"
+  | "interests"
+  | "duration"
+  | "schedule"
+  | "complete";
+
+export interface LearnerProfile {
+  id: string;
+  target_language: string;
+  l1: string;
+  timezone: string;
+  address_as: string | null;
+  age: number | null;
+  goals: string[];
+  desired_outcome: string[];
+  interests: string[];
+  emphasis: string[];
+  lesson_duration_minutes: number | null;
+  weekly_slots: WeeklySlot[];
+  intake_step: IntakeStep;
+}
+
+export type LearnerPatch = Partial<{
+  address_as: string;
+  age: number;
+  goals: string[];
+  desired_outcome: string[];
+  interests: string[];
+  emphasis: string[];
+  lesson_duration_minutes: number;
+  timezone: string;
+  weekly_slots: WeeklySlot[];
+  intake_step: IntakeStep;
+}>;
+
 const UNAVAILABLE_AUTH: TeacherAuth = {
   state: "error",
   base_url: "",
@@ -162,4 +204,27 @@ export async function saveLlmApiKey(
     throw await toApiError(response);
   }
   return parseSuccessJson<LlmConfigStatus>(response);
+}
+
+export async function fetchLearner(auth: TeacherAuth): Promise<LearnerProfile> {
+  const response = await authorizedFetch(auth, "/learner");
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+  return parseSuccessJson<LearnerProfile>(response);
+}
+
+export async function patchLearner(
+  auth: TeacherAuth,
+  body: LearnerPatch,
+): Promise<LearnerProfile> {
+  const response = await authorizedFetch(auth, "/learner", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+  return parseSuccessJson<LearnerProfile>(response);
 }
