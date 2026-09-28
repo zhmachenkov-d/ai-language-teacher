@@ -1,120 +1,177 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { onBeforeRouteLeave } from 'vue-router'
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 import {
   fetchLlmConfigStatus,
   getTeacherAuth,
   retryTeacher,
   saveLlmApiKey,
   TeacherApiError,
-  type TeacherAuth
-} from '../services/teacherClient'
+  type TeacherAuth,
+} from "../services/teacherClient";
 
-const auth = ref<TeacherAuth>({ state: 'starting', base_url: '', bearer: null })
-const configured = ref(false)
-const llmApiKey = ref('')
-const validationError = ref<string | null>(null)
-const saveError = ref<string | null>(null)
-const loadError = ref<string | null>(null)
-const saving = ref(false)
-const loading = ref(true)
+const auth = ref<TeacherAuth>({
+  state: "starting",
+  base_url: "",
+  bearer: null,
+});
+const configured = ref(false);
+const llmApiKey = ref("");
+const validationError = ref<string | null>(null);
+const saveError = ref<string | null>(null);
+const loadError = ref<string | null>(null);
+const saving = ref(false);
+const loading = ref(true);
 
-const dirty = computed(() => llmApiKey.value.trim().length > 0)
+/** Bumped on every auth apply so in-flight getAuth/retry cannot overwrite newer status. */
+let authSeq = 0;
+
+const dirty = computed(() => llmApiKey.value.trim().length > 0);
 
 const launchFailureMessage = computed(
-  () => auth.value.message ?? 'Не удаётся подключиться к учителю'
-)
+  () => auth.value.message ?? "Не удаётся подключиться к учителю",
+);
+
+function applyAuth(next: TeacherAuth, seq: number): boolean {
+  if (seq !== authSeq) {
+    return false;
+  }
+  auth.value = next;
+  return true;
+}
 
 async function loadLlmStatus(): Promise<void> {
-  loadError.value = null
-  if (auth.value.state !== 'running') {
-    return
+  loadError.value = null;
+  if (auth.value.state !== "running") {
+    return;
   }
   try {
-    const status = await fetchLlmConfigStatus(auth.value)
-    configured.value = status.configured
+    const status = await fetchLlmConfigStatus(auth.value);
+    configured.value = status.configured;
   } catch (err) {
     loadError.value =
-      err instanceof TeacherApiError ? err.message : 'Не удалось загрузить статус ключа'
+      err instanceof TeacherApiError
+        ? err.message
+        : "Не удалось загрузить статус ключа";
   }
 }
 
 async function refreshStatus(): Promise<void> {
-  loading.value = true
+  const seq = ++authSeq;
+  loading.value = true;
   try {
-    auth.value = await getTeacherAuth()
-    await loadLlmStatus()
+    const next = await getTeacherAuth();
+    if (!applyAuth(next, seq)) {
+      return;
+    }
+    await loadLlmStatus();
+  } catch {
+    applyAuth(
+      {
+        state: "error",
+        base_url: "",
+        bearer: null,
+        message: "Не удалось получить статус учителя",
+      },
+      seq,
+    );
   } finally {
-    loading.value = false
+    if (seq === authSeq) {
+      loading.value = false;
+    }
   }
 }
 
 async function retry(): Promise<void> {
-  loading.value = true
+  const seq = ++authSeq;
+  loading.value = true;
   try {
-    auth.value = await retryTeacher()
-    await loadLlmStatus()
+    const next = await retryTeacher();
+    if (!applyAuth(next, seq)) {
+      return;
+    }
+    await loadLlmStatus();
+  } catch {
+    applyAuth(
+      {
+        state: "error",
+        base_url: "",
+        bearer: null,
+        message: "Не удалось перезапустить учителя",
+      },
+      seq,
+    );
   } finally {
-    loading.value = false
+    if (seq === authSeq) {
+      loading.value = false;
+    }
   }
 }
 
 async function save(): Promise<void> {
   if (saving.value) {
-    return
+    return;
   }
-  validationError.value = null
-  saveError.value = null
-  const trimmed = llmApiKey.value.trim()
+  validationError.value = null;
+  saveError.value = null;
+  const trimmed = llmApiKey.value.trim();
   if (!trimmed) {
-    validationError.value = 'Введите ключ — пустое значение не сохраняется'
-    return
+    validationError.value = "Введите ключ — пустое значение не сохраняется";
+    return;
   }
-  if (auth.value.state !== 'running') {
-    saveError.value = 'Учитель не запущен — сохранение недоступно'
-    return
+  if (auth.value.state !== "running") {
+    saveError.value = "Учитель не запущен — сохранение недоступно";
+    return;
   }
-  saving.value = true
+  saving.value = true;
   try {
-    const result = await saveLlmApiKey(auth.value, trimmed)
-    configured.value = result.configured
-    llmApiKey.value = ''
+    const result = await saveLlmApiKey(auth.value, trimmed);
+    configured.value = result.configured;
+    llmApiKey.value = "";
   } catch (err) {
     saveError.value =
-      err instanceof TeacherApiError ? err.message : 'Не удалось сохранить ключ'
+      err instanceof TeacherApiError
+        ? err.message
+        : "Не удалось сохранить ключ";
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
-let unsubscribe: (() => void) | undefined
+let unsubscribe: (() => void) | undefined;
 
 onMounted(() => {
-  void refreshStatus()
-  if (typeof window !== 'undefined' && window.teacher) {
+  void refreshStatus();
+  if (typeof window !== "undefined" && window.teacher) {
     unsubscribe = window.teacher.onStatusChange((status) => {
-      auth.value = status
-      if (status.state === 'running') {
-        void loadLlmStatus()
+      const seq = ++authSeq;
+      applyAuth(status, seq);
+      if (status.state === "running") {
+        void loadLlmStatus();
       }
-    })
+      loading.value = false;
+    });
   }
-})
+});
 
 onUnmounted(() => {
-  unsubscribe?.()
-})
+  unsubscribe?.();
+});
 
 // LEAVE_DIRTY: unsaved LLM edits must never silently persist or be silently
-// discarded — confirm before leaving; stay on cancel.
+// discarded — confirm before leaving; stay on cancel. Block leave while a save
+// is in flight so a confirmed discard cannot race a completing PUT.
 onBeforeRouteLeave(() => {
+  if (saving.value) {
+    return false;
+  }
   if (!dirty.value) {
-    return true
+    return true;
   }
   return window.confirm(
-    'Есть несохранённые изменения в LLM/API. Уйти без сохранения?'
-  )
-})
+    "Есть несохранённые изменения в LLM/API. Уйти без сохранения?",
+  );
+});
 </script>
 
 <template>
@@ -122,7 +179,11 @@ onBeforeRouteLeave(() => {
     <div class="scroll">
       <h1 class="page-title">Настройки</h1>
 
-      <p v-if="auth.state === 'starting'" class="hint" data-testid="connecting-hint">
+      <p
+        v-if="auth.state === 'starting'"
+        class="hint"
+        data-testid="connecting-hint"
+      >
         Подключение к учителю…
       </p>
       <div
@@ -132,7 +193,9 @@ onBeforeRouteLeave(() => {
         data-testid="launch-failure-banner"
       >
         <p>{{ launchFailureMessage }}</p>
-        <button type="button" class="secondary" @click="retry">Повторить</button>
+        <button type="button" class="secondary" @click="retry">
+          Повторить
+        </button>
       </div>
 
       <section class="settings-section" aria-labelledby="section-telegram">
@@ -140,7 +203,8 @@ onBeforeRouteLeave(() => {
         <p id="section-telegram" class="kicker">TELEGRAM</p>
         <p class="status">Статус: не привязан</p>
         <p class="hint">
-          Свяжите Telegram, чтобы получать напоминания о занятиях и мини-уроки в течение дня.
+          Свяжите Telegram, чтобы получать напоминания о занятиях и мини-уроки в
+          течение дня.
         </p>
         <button type="button" class="cta" disabled title="Появится в Epic 4">
           Привязать
@@ -151,16 +215,23 @@ onBeforeRouteLeave(() => {
         <span class="accent-rule" aria-hidden="true" />
         <p id="section-voice" class="kicker">ГОЛОС</p>
         <p class="hint">
-          Режим микрофона (нажать-и-говорить или автопрослушивание) и выбор устройства
-          появятся здесь.
+          Режим микрофона (нажать-и-говорить или автопрослушивание) и выбор
+          устройства появятся здесь.
         </p>
       </section>
 
       <section class="settings-section" aria-labelledby="section-schedule">
         <span class="accent-rule" aria-hidden="true" />
         <p id="section-schedule" class="kicker">РАСПИСАНИЕ И ДЛИТЕЛЬНОСТЬ</p>
-        <p class="hint">Текущее расписание и длительность уроков появятся здесь.</p>
-        <button type="button" class="secondary" disabled title="Появится в Epic 2">
+        <p class="hint">
+          Текущее расписание и длительность уроков появятся здесь.
+        </p>
+        <button
+          type="button"
+          class="secondary"
+          disabled
+          title="Появится в Epic 2"
+        >
           Изменить
         </button>
       </section>
@@ -177,7 +248,9 @@ onBeforeRouteLeave(() => {
         <p v-if="configured" class="hint" data-testid="llm-configured-hint">
           Ключ уже сохранён. Введите новый, чтобы заменить его.
         </p>
-        <p v-else class="hint" data-testid="llm-unconfigured-hint">Ключ ещё не сохранён.</p>
+        <p v-else class="hint" data-testid="llm-unconfigured-hint">
+          Ключ ещё не сохранён.
+        </p>
         <label class="field-label" for="llm-api-key">Ключ API</label>
         <input
           id="llm-api-key"
@@ -188,7 +261,12 @@ onBeforeRouteLeave(() => {
           placeholder="sk-..."
           :disabled="auth.state !== 'running' || saving"
         />
-        <p v-if="validationError" class="error" role="alert" data-testid="validation-error">
+        <p
+          v-if="validationError"
+          class="error"
+          role="alert"
+          data-testid="validation-error"
+        >
           {{ validationError }}
         </p>
         <p v-if="saveError" class="error" role="alert" data-testid="save-error">

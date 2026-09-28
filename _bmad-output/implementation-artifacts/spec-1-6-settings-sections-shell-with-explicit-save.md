@@ -130,6 +130,43 @@ context:
 - Given app-data clear or bearer rotate, when the prior token is presented, then it is rejected until the host remints Config bearer on next start
 - Given a running teacher, when the Learner closes the UI window, then the window hides, tray remains, and the teacher is not stopped; tray reopen restores the window; explicit quit may stop the teacher with the host
 
+### Review Findings
+
+- [x] [Review][Patch] Devcontainer: ensure workspace `.env` exists from `.env.example` in post-create/post-start (decision: option 1) [`.devcontainer/`]
+- [x] [Review][Patch] Deduplicate HOST_SURVIVAL deferred-work ledger rows [`_bmad-output/implementation-artifacts/deferred-work.md:72-78`]
+- [x] [Review][Patch] `doStart()` always `killOwnedChild()` before attach — re-entrant `start()`/`retry` tears down a healthy owned teacher [`apps/desktop/src/main/teacherHost.ts:243`]
+- [x] [Review][Patch] Timeout/unhealthy spawn path: assert `kill` / `ownsChildProcess()===false` (cleanup implemented, unproven) [`apps/desktop/src/main/teacherHost.spec.ts:249`]
+- [x] [Review][Patch] Block leave-dirty confirm while `save()` PUT is in flight (key can persist after discard) [`apps/desktop/src/renderer/src/views/SettingsView.vue:110`]
+- [x] [Review][Patch] `authorizedFetch` has no AbortSignal timeout — hung loopback leaves Save/load stuck [`apps/desktop/src/renderer/src/services/teacherClient.ts:95`]
+- [x] [Review][Patch] `stop()` during `waitForHealth` can flip status back to running/error after quit [`apps/desktop/src/main/teacherHost.ts:349`]
+- [x] [Review][Patch] Shape Config `RuntimeError` on `/config/llm` to `{code,message,retryable}` [`services/teacher/src/teacher_service/adapters/api/app.py:131`]
+- [x] [Review][Patch] Ignore stale `getAuth` results when a newer `onStatusChange` already applied [`apps/desktop/src/renderer/src/views/SettingsView.vue:42`]
+- [x] [Review][Patch] Catch `getAuth`/`retry` IPC reject → LAUNCH_FAILURE error state (not permanent Connecting) [`apps/desktop/src/renderer/src/views/SettingsView.vue:42`]
+- [x] [Review][Patch] Test spawn child `error` event → `state:'error'` + ownership cleared [`apps/desktop/src/main/teacherHost.spec.ts`]
+- [x] [Review][Patch] Test overlapping `start()` shares one in-flight attempt / single spawn [`apps/desktop/src/main/teacherHost.spec.ts`]
+- [x] [Review][Patch] After save-401, assert «Сохранить» re-enabled (and optionally second PUT) [`apps/desktop/src/renderer/src/views/SettingsView.spec.ts:155`]
+- [x] [Review][Defer] HOST_SURVIVAL Electron main wiring untested beyond `hostSurvival` helpers [`apps/desktop/src/main/index.ts:74`] — deferred: needs Electron main harness; already ledgered in deferred-work
+- [x] [Review][Defer] AUTH_BRIDGE main/preload IPC handlers never executed in tests [`apps/desktop/src/main/index.ts:126`] — deferred: same Electron-host harness cost; Vue/HTTP covered against mock contract
+- [x] [Review][Defer] AGENTS.md still says Electron spawn/host-survival remain deferred [`AGENTS.md`] — deferred: fix edits agent-context AGENTS.md
+
+**Rejected:**
+
+- false — Spec `status: done` vs sprint `review`: intentional BMAD lifecycle (implementation done → review gate)
+- false — Empty Spec Change Log: unused section; fixing it is a spec edit
+- false — Spec Verification vs Implementation Notes count drift: fix edits the spec under review
+- false — `window.confirm` leave-dirty: Intent requires a confirm dialog; Russian copy present; custom modal not required
+- false — Dedicated save-failure retry control: «Сохранить» re-click is the retry (prior triage)
+- false — LAUNCH_FAILURE_UI Settings-only: Intent locks “minimal shell/Settings banner”; polished global chrome deferred
+- false — Deferred-work “learner-visible chrome” resolved while polished stays deferred: evidence note already records that split
+- false — Voice/Schedule/Goals “incomplete summary”: STUBS allow placeholder chrome; Telegram alone has status summary
+- false — REMINT only mint-if-absent: Intent remint is clear-app-data / next-start mint; rotate covered by Config rewrite + pytest
+- false — `create_app` always constructs `FileConfig`: required for `app.state.config` + `/config/llm`; same resolve path as bearer
+- false — Tray reopen hostSurvival case title: reopen is `showMainWindow()`; close policy covered; full wiring deferred with Electron harness
+- low — `.env.example` blank `GH_TOKEN` docs: chore-only; not everyday Learner harm
+- low — `forwardPorts` omits `8765`: host smoke convenience only
+- low — Schedule «Изменить» vs «изменить»: sentence-case button label; not everyday product harm
+- low — `createTray()` throw aborts `whenReady`: data-URL tray unlikely to fail; swallowing would break HOST_SURVIVAL
+
 ## Implementation Notes
 
 - Review patch (pre-approval): bearer authority = Config only; SECRET_API paths locked; ATTACH + LAUNCH_FAILURE_UI + remint ACs added; tasks use concrete paths; `baseline_commit` set to `a99d031…`.
@@ -137,7 +174,7 @@ context:
 - **Electron thin host (AUTH_BRIDGE / HOST_SURVIVAL / ATTACH / REMINT):** New Electron-free `apps/desktop/src/main/teacherHost.ts` owns `resolveDataDir` (linux/macOS/Windows platformdirs-equivalent, `TEACHER_DATA_DIR` override), Config-secrets bearer mint/read/write (`secrets/bearer_token`, 0700/0600 perms — sole authority, no second userData store), `checkHealth` (ok/unauthorized/unreachable), spawn-command resolution (`uv run teacher-api` in `services/teacher`, `TEACHER_SERVICE_DIR` override), and the `TeacherHost` class (attach-if-healthy, fail-closed on token mismatch, else spawn + poll, `stop()` only kills a process it spawned). `apps/desktop/src/main/index.ts` wires this into Electron: tray icon (embedded coral-mark PNG) with «Открыть»/«Выход», `window-all-closed` is now a no-op (window `close` hides instead), and `before-quit` stops only an owned child. `apps/desktop/src/preload/index.ts` + `index.d.ts` expose `window.teacher.{getAuth,retry,onStatusChange}` (`base_url`/`bearer`/`state` — lifecycle IPC only, no domain bus). 18 new node-environment unit tests in `apps/desktop/src/main/teacherHost.spec.ts` cover data-dir resolution per platform, mint/reuse/remint, health tri-state, command resolution + override, and the attach/fail-closed/spawn/timeout/stop paths via injected fake `fetch`/`spawn`.
 - **Settings shell (SECTIONS / LEAVE_DIRTY / stubs):** New `apps/desktop/src/renderer/src/views/SettingsView.vue` — single-scroll full-screen shell reusing `tokens.css` surfaces; ALL CAPS kickers (TELEGRAM / ГОЛОС / РАСПИСАНИЕ И ДЛИТЕЛЬНОСТЬ / ЦЕЛИ И АКЦЕНТЫ / LLM / API); Telegram unlinked + disabled «Привязать» stub (no chat-id), disabled «Изменить» schedule stub, Voice/Goals placeholder copy; LLM field is always empty/masked on load (`GET /config/llm` only toggles a "already saved" hint) with explicit «Сохранить» (client-side blank-key validation before any fetch — no autosave); save error/retry surfaces the teacher's `{code,message,retryable}` without clearing the input; a minimal LAUNCH_FAILURE_UI banner + «Повторить» appears whenever `state !== 'running'` (calls `window.teacher.retry()`); `onBeforeRouteLeave` confirms via `window.confirm` only when the LLM field is dirty, staying on cancel. New `apps/desktop/src/renderer/src/services/teacherClient.ts` wraps preload auth + `fetch` with a shaped `TeacherApiError` (never silently succeeds against a dead/unreachable teacher). Router (`router/index.ts`) now points `settings` at `SettingsView`; `plan`/`progress` stay `TitleStubView`.
 - **Tests:** `apps/desktop/src/renderer/src/views/SettingsView.spec.ts` (9 tests, mounted through a real `<router-view>` so `onBeforeRouteLeave` attaches) covers stub chrome, masked-status load, blank-key rejection with no PUT, save+mask+no-autosave, 401 error+retry with input preserved, LAUNCH_FAILURE_UI+retry, and both leave-dirty branches (cancel stays / confirm leaves) plus the no-dirty no-prompt case. `apps/desktop/src/renderer/src/services/teacherClient.spec.ts` (6 tests) covers the HTTP/error-shaping layer directly. `App.spec.ts` updated: `plan`/`progress` stay in the title-only stub loop (Settings no longer is one); added a Settings-sections-shell assertion (no calendar panel, five kickers, theme control still present via the nav-footer chrome that lives outside `<RouterView>`). Added `src/renderer/src/test-setup.ts` (default `window.teacher` + `fetch` mocks, guarded to no-op outside `happy-dom`) and switched `vitest.config.ts` to `environmentMatchGlobs` so `src/main/**/*.spec.ts` runs under `node` (Vitest logs this option as deprecated in favor of `test.projects`; kept for now — functionally correct, low risk to revisit later). Full run: `npm test` → 65 passed (6 files); `npm run typecheck` clean; `npm run build` clean.
-- **Not verified in this pass:** the actual Electron GUI (tray icon rendering, real spawn of `uv run teacher-api`, window-hide-on-close, tray reopen, quit-stops-child) was not exercised end-to-end — this sandbox has no `Xvfb`/VNC runtime available in the working shell (`xvfb-run: not found`; `AGENTS.md`'s documented `npm run preview:xvfb` / port-6080 path needs the `desktop-lite` devcontainer feature active in an interactive session). Lifecycle *decision logic* is unit-tested: `teacherHost.spec.ts` (attach/fail-closed/spawn/timeout/stop) plus `hostSurvival.spec.ts` (window-close hide vs allow-close, quit stop-owned vs leave-attached, `window-all-closed` never quits). Flagged as a residual manual-verification gap, not a deferred-work ledger item, since the spec's required Verification commands (`npm test`/`typecheck`/`build`, `uv run pytest`) all pass.
+- **Not verified in this pass:** the actual Electron GUI (tray icon rendering, real spawn of `uv run teacher-api`, window-hide-on-close, tray reopen, quit-stops-child) was not exercised end-to-end — this sandbox has no `Xvfb`/VNC runtime available in the working shell (`xvfb-run: not found`; `AGENTS.md`'s documented `npm run preview:xvfb` / port-6080 path needs the `desktop-lite` devcontainer feature active in an interactive session). Lifecycle _decision logic_ is unit-tested: `teacherHost.spec.ts` (attach/fail-closed/spawn/timeout/stop) plus `hostSurvival.spec.ts` (window-close hide vs allow-close, quit stop-owned vs leave-attached, `window-all-closed` never quits). Flagged as a residual manual-verification gap, not a deferred-work ledger item, since the spec's required Verification commands (`npm test`/`typecheck`/`build`, `uv run pytest`) all pass.
 
 ## Spec Change Log
 
@@ -180,8 +217,8 @@ Layout: single scroll of `{colors.surface}` blocks on `{colors.bg}`; coral-cta o
 
 **Commands:**
 
-- `cd services/teacher && uv run pytest` — expected: `/config/llm` write/mask/auth tests green — **ran: 49 passed** (39 prior + 10 new in `test_config_llm_api.py`)
-- `cd apps/desktop && npm test && npm run typecheck && npm run build` — expected: Settings + lifecycle client tests green; clean typecheck + build — **ran: 72 passed across 7 files** (`teacherHost.spec.ts` 19, `hostSurvival.spec.ts` 4, `calendarDates.spec.ts` 10, `teacherClient.spec.ts` 6, `useTheme.spec.ts` 8, `SettingsView.spec.ts` 11, `App.spec.ts` 14); `typecheck` clean; `build` clean
+- `cd services/teacher && uv run pytest` — expected: `/config/llm` write/mask/auth tests green — **ran: 50 passed** (post code-review patches; +1 RuntimeError shaped-500)
+- `cd apps/desktop && npm test && npm run typecheck && npm run build` — expected: Settings + lifecycle client tests green; clean typecheck + build — **ran: 78 passed across 7 files** (post code-review patches) (`teacherHost.spec.ts` 19, `hostSurvival.spec.ts` 4, `calendarDates.spec.ts` 10, `teacherClient.spec.ts` 6, `useTheme.spec.ts` 8, `SettingsView.spec.ts` 11, `App.spec.ts` 14); `typecheck` clean; `build` clean
 
 **Manual checks:**
 

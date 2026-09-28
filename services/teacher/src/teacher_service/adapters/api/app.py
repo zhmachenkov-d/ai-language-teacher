@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, field_validator
@@ -131,7 +131,17 @@ def create_app(
     @app.get("/config/llm")
     async def get_llm_config(request: Request) -> dict[str, bool]:
         cfg: ConfigPort = request.app.state.config
-        configured = cfg.get_secret(SECRET_LLM_API_KEY) is not None
+        try:
+            configured = cfg.get_secret(SECRET_LLM_API_KEY) is not None
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "config_error",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
         return {"configured": configured}
 
     @app.put("/config/llm")
@@ -139,7 +149,17 @@ def create_app(
         payload: LlmConfigUpdate, request: Request
     ) -> dict[str, bool]:
         cfg: ConfigPort = request.app.state.config
-        cfg.set_secret(SECRET_LLM_API_KEY, payload.llm_api_key)
+        try:
+            cfg.set_secret(SECRET_LLM_API_KEY, payload.llm_api_key)
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "config_error",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
         return {"configured": True}
 
     return app
