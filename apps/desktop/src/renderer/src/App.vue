@@ -1,199 +1,125 @@
 <script setup lang="ts">
-import { useTheme, type ThemePreference } from './composables/useTheme'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+import ThemeControl from './components/ThemeControl.vue'
 
-const scaffold = typeof window !== 'undefined' && window.desktop ? window.desktop.scaffold : '—'
-const { preference, setPreference } = useTheme()
+const route = useRoute()
 
-const options: { value: ThemePreference; label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' }
-]
+const navItems = [
+  { name: 'calendar', label: 'Календарь' },
+  { name: 'plan', label: 'План' },
+  { name: 'progress', label: 'Прогресс' },
+  { name: 'settings', label: 'Настройки' }
+] as const
 </script>
 
 <template>
-  <main class="shell">
-    <header class="chrome">
-      <h1>AI Language Teacher</h1>
-      <div class="theme-control" role="radiogroup" aria-label="Theme preference">
-        <button
-          v-for="option in options"
-          :key="option.value"
-          type="button"
-          role="radio"
-          class="theme-option"
-          :aria-checked="preference === option.value"
-          :class="{ active: preference === option.value }"
-          @click="setPreference(option.value)"
-        >
-          {{ option.label }}
-        </button>
+  <div class="app-shell">
+    <nav class="nav" aria-label="Основная навигация">
+      <div class="brand">
+        <span class="mark" aria-hidden="true" />
+        <span class="brand-text">Учитель</span>
       </div>
-    </header>
-
-    <section class="demo" aria-label="Design token samples">
-      <p class="ink">
-        Desktop scaffold (Story 1.1). Teacher service is not required to start this window.
-      </p>
-      <p class="muted">Muted secondary copy — cool grey chrome, coral as spark only.</p>
-      <p class="meta">scaffold={{ scaffold }}</p>
-      <div class="swatches" aria-hidden="true">
-        <span class="swatch surface">surface</span>
-        <span class="swatch line">line</span>
-        <span class="swatch sidebar">sidebar</span>
-        <span class="swatch today">today-tint</span>
+      <RouterLink
+        v-for="item in navItems"
+        :key="item.name"
+        :to="{ name: item.name }"
+        class="nav-link"
+        :class="{ active: route.name === item.name }"
+        :aria-current="route.name === item.name ? 'page' : undefined"
+      >
+        {{ item.label }}
+      </RouterLink>
+      <div class="nav-footer">
+        <ThemeControl />
       </div>
-      <button type="button" class="cta">Sample CTA</button>
-    </section>
-  </main>
+    </nav>
+    <div class="content">
+      <RouterView />
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.shell {
+.app-shell {
+  display: flex;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 2rem;
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  transition:
-    background-color 160ms ease,
-    color 160ms ease;
 }
 
-.chrome {
+.nav {
+  width: 168px;
+  flex-shrink: 0;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-line);
-}
-
-h1 {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: var(--color-ink);
-}
-
-.theme-control {
-  display: inline-flex;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--color-surface);
-}
-
-.theme-option {
-  margin: 0;
-  padding: 0.4rem 0.75rem;
-  border: 0;
-  border-right: 1px solid var(--color-line);
-  background: transparent;
-  color: var(--color-muted);
-  font: inherit;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition:
-    background-color 160ms ease,
-    color 160ms ease;
-}
-
-.theme-option:last-child {
-  border-right: 0;
-}
-
-.theme-option.active {
+  flex-direction: column;
+  padding: 14px 0;
   background: var(--color-sidebar);
+  border-right: 1px solid var(--color-line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 14px 16px;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--color-ink);
 }
 
-.theme-option:focus-visible {
+.mark {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-coral);
+  border-radius: 9999px;
+  position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.mark::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 50%;
+  border-top: 1px solid var(--color-coral);
+}
+
+.nav-link {
+  display: block;
+  padding: 8px 14px;
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+}
+
+.nav-link.active {
+  color: var(--color-ink);
+  font-weight: 600;
+  background: var(--color-surface);
+  border-left-color: var(--color-coral);
+}
+
+.nav-link:focus-visible {
   outline: 2px solid var(--color-coral);
   outline-offset: -2px;
   z-index: 1;
 }
 
-.demo {
-  max-width: 36rem;
-  padding: 1.25rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease;
+.nav-footer {
+  margin-top: auto;
+  padding: 14px;
 }
 
-.ink {
-  margin: 0 0 0.5rem;
-  line-height: 1.45;
-  color: var(--color-ink);
-}
-
-.muted {
-  margin: 0 0 0.5rem;
-  line-height: 1.45;
-  color: var(--color-muted);
-}
-
-.meta {
-  margin: 0 0 1rem;
-  font-size: 0.875rem;
-  color: var(--color-muted);
-}
-
-.swatches {
+.content {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.swatch {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.6rem;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  color: var(--color-muted);
-}
-
-.swatch.surface {
-  background: var(--color-surface);
-}
-
-.swatch.line {
-  background: var(--color-bg);
-  border-color: var(--color-line);
-}
-
-.swatch.sidebar {
-  background: var(--color-sidebar);
-}
-
-.swatch.today {
-  background: var(--color-today-tint);
-}
-
-.cta {
-  margin: 0;
-  padding: 0.5rem 1rem;
-  border: 0;
-  border-radius: var(--radius-md);
-  background: var(--color-coral-cta);
-  color: var(--color-on-coral);
-  font: inherit;
-  font-size: 0.875rem;
-  cursor: pointer;
-}
-
-.cta:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
 }
 </style>
