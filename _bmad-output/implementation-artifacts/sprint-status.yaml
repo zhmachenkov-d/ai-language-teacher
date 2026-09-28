@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-24-2026 10:16
-last_updated: 09-28-2026 11:04
+last_updated: 09-28-2026 12:40
 project: ai-language-teacher
 project_key: NOKEY
 tracking_system: file-system
@@ -41,7 +41,7 @@ development_status:
   1-3-config-port-secrets-layout-and-sqlite-app-data-store: done
   1-4-design-tokens-dark-mode-and-russian-app-chrome-shell: done
   1-5-calendar-home-empty-chrome-with-side-panel: done
-  1-6-settings-sections-shell-with-explicit-save: backlog
+  1-6-settings-sections-shell-with-explicit-save: review
   epic-1-retrospective: optional
 
   epic-2: backlog

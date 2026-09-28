@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory, type Router } from 'vue-router'
 import CalendarHome from '../views/CalendarHome.vue'
+import SettingsView from '../views/SettingsView.vue'
 import TitleStubView from '../views/TitleStubView.vue'
 
 export function createAppRouter(): Router {
@@ -30,8 +31,7 @@ export function createAppRouter(): Router {
       {
         path: '/settings',
         name: 'settings',
-        component: TitleStubView,
-        props: { title: 'Настройки' }
+        component: SettingsView
       },
       {
         path: '/:pathMatch(.*)*',

@@ -11,6 +11,8 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
-    include: ['src/renderer/src/**/*.spec.ts']
+    environmentMatchGlobs: [['src/main/**/*.spec.ts', 'node']],
+    setupFiles: ['src/renderer/src/test-setup.ts'],
+    include: ['src/renderer/src/**/*.spec.ts', 'src/main/**/*.spec.ts']
   }
 })

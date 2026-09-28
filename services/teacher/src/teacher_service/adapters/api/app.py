@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, field_validator
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
@@ -17,6 +18,7 @@ from teacher_service.adapters.api.auth import (
     resolve_auth_token,
     tokens_match,
 )
+from teacher_service.adapters.config import SECRET_LLM_API_KEY
 
 if TYPE_CHECKING:
     from teacher_service.ports.config import ConfigPort
@@ -29,6 +31,19 @@ _UNAUTHORIZED_BODY = {
     "message": "Missing or invalid authentication token",
     "retryable": False,
 }
+
+
+class LlmConfigUpdate(BaseModel):
+    """PUT /config/llm body — a non-empty LLM API key (never echoed back)."""
+
+    llm_api_key: str
+
+    @field_validator("llm_api_key")
+    @classmethod
+    def _reject_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("llm_api_key must be a non-empty string")
+        return value
 
 
 class BearerAuthMiddleware(BaseHTTPMiddleware):
@@ -56,6 +71,10 @@ def create_app(
     config: ConfigPort | None = None,
 ) -> FastAPI:
     """Build the API app. Token: arg → env → Config bearer (fail closed)."""
+    if config is None:
+        from teacher_service.adapters.config import FileConfig
+
+        config = FileConfig()
     token = resolve_auth_token(auth_token, config=config)
     settings = AuthSettings(token)
     app = FastAPI(
@@ -65,6 +84,7 @@ def create_app(
         openapi_url=None,
     )
     app.state.auth = settings
+    app.state.config = config
     app.add_middleware(BearerAuthMiddleware, token=settings.token)
 
     @app.exception_handler(StarletteHTTPException)
@@ -107,5 +127,19 @@ def create_app(
     @app.get("/health")
     async def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/config/llm")
+    async def get_llm_config(request: Request) -> dict[str, bool]:
+        cfg: ConfigPort = request.app.state.config
+        configured = cfg.get_secret(SECRET_LLM_API_KEY) is not None
+        return {"configured": configured}
+
+    @app.put("/config/llm")
+    async def put_llm_config(
+        payload: LlmConfigUpdate, request: Request
+    ) -> dict[str, bool]:
+        cfg: ConfigPort = request.app.state.config
+        cfg.set_secret(SECRET_LLM_API_KEY, payload.llm_api_key)
+        return {"configured": True}
 
     return app
