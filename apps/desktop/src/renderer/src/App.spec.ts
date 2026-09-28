@@ -107,8 +107,7 @@ describe('App shell + calendar home', () => {
   it('stub routes are title-only without calendar panel; theme control remains', async () => {
     for (const [hash, title] of [
       ['#/plan', 'План'],
-      ['#/progress', 'Прогресс'],
-      ['#/settings', 'Настройки']
+      ['#/progress', 'Прогресс']
     ] as const) {
       const { wrapper, router } = await mountApp(hash)
       expect(router.currentRoute.value.name).not.toBe('calendar')
@@ -118,6 +117,27 @@ describe('App shell + calendar home', () => {
       expect(wrapper.find('[role="radiogroup"][aria-label="Theme preference"]').exists()).toBe(true)
       wrapper.unmount()
     }
+  })
+
+  it('Settings opens a full-screen sections shell (no calendar panel); theme control remains', async () => {
+    const { wrapper, router } = await mountApp('#/settings')
+    await flushPromises()
+    expect(router.currentRoute.value.name).toBe('settings')
+    expect(wrapper.find('[data-testid="settings-view"]').exists()).toBe(true)
+    expect(wrapper.find('.panel').exists()).toBe(false)
+    expect(wrapper.find('.empty-hint').exists()).toBe(false)
+    expect(wrapper.find('[role="radiogroup"][aria-label="Theme preference"]').exists()).toBe(
+      true
+    )
+    const kickers = wrapper.findAll('.kicker').map((k) => k.text())
+    expect(kickers).toEqual([
+      'TELEGRAM',
+      'ГОЛОС',
+      'РАСПИСАНИЕ И ДЛИТЕЛЬНОСТЬ',
+      'ЦЕЛИ И АКЦЕНТЫ',
+      'LLM / API'
+    ])
+    wrapper.unmount()
   })
 
   it('unknown hash redirects to Calendar', async () => {

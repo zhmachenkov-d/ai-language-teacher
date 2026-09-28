@@ -15,14 +15,17 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
   summary: Electron host-survival UX when the UI window closes (tray and/or hide-without-tray reopen/attach; teacher must not stop solely because the window closed)
   evidence: Split from 1.2 to keep the draft under the token budget; core loopback API + auth + spawn remains in-spec; AD-2 window-close gate moves here with the visible host model choice
+  resolved_by: spec-1-6-settings-sections-shell-with-explicit-save.md
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
   summary: Learner-visible stopped/error/retry chrome (copy language and UI) when teacher start/attach fails
   evidence: Split from 1.2 with host-survival UX; narrowed 1.2 proves lifecycle status + health over HTTP without polished status chrome (Story 1.4 may also own Russian chrome)
+  resolved_by: spec-1-6-settings-sections-shell-with-explicit-save.md (minimal Settings-banner LAUNCH_FAILURE_UI; polished global status chrome stays deferred)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
   summary: Electron thin-host spawn/attach/stop/status, userData token mint/load bridge, preload token/base_url surface, and Vue GET /health smoke when running
   evidence: Second split from 1.2 to fit the token budget; narrowed spec ships teacher loopback FastAPI + Bearer auth + health + pytest only
+  resolved_by: spec-1-6-settings-sections-shell-with-explicit-save.md (bridge lands with Config as the sole bearer authority — no second userData store, per the locked 1.6 Intent)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
   summary: Strengthen AGENTS.md unauthenticated health smoke to assert error JSON body shape `{code,message,retryable}` not only HTTP status
@@ -31,6 +34,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md`
   summary: When Electron token bridge lands, explicitly cover remint/rotate and invalidate-on-clear of prior Bearer tokens (epic Story 1.2 AC)
   evidence: Review found remint/rotation not parked beyond userData mint/load in deferred Electron spawn entry
+  resolved_by: spec-1-6-settings-sections-shell-with-explicit-save.md
 
 ## Deferred from: code review of spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md (2026-09-24)
 
@@ -64,3 +68,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-5-calendar-home-empty-chrome-with-side-panel.md`
   summary: Production `main.ts` hash-router `.use(createAppRouter())` install is not executed by vitest (App.spec injects its own router)
   evidence: Verification-gap review; removing `.use(router)` from main would leave all App.spec suites green; low-leverage entry smoke for this chrome story
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-settings-sections-shell-with-explicit-save.md`
+  summary: Electron main HOST_SURVIVAL wiring (close→hide, window-all-closed no-quit, tray quit→isQuitting, before-quit stop-owned) lacks an Electron harness test beyond pure hostSurvival helpers
+  evidence: Verification-gap review; hostSurvival.spec.ts covers decisions only; demonstrating index.ts regressions needs Electron main test runtime unavailable in this sandbox
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-settings-sections-shell-with-explicit-save.md`
+  summary: Electron main HOST_SURVIVAL wiring (close→hide, window-all-closed no-quit, tray quit→isQuitting, before-quit stop-owned) lacks an Electron harness test beyond pure hostSurvival helpers
+  evidence: Verification-gap review; hostSurvival.spec.ts covers decisions only; demonstrating index.ts regressions needs Electron main test runtime unavailable in this sandbox
