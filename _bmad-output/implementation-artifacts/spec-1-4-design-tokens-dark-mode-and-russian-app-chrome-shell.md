@@ -86,13 +86,35 @@ context:
 - Given typography/shape tokens, when the tokenized surface renders, then `--font-sans` and `--radius-md` (4px) apply; `rounded.full` unused
 - Given this slice reaches Done, when sprint status is updated, then Russian nav shell / UX-DR20 routed chrome (and nav/panel case rules) remain open via deferred-work — not satisfied by this Done
 
+### Review Findings
+
+- [x] [Review][Patch] Reduce-motion test bypasses media query gate [`apps/desktop/src/renderer/src/composables/useTheme.spec.ts:197`]
+- [x] [Review][Patch] App theme click does not assert preference binding [`apps/desktop/src/renderer/src/App.spec.ts:47`]
+- [x] [Review][Patch] Corrupt theme-preference fallback does not assert preference === system [`apps/desktop/src/renderer/src/composables/useTheme.spec.ts:116`]
+- [x] [Review][Patch] Product tsconfig.web.json typechecks renderer `*.spec.ts` without exclude [`apps/desktop/tsconfig.web.json:18`]
+- [x] [Review][Defer] Epic Story 1.4 in epics.md still presents Russian chrome / UX-DR20 ACs without deferral cross-reference [`_bmad-output/planning-artifacts/epics.md:230`] — deferred: same class as 1.3 epics drift; deferred-work already records the shell split
+- [x] [Review][Defer] AGENTS.md desktop verify path omits `npm test` / Vitest after first renderer harness [`AGENTS.md`] — deferred: fix edits agent-context AGENTS.md
+
+**Rejected**
+
+- false — Blind: swatches omit ink/muted as chips — disproved: `.ink`/`.muted` text + line swatch + Sample CTA prove the locked demo set
+- false — Blind: corrupt storage leaves bad key — matrix only requires effective `system`; prior triage already allowed leaving the key
+- false — Blind: Spec `status: done` vs sprint `review` — sprint correctly tracks review; frontmatter Done means implementation tasks complete
+- low — Blind: Spec Change Log empty / review_loop_iteration 0 / English labels not in Intent / stale “5 tests” count — fix would edit the spec under review
+- low — Blind: sprint key still names russian-app-chrome-shell — renaming keys costs more than everyday confusion; deferred-work is authoritative
+- low — Blind: radiogroup missing arrow-key roving — Tab still reaches each button; full radiogroup keyboard is complexity beyond everyday personal-desktop theme toggle
+- low — Blind: global `*` reduce-motion `!important` — common pattern; scoped opt-out would add complexity without a demonstrated break
+- low — Blind: localStorage throw/quota missing from matrix — code already catches; matrix row would be a spec edit
+- low — Edge: matchMedia missing/throws; OS flip before onMounted; preference Ref assign without setPreference; no cross-window `storage` listener — unlikely everyday on Electron single-window; prior triage rejected the same class
+
 ## Implementation Notes
 
 - Added `tokens.css` with locked DESIGN hex pairs; dark `--color-today-tint` = `#352622`.
 - `useTheme` + `bootstrapTheme`: `theme-preference` localStorage; corrupt → `system`; OS `matchMedia` listener; `dataset.theme`.
 - `App.vue` tokenized demo + System/Light/Dark control; coral only on sample CTA via `--color-coral-cta` / `--color-on-coral`.
-- Matrix covered by vitest (`useTheme.spec.ts`): fresh/OS, manual persist, corrupt fallback, OS live change, reduce-motion CSS rule. `npm test` → 5 passed; typecheck + build clean.
+- Matrix covered by vitest (`useTheme.spec.ts` + `App.spec.ts`): fresh/OS, manual persist, corrupt→`system` preference, OS live/ignored, return-to-system, reduce-motion CSSOM gate + main import, App click binding. `npm test` → 9 passed; typecheck + build clean.
 - Russian shell remains deferred.
+
 ## Spec Change Log
 
 ## Review Triage Log
@@ -122,7 +144,7 @@ Effective theme: `dataset.theme = 'light'|'dark'` from preference + `matchMedia(
 
 **Commands:**
 
-- `cd apps/desktop && npm install && npm test && npm run typecheck && npm run build` -- expected: 5 theme matrix tests green; clean typecheck + production build
+- `cd apps/desktop && npm install && npm test && npm run typecheck && npm run build` -- expected: 9 theme/chrome tests green; clean typecheck + production build
 
 **Manual checks:**
 
