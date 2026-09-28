@@ -93,7 +93,7 @@ describe('App shell + calendar home', () => {
     expect(router.currentRoute.value.name).toBe('calendar')
     expect(wrapper.find('.empty-hint').text()).toBe(EMPTY_HINT)
     expect(wrapper.find('[aria-label="Неделя"]').exists()).toBe(true)
-    expect(wrapper.find('[role="radiogroup"][aria-label="Theme preference"]').exists()).toBe(true)
+    expect(wrapper.find('[role="radiogroup"][aria-label="Тема оформления"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('Календарь')
     expect(wrapper.text()).toContain('Неделя')
     const hourTexts = wrapper.findAll('.time-col .hour').map((h) => h.text())
@@ -114,7 +114,7 @@ describe('App shell + calendar home', () => {
       expect(wrapper.find('h1').text()).toBe(title)
       expect(wrapper.find('.panel').exists()).toBe(false)
       expect(wrapper.find('.empty-hint').exists()).toBe(false)
-      expect(wrapper.find('[role="radiogroup"][aria-label="Theme preference"]').exists()).toBe(true)
+      expect(wrapper.find('[role="radiogroup"][aria-label="Тема оформления"]').exists()).toBe(true)
       wrapper.unmount()
     }
   })
@@ -126,7 +126,7 @@ describe('App shell + calendar home', () => {
     expect(wrapper.find('[data-testid="settings-view"]').exists()).toBe(true)
     expect(wrapper.find('.panel').exists()).toBe(false)
     expect(wrapper.find('.empty-hint').exists()).toBe(false)
-    expect(wrapper.find('[role="radiogroup"][aria-label="Theme preference"]').exists()).toBe(
+    expect(wrapper.find('[role="radiogroup"][aria-label="Тема оформления"]').exists()).toBe(
       true
     )
     const kickers = wrapper.findAll('.kicker').map((k) => k.text())
@@ -253,6 +253,10 @@ describe('App shell + calendar home', () => {
     const { wrapper } = await mountApp()
     const radios = wrapper.findAll('[role="radio"]')
     expect(radios).toHaveLength(3)
+    expect(radios.map((r) => r.text())).toEqual(['Система', 'Светлая', 'Тёмная'])
+    expect(wrapper.find('[role="radiogroup"]').attributes('aria-label')).toBe(
+      'Тема оформления',
+    )
 
     await radios[1]!.trigger('click')
     expect(localStorage.getItem(STORAGE_KEY)).toBe('light')

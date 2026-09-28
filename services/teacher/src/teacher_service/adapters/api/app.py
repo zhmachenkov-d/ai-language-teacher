@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, field_validator
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
@@ -31,6 +32,12 @@ _UNAUTHORIZED_BODY = {
     "message": "Missing or invalid authentication token",
     "retryable": False,
 }
+
+# Vue renderer origins that may call loopback HTTP (Vite/Electron http(s) + file:// → null).
+_LOOPBACK_ORIGIN_REGEX = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
+_CORS_ALLOW_ORIGINS = ["null"]
+_CORS_ALLOW_METHODS = ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"]
+_CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]
 
 
 class LlmConfigUpdate(BaseModel):
@@ -56,6 +63,9 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
+        # CORS preflight must reach CORSMiddleware without a Bearer requirement.
+        if request.method == "OPTIONS":
+            return await call_next(request)
         presented = ""
         authorization = request.headers.get("Authorization", "")
         if authorization.lower().startswith("bearer "):
@@ -85,7 +95,17 @@ def create_app(
     )
     app.state.auth = settings
     app.state.config = config
+    # Middleware order: last added runs first. CORS must wrap Bearer so preflight
+    # is answered before auth; Bearer still skips OPTIONS defensively.
     app.add_middleware(BearerAuthMiddleware, token=settings.token)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_CORS_ALLOW_ORIGINS,
+        allow_origin_regex=_LOOPBACK_ORIGIN_REGEX,
+        allow_credentials=False,
+        allow_methods=_CORS_ALLOW_METHODS,
+        allow_headers=_CORS_ALLOW_HEADERS,
+    )
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(

@@ -106,14 +106,26 @@ describe("bearer token mint/read (Config secrets layout)", () => {
 });
 
 describe("checkHealth", () => {
-  it("returns ok for 200", async () => {
+  it("returns ok for 200 and sends Authorization Bearer", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(200));
     expect(await checkHealth(BASE_URL, "tok", fetchImpl)).toBe("ok");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      `${BASE_URL}/health`,
+      expect.objectContaining({
+        headers: { Authorization: "Bearer tok" },
+      }),
+    );
   });
 
   it("returns unauthorized for 401/403 (fail closed on token mismatch)", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(401));
     expect(await checkHealth(BASE_URL, "tok", fetchImpl)).toBe("unauthorized");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      `${BASE_URL}/health`,
+      expect.objectContaining({
+        headers: { Authorization: "Bearer tok" },
+      }),
+    );
     fetchImpl.mockResolvedValue(jsonResponse(403));
     expect(await checkHealth(BASE_URL, "tok", fetchImpl)).toBe("unauthorized");
   });
@@ -282,6 +294,7 @@ describe("TeacherHost", () => {
     expect(args).toEqual(["run", "teacher-api"]);
     expect(options.env.TEACHER_DATA_DIR).toBe(dir);
     expect(typeof options.env.TEACHER_AUTH_TOKEN).toBe("string");
+    expect(options.env.TEACHER_AUTH_TOKEN).toBe(result.bearer);
     expect(host.ownsChildProcess()).toBe(true);
     // AUTH_BRIDGE: spawn must report the same Config bearer + fixed base_url.
     expect(result.bearer).toBe(readBearerToken(dir));
