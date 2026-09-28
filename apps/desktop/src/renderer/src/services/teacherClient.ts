@@ -44,6 +44,11 @@ export interface LearnerProfile {
   lesson_duration_minutes: number | null;
   weekly_slots: WeeklySlot[];
   intake_step: IntakeStep;
+  consent_mic: boolean;
+  consent_telegram: boolean;
+  consent_ai: boolean;
+  consent_privacy: boolean;
+  consent_complete: boolean;
 }
 
 export type LearnerPatch = Partial<{
@@ -57,6 +62,11 @@ export type LearnerPatch = Partial<{
   timezone: string;
   weekly_slots: WeeklySlot[];
   intake_step: IntakeStep;
+  consent_mic: boolean;
+  consent_telegram: boolean;
+  consent_ai: boolean;
+  consent_privacy: boolean;
+  consent_complete: boolean;
 }>;
 
 const UNAVAILABLE_AUTH: TeacherAuth = {

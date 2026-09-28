@@ -18,6 +18,18 @@ export function quitTeacherAction(
   return ownsChildProcess ? "stop-owned" : "leave-attached";
 }
 
+/**
+ * Explicit quit (tray «Выход» or `desktop:quit`): set isQuitting before
+ * app.quit() so window-close hide policy does not fight tray-first survival.
+ */
+export function beginExplicitQuit(
+  setQuitting: () => void,
+  quitApp: () => void,
+): void {
+  setQuitting();
+  quitApp();
+}
+
 /** `window-all-closed` must never quit — tray keeps the host alive. */
 export function shouldQuitOnWindowAllClosed(): boolean {
   return false;

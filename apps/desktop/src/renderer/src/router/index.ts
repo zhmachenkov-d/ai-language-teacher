@@ -8,8 +8,13 @@ import CalendarHome from '../views/CalendarHome.vue'
 import SettingsView from '../views/SettingsView.vue'
 import TitleStubView from '../views/TitleStubView.vue'
 import OnboardingWizard from '../views/OnboardingWizard.vue'
-import OnboardingConsentStub from '../views/OnboardingConsentStub.vue'
-import { gateDestination, isGatedRoute } from '../onboarding/gate'
+import OnboardingConsent from '../views/OnboardingConsent.vue'
+import OnboardingPlacementStub from '../views/OnboardingPlacementStub.vue'
+import {
+  gateDestination,
+  isGatedRoute,
+  isOnboardingRoute,
+} from '../onboarding/gate'
 import {
   fetchLearner,
   getTeacherAuth,
@@ -58,7 +63,13 @@ export function createAppRouter(): Router {
       {
         path: '/onboarding/consent',
         name: 'onboarding-consent',
-        component: OnboardingConsentStub,
+        component: OnboardingConsent,
+        meta: { hideNav: true },
+      },
+      {
+        path: '/onboarding/placement',
+        name: 'onboarding-placement',
+        component: OnboardingPlacementStub,
         meta: { hideNav: true },
       },
       {
@@ -91,19 +102,16 @@ export function createAppRouter(): Router {
   })
 
   router.beforeEach(async (to: RouteLocationNormalized) => {
-    if (to.name === 'onboarding' || to.name === 'onboarding-consent') {
+    if (isOnboardingRoute(to.name)) {
       // Still apply RESUME / post-intake handoff when hitting the wrong onboarding route.
       const learner = await resolveLearnerForGate()
       if (learner == null) {
-        // Fail closed: never linger on consent without a learner projection.
-        return to.name === 'onboarding-consent' ? { name: 'onboarding' } : true
+        // Fail closed: never linger on consent/placement without a learner projection.
+        return to.name === 'onboarding' ? true : { name: 'onboarding' }
       }
       const dest = gateDestination(learner)
-      if (to.name === 'onboarding' && dest === 'onboarding-consent') {
-        return { name: 'onboarding-consent' }
-      }
-      if (to.name === 'onboarding-consent' && dest === 'onboarding') {
-        return { name: 'onboarding' }
+      if (to.name !== dest) {
+        return { name: dest }
       }
       return true
     }

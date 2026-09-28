@@ -21,6 +21,11 @@ const BASE_LEARNER: LearnerProfile = {
   lesson_duration_minutes: null,
   weekly_slots: [],
   intake_step: 'greeting',
+  consent_mic: false,
+  consent_telegram: false,
+  consent_ai: false,
+  consent_privacy: false,
+  consent_complete: false,
 }
 
 type MediaListener = (event: MediaQueryListEvent) => void
@@ -99,7 +104,7 @@ describe('App shell + onboarding GATE', () => {
     document.documentElement.removeAttribute('data-theme')
     mockMatchMedia(false)
     setGateLearnerOverride(undefined)
-    // Wizard load still hits teacherClient; keep bridge present.
+    // Wizard/consent load still hits teacherClient; keep bridge present.
     Object.defineProperty(window, 'teacher', {
       configurable: true,
       value: {
@@ -110,6 +115,13 @@ describe('App shell + onboarding GATE', () => {
         }),
         retry: vi.fn(),
         onStatusChange: vi.fn().mockReturnValue(() => undefined),
+      },
+    })
+    Object.defineProperty(window, 'desktop', {
+      configurable: true,
+      value: {
+        scaffold: '1.1',
+        quit: vi.fn().mockResolvedValue(undefined),
       },
     })
     vi.stubGlobal(
@@ -144,7 +156,7 @@ describe('App shell + onboarding GATE', () => {
     wrapper.unmount()
   })
 
-  it('intake complete + consent pending opens consent stub, not calendar', async () => {
+  it('intake complete + consent pending opens consent, not calendar', async () => {
     const { wrapper, router } = await mountApp('#/', {
       ...BASE_LEARNER,
       intake_step: 'complete',
@@ -152,8 +164,75 @@ describe('App shell + onboarding GATE', () => {
       age: 30,
     })
     expect(router.currentRoute.value.name).toBe('onboarding-consent')
-    expect(wrapper.find('[data-testid="onboarding-consent-stub"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="onboarding-consent"]').exists()).toBe(true)
     expect(wrapper.find('nav.nav').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('consent_complete opens placement stub, not calendar', async () => {
+    const { wrapper, router } = await mountApp('#/', {
+      ...BASE_LEARNER,
+      intake_step: 'complete',
+      address_as: 'Саша',
+      age: 30,
+      consent_mic: true,
+      consent_ai: true,
+      consent_privacy: true,
+      consent_complete: true,
+    })
+    expect(router.currentRoute.value.name).toBe('onboarding-placement')
+    expect(wrapper.find('[data-testid="onboarding-placement-stub"]').exists()).toBe(
+      true,
+    )
+    expect(wrapper.find('nav.nav').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('RESUME: #/onboarding/consent with consent_complete → placement', async () => {
+    const { wrapper, router } = await mountApp('#/onboarding/consent', {
+      ...BASE_LEARNER,
+      intake_step: 'complete',
+      address_as: 'Саша',
+      age: 30,
+      consent_complete: true,
+    })
+    expect(router.currentRoute.value.name).toBe('onboarding-placement')
+    expect(wrapper.find('[data-testid="onboarding-placement-stub"]').exists()).toBe(
+      true,
+    )
+    wrapper.unmount()
+  })
+
+  it('RESUME: #/onboarding with consent_complete → placement', async () => {
+    const { wrapper, router } = await mountApp('#/onboarding', {
+      ...BASE_LEARNER,
+      intake_step: 'complete',
+      address_as: 'Саша',
+      age: 30,
+      consent_complete: true,
+    })
+    expect(router.currentRoute.value.name).toBe('onboarding-placement')
+    expect(wrapper.find('[data-testid="onboarding-placement-stub"]').exists()).toBe(
+      true,
+    )
+    wrapper.unmount()
+  })
+
+  it('calendar and / navigate to placement when consent_complete', async () => {
+    const { wrapper, router } = await mountApp('#/calendar', {
+      ...BASE_LEARNER,
+      intake_step: 'complete',
+      address_as: 'Саша',
+      age: 30,
+      consent_complete: true,
+    })
+    expect(router.currentRoute.value.name).toBe('onboarding-placement')
+    wrapper.unmount()
+  })
+
+  it('null learner on placement fails closed to onboarding', async () => {
+    const { wrapper, router } = await mountApp('#/onboarding/placement', null)
+    expect(router.currentRoute.value.name).toBe('onboarding')
     wrapper.unmount()
   })
 
@@ -321,7 +400,7 @@ describe('App shell + onboarding GATE', () => {
       }),
     )
     expect(router.currentRoute.value.name).toBe('onboarding-consent')
-    expect(wrapper.find('[data-testid="onboarding-consent-stub"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="onboarding-consent"]').exists()).toBe(true)
     wrapper.unmount()
   })
 })
