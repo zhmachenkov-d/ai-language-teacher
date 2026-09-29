@@ -166,6 +166,27 @@ def test_cli_binds_loopback_fixed_port(
     assert ok.json() == {"status": "ok"}
 
 
+def test_cli_oserror_from_uvicorn_exits_controlled(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    auth_token: str,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setenv(AUTH_TOKEN_ENV, auth_token)
+    monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "cli-data"))
+
+    def boom(app: object, **kwargs: object) -> None:
+        raise OSError(98, "Address already in use")
+
+    monkeypatch.setattr("teacher_service.adapters.api.cli.uvicorn.run", boom)
+    with pytest.raises(SystemExit) as excinfo:
+        cli_main([])
+    assert excinfo.value.code == 1
+    err = capsys.readouterr().err
+    assert "Failed to bind" in err
+    assert "8765" in err
+
+
 def test_cli_requires_token(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv(AUTH_TOKEN_ENV, raising=False)
     monkeypatch.setenv("TEACHER_DATA_DIR", str(tmp_path / "empty-data"))

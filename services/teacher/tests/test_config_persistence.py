@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import secrets
+import sqlite3
 import stat
 import uuid
 from pathlib import Path
@@ -62,6 +63,28 @@ def test_fresh_layout_and_learner_defaults(data_dir: Path) -> None:
 
     again = get_or_create_learner(store)
     assert again == learner
+
+
+def test_sqlite_foreign_keys_pragma_on(data_dir: Path) -> None:
+    """lesson_record → living_plan FK must be enforced (PRAGMA foreign_keys=ON)."""
+    config = FileConfig(data_dir)
+    config.ensure_layout()
+    store = SqliteStore(config.sqlite_path())
+    with store._connect() as conn:
+        assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+        with pytest.raises(sqlite3.IntegrityError):
+            conn.execute(
+                "INSERT INTO lesson_record "
+                "(id, living_plan_id, scheduled_at, timezone) "
+                "VALUES (?, ?, ?, ?)",
+                (
+                    "orphan-lesson",
+                    "missing-living-plan",
+                    "2026-01-01T12:00:00+00:00",
+                    "UTC",
+                ),
+            )
+            conn.commit()
 
 
 def test_secret_persist_and_absent(data_dir: Path) -> None:
