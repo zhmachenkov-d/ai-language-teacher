@@ -216,7 +216,7 @@ describe("OnboardingWizard", () => {
       .mockResolvedValueOnce(jsonResponse(200, completed))
       .mockResolvedValue(jsonResponse(200, completed));
     const { wrapper, router } = await mountWizard(fetchMock);
-    await wrapper.get("[data-testid=\"add-slot\"]").trigger("click");
+    await wrapper.get('[data-testid="half-0-9-00"]').trigger("click");
     await wrapper.get("[data-testid=\"next-button\"]").trigger("click");
     await flushPromises();
     const patchCall = fetchMock.mock.calls.find(
@@ -232,6 +232,174 @@ describe("OnboardingWizard", () => {
       true,
     );
     wrapper.unmount();
+  });
+
+  it("toggles :00 and :30 halves and shows both chips", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...FRESH_LEARNER,
+        address_as: "Саша",
+        age: 30,
+        intake_step: "schedule",
+        lesson_duration_minutes: 45,
+        timezone: "Europe/Moscow",
+        weekly_slots: [],
+      }),
+    );
+    const { wrapper } = await mountWizard(fetchMock);
+    await wrapper.get('[data-testid="half-0-9-00"]').trigger("click");
+    await wrapper.get('[data-testid="half-0-9-30"]').trigger("click");
+    await flushPromises();
+    expect(
+      wrapper.get('[data-testid="half-0-9-00"]').attributes("aria-pressed"),
+    ).toBe("true");
+    expect(
+      wrapper.get('[data-testid="half-0-9-30"]').attributes("aria-pressed"),
+    ).toBe("true");
+    expect(wrapper.find(".chip-top").exists()).toBe(true);
+    expect(wrapper.find(".chip-mid").exists()).toBe(true);
+    wrapper.unmount();
+  });
+
+  it("keeps prior :30 without snap notice", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...FRESH_LEARNER,
+        address_as: "Саша",
+        age: 30,
+        intake_step: "schedule",
+        lesson_duration_minutes: 45,
+        timezone: "Europe/Moscow",
+        weekly_slots: [{ weekday: 0, start_minute: 570 }],
+      }),
+    );
+    const { wrapper } = await mountWizard(fetchMock);
+    expect(
+      wrapper.get('[data-testid="half-0-9-30"]').attributes("aria-pressed"),
+    ).toBe("true");
+    expect(wrapper.find("[data-testid=\"snap-notice\"]").exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("fine-snaps 09:15 → 09:00 and shows RU notice", async () => {
+    const completed = {
+      ...FRESH_LEARNER,
+      address_as: "Саша",
+      age: 30,
+      intake_step: "complete" as const,
+      lesson_duration_minutes: 45,
+      timezone: "Europe/Moscow",
+      weekly_slots: [{ weekday: 0, start_minute: 540 }],
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse(200, {
+          ...FRESH_LEARNER,
+          address_as: "Саша",
+          age: 30,
+          intake_step: "schedule",
+          lesson_duration_minutes: 45,
+          timezone: "Europe/Moscow",
+          weekly_slots: [{ weekday: 0, start_minute: 555 }],
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse(200, completed))
+      .mockResolvedValue(jsonResponse(200, completed));
+    const { wrapper } = await mountWizard(fetchMock);
+    await flushPromises();
+    expect(
+      wrapper.get('[data-testid="half-0-9-00"]').attributes("aria-pressed"),
+    ).toBe("true");
+    expect(wrapper.get("[data-testid=\"snap-notice\"]").text()).toContain(
+      "округлено до получаса",
+    );
+    await wrapper.get("[data-testid=\"next-button\"]").trigger("click");
+    await flushPromises();
+    const patchCall = fetchMock.mock.calls.find(
+      (c) => (c[1] as RequestInit | undefined)?.method === "PATCH",
+    );
+    expect(JSON.parse(String((patchCall![1] as RequestInit).body))).toEqual({
+      timezone: "Europe/Moscow",
+      weekly_slots: [{ weekday: 0, start_minute: 540 }],
+      intake_step: "complete",
+    });
+    wrapper.unmount();
+  });
+
+  it("fine-snaps 09:45 → 09:30 and coalesces 09:10 with 09:00", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...FRESH_LEARNER,
+        address_as: "Саша",
+        age: 30,
+        intake_step: "schedule",
+        lesson_duration_minutes: 45,
+        timezone: "Europe/Moscow",
+        weekly_slots: [
+          { weekday: 0, start_minute: 585 },
+          { weekday: 1, start_minute: 550 },
+          { weekday: 1, start_minute: 540 },
+        ],
+      }),
+    );
+    const { wrapper } = await mountWizard(fetchMock);
+    await flushPromises();
+    expect(
+      wrapper.get('[data-testid="half-0-9-30"]').attributes("aria-pressed"),
+    ).toBe("true");
+    expect(
+      wrapper.get('[data-testid="half-1-9-00"]').attributes("aria-pressed"),
+    ).toBe("true");
+    expect(
+      wrapper.get('[data-testid="half-1-9-30"]').attributes("aria-pressed"),
+    ).toBe("false");
+    expect(wrapper.find("[data-testid=\"snap-notice\"]").exists()).toBe(true);
+    wrapper.unmount();
+  });
+
+  it("INITIAL_VIEW scrolls in-band by default and evening 22:30 into view", async () => {
+    const inBand = vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...FRESH_LEARNER,
+        address_as: "Саша",
+        age: 30,
+        intake_step: "schedule",
+        lesson_duration_minutes: 45,
+        timezone: "Europe/Moscow",
+        weekly_slots: [],
+      }),
+    );
+    const { wrapper: emptyWrapper } = await mountWizard(inBand);
+    const emptyScroll = emptyWrapper.get(
+      '[data-testid="schedule-grid-scroll"]',
+    ).element as HTMLElement;
+    expect(emptyScroll.scrollTop).toBe(7 * 52);
+    emptyWrapper.unmount();
+
+    const evening = vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...FRESH_LEARNER,
+        address_as: "Саша",
+        age: 30,
+        intake_step: "schedule",
+        lesson_duration_minutes: 45,
+        timezone: "Europe/Moscow",
+        weekly_slots: [{ weekday: 0, start_minute: 1350 }],
+      }),
+    );
+    const { wrapper: eveningWrapper } = await mountWizard(evening);
+    await flushPromises();
+    const eveningScroll = eveningWrapper.get(
+      '[data-testid="schedule-grid-scroll"]',
+    ).element as HTMLElement;
+    expect(eveningScroll.scrollTop).toBe(22 * 52);
+    expect(
+      eveningWrapper
+        .get('[data-testid="half-0-22-30"]')
+        .attributes("aria-pressed"),
+    ).toBe("true");
+    eveningWrapper.unmount();
   });
 
   it("goals step PATCHes selected chips and advances", async () => {
@@ -361,27 +529,6 @@ describe("OnboardingWizard", () => {
       intake_step: "schedule",
     });
     expect(wrapper.find("[data-testid=\"step-schedule\"]").exists()).toBe(true);
-    wrapper.unmount();
-  });
-
-  it("accepts HH:MM:SS from time input when adding a slot", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse(200, {
-        ...FRESH_LEARNER,
-        address_as: "Саша",
-        age: 30,
-        intake_step: "schedule",
-        lesson_duration_minutes: 45,
-        timezone: "Europe/Moscow",
-        weekly_slots: [],
-      }),
-    );
-    const { wrapper } = await mountWizard(fetchMock);
-    await wrapper.get("[data-testid=\"slot-time\"]").setValue("09:30:00");
-    await wrapper.get("[data-testid=\"add-slot\"]").trigger("click");
-    await flushPromises();
-    expect(wrapper.get("[data-testid=\"slot-list\"]").text()).toContain("09:30");
-    expect(wrapper.find("[data-testid=\"validation-error\"]").exists()).toBe(false);
     wrapper.unmount();
   });
 

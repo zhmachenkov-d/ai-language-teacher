@@ -100,6 +100,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-1-onboarding-wizard-greeting-goals-interests-duration-schedule.md`
   summary: Outlook-like week-grid schedule UI (visual week chrome / click-to-add slots) reusable for Settings «изменить» mini-wizard
   evidence: Split from 2.1 to fit the token budget; narrowed 2.1 ships intake wizard with a compact weekday+time slot list editor and the same slot persistence model — epic Outlook week-grid chrome AC remains open here (needed before/with 2.7 Settings schedule edit)
+  resolved_by: spec-2-1-outlook-week-grid-schedule.md (partial — onboarding grid + ScheduleWeekGrid extract; Settings mini-wizard mount remains 2.7; calendar lesson layout not claimed)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
   summary: Rich listening player scrub/seek/replay-from-position UI (full EXPERIENCE listening player)

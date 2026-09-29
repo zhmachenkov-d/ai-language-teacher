@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import ScheduleWeekGrid from "../components/ScheduleWeekGrid.vue";
 import {
   DURATION_OPTIONS,
   EMPHASIS_CHIPS,
   GOAL_CHIPS,
   INTEREST_CHIPS,
   OUTCOME_CHIPS,
-  WEEKDAY_OPTIONS,
   detectTimezone,
-  formatStartMinute,
   mergePrefList,
   nextIntakeStep,
-  parseStartMinute,
   prefGroupComplete,
   resumeWizardStep,
   splitPrefList,
@@ -35,6 +33,7 @@ const saving = ref(false);
 const loadError = ref<string | null>(null);
 const saveError = ref<string | null>(null);
 const validationError = ref<string | null>(null);
+const snapNotice = ref(false);
 
 const auth = ref<TeacherAuth>({
   state: "starting",
@@ -60,8 +59,6 @@ const duration = ref<number | null>(null);
 
 const timezone = ref(detectTimezone());
 const slots = ref<WeeklySlot[]>([]);
-const draftWeekday = ref(0);
-const draftTime = ref("09:00");
 
 const stepTitle = computed(() => {
   switch (step.value) {
@@ -101,6 +98,7 @@ function hydrate(learner: LearnerProfile): void {
     ? learner.timezone
     : detectTimezone();
   slots.value = [...learner.weekly_slots];
+  snapNotice.value = false;
   step.value = resumeWizardStep(learner.intake_step);
 }
 
@@ -110,31 +108,13 @@ function toggleChip(list: string[], chip: string): string[] {
     : [...list, chip];
 }
 
-function addSlot(): void {
+function onSlotsUpdate(next: WeeklySlot[]): void {
+  slots.value = next;
   validationError.value = null;
-  const minute = parseStartMinute(draftTime.value);
-  if (minute == null) {
-    validationError.value = "Укажите время в формате ЧЧ:ММ";
-    return;
-  }
-  const next: WeeklySlot = {
-    weekday: draftWeekday.value,
-    start_minute: minute,
-  };
-  const exists = slots.value.some(
-    (s) => s.weekday === next.weekday && s.start_minute === next.start_minute,
-  );
-  if (!exists) {
-    slots.value = [...slots.value, next];
-  }
 }
 
-function removeSlot(index: number): void {
-  slots.value = slots.value.filter((_, i) => i !== index);
-}
-
-function weekdayLabel(weekday: number): string {
-  return WEEKDAY_OPTIONS.find((w) => w.value === weekday)?.label ?? String(weekday);
+function onSlotsSnapped(): void {
+  snapNotice.value = true;
 }
 
 function validateCurrentStep(): string | null {
@@ -286,7 +266,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="wizard" data-testid="onboarding-wizard">
+  <main class="wizard" :class="{ 'wizard-wide': step === 'schedule' }" data-testid="onboarding-wizard">
     <div v-if="loading" class="status" data-testid="wizard-loading">Загрузка…</div>
     <div v-else-if="loadError" class="status error-block" role="alert">
       <p>{{ loadError }}</p>
@@ -442,7 +422,7 @@ onMounted(() => {
 
       <section
         v-else-if="step === 'schedule'"
-        class="surface"
+        class="surface schedule-surface"
         data-testid="step-schedule"
       >
         <span class="accent-rule" aria-hidden="true" />
@@ -450,38 +430,19 @@ onMounted(() => {
           Часовой пояс:
           <strong data-testid="timezone-label">{{ timezone }}</strong>
         </p>
-        <ul class="slot-list" data-testid="slot-list">
-          <li v-for="(slot, index) in slots" :key="`${slot.weekday}-${slot.start_minute}-${index}`">
-            <span>{{ weekdayLabel(slot.weekday) }} · {{ formatStartMinute(slot.start_minute) }}</span>
-            <button
-              type="button"
-              class="secondary"
-              :aria-label="`Удалить слот ${index + 1}`"
-              @click="removeSlot(index)"
-            >
-              Удалить
-            </button>
-          </li>
-        </ul>
-        <div class="slot-draft">
-          <label class="field-label" for="slot-weekday">День</label>
-          <select id="slot-weekday" v-model.number="draftWeekday" class="field">
-            <option v-for="day in WEEKDAY_OPTIONS" :key="day.value" :value="day.value">
-              {{ day.label }}
-            </option>
-          </select>
-          <label class="field-label" for="slot-time">Время</label>
-          <input
-            id="slot-time"
-            v-model="draftTime"
-            class="field"
-            type="time"
-            data-testid="slot-time"
-          />
-          <button type="button" class="secondary" data-testid="add-slot" @click="addSlot">
-            Добавить слот
-          </button>
-        </div>
+        <p
+          v-if="snapNotice"
+          class="hint snap-notice"
+          role="status"
+          data-testid="snap-notice"
+        >
+          Время округлено до получаса
+        </p>
+        <ScheduleWeekGrid
+          :slots="slots"
+          @update:slots="onSlotsUpdate"
+          @snapped="onSlotsSnapped"
+        />
       </section>
 
       <p
@@ -525,6 +486,10 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
+.wizard-wide {
+  max-width: 920px;
+}
+
 .header h1 {
   margin: 0;
   font-size: 1.45rem;
@@ -540,6 +505,10 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.schedule-surface {
+  min-height: 0;
 }
 
 .accent-rule {
@@ -569,6 +538,10 @@ onMounted(() => {
   font-size: 13px;
   line-height: 1.45;
   color: var(--color-muted);
+}
+
+.snap-notice {
+  color: var(--color-ink);
 }
 
 .field-label {
@@ -612,30 +585,6 @@ onMounted(() => {
 .chip:focus-visible {
   outline: 2px solid var(--color-coral);
   outline-offset: 1px;
-}
-
-.slot-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.slot-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
-}
-
-.slot-draft {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
 }
 
 .error,
