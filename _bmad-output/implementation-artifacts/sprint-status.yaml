@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-24-2026 10:16
-last_updated: 09-29-2026 12:01
+last_updated: 09-29-2026 12:10
 project: ai-language-teacher
 project_key: NOKEY
 tracking_system: file-system
@@ -48,7 +48,7 @@ development_status:
   2-1-onboarding-wizard-greeting-goals-interests-duration-schedule: done
   2-2-consent-and-regulated-copy-gating: done
   2-3-placement-briefing-written-listening-speaking: done
-  2-4-living-plan-creation-and-persistence: review
+  2-4-living-plan-creation-and-persistence: done
   2-5-living-plan-full-screen-document-view-only: backlog
   2-6-calendar-climax-scheduled-events-side-panel-tip-stub-start-c: backlog
   2-7-settings-wiring-voice-schedule-edit-goals: backlog
