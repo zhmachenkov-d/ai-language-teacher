@@ -23,7 +23,10 @@ from teacher_service.adapters.api.auth import (
     resolve_auth_token,
     tokens_match,
 )
-from teacher_service.adapters.config import SECRET_LLM_API_KEY
+from teacher_service.adapters.config import (
+    SECRET_CLOUD_VOICE_API_KEY,
+    SECRET_LLM_API_KEY,
+)
 from teacher_service.adapters.persistence import SqliteStore
 from teacher_service.domain.learner import (
     ALLOWED_LESSON_DURATIONS,
@@ -82,6 +85,20 @@ class LlmConfigUpdate(BaseModel):
     def _reject_blank(cls, value: str) -> str:
         if not value.strip():
             raise ValueError("llm_api_key must be a non-empty string")
+        return value
+
+
+class VoiceConfigUpdate(BaseModel):
+    """PUT /config/voice body — carries `cloud_voice_api_key` (never echoed);
+    response is `{configured}` only."""
+
+    cloud_voice_api_key: str
+
+    @field_validator("cloud_voice_api_key")
+    @classmethod
+    def _reject_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("cloud_voice_api_key must be a non-empty string")
         return value
 
 
@@ -319,9 +336,17 @@ def create_app(
 
         llm = OpenAiLlmAdapter(config)
     if voice is None:
-        from teacher_service.adapters.voice import LocalVoiceAdapter
+        from teacher_service.adapters.voice import (
+            CloudVoiceAdapter,
+            LocalThenCloudVoice,
+            LocalVoiceAdapter,
+        )
 
-        voice = LocalVoiceAdapter()
+        voice = LocalThenCloudVoice(
+            LocalVoiceAdapter(),
+            CloudVoiceAdapter(config),
+            config,
+        )
     app = FastAPI(
         title="teacher-service",
         docs_url=None,
@@ -410,6 +435,40 @@ def create_app(
         cfg: ConfigPort = request.app.state.config
         try:
             cfg.set_secret(SECRET_LLM_API_KEY, payload.llm_api_key)
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "config_error",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
+        return {"configured": True}
+
+    @app.get("/config/voice")
+    async def get_voice_config(request: Request) -> dict[str, bool]:
+        cfg: ConfigPort = request.app.state.config
+        try:
+            configured = cfg.get_secret(SECRET_CLOUD_VOICE_API_KEY) is not None
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "config_error",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
+        return {"configured": configured}
+
+    @app.put("/config/voice")
+    async def put_voice_config(
+        payload: VoiceConfigUpdate, request: Request
+    ) -> dict[str, bool]:
+        cfg: ConfigPort = request.app.state.config
+        try:
+            cfg.set_secret(SECRET_CLOUD_VOICE_API_KEY, payload.cloud_voice_api_key)
         except RuntimeError as exc:
             raise HTTPException(
                 status_code=500,
