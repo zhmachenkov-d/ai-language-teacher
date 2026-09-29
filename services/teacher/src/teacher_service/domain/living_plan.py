@@ -1,9 +1,11 @@
 """Living plan creation: path/curriculum validation, difficulty bands, WEEK_FILL.
 
 Domain owns propose → auto-select → atomic persist (AD-6/7). Callers inject
-`now` for WEEK_FILL (prod = real UTC; tests = fixture). Never invents times
-when slots yield zero hits (`schedule_unusable`). Never fakes `plan_complete`
-on LLM/schedule failure.
+`now` / `now_provider` for WEEK_FILL (prod = real UTC; tests = fixture).
+WEEK_FILL used for persist is recomputed after the LLM returns so a slow
+propose cannot lock in times already in the past. Never invents times when
+slots yield zero hits (`schedule_unusable`). Never fakes `plan_complete` on
+LLM/schedule failure.
 """
 
 from __future__ import annotations
@@ -104,7 +106,9 @@ class LivingPlanProjection:
     lessons: tuple[LessonRecord, ...]
 
 
-def seed_difficulty(*, listening_score: float | None, speaking_score: float | None) -> str:
+def seed_difficulty(
+    *, listening_score: float | None, speaking_score: float | None
+) -> str:
     """Map avg(listening, speaking) onto CEFR-ish v1 bands.
 
     Bands: beginner [0,0.25) | elementary [0.25,0.5) | intermediate [0.5,0.75)
@@ -296,7 +300,7 @@ def week_fill_occurrences(
     results: list[datetime] = []
     for slot in slots:
         hit: datetime | None = None
-        for day_offset in range(0, 8):
+        for day_offset in range(8):
             day = local_now.date() + timedelta(days=day_offset)
             if day.weekday() != slot.weekday:
                 continue
@@ -366,9 +370,7 @@ def _load_living_plan_or_inconsistent(
         ) from exc
 
 
-def _ensure_plan_complete_flag(
-    store: PersistencePort, learner: Learner
-) -> None:
+def _ensure_plan_complete_flag(store: PersistencePort, learner: Learner) -> None:
     """Heal `plan_complete` when a LivingPlan row already exists without the FLAG."""
     if learner.plan_complete:
         return
@@ -408,13 +410,23 @@ def create_living_plan(
     config: ConfigPort,
     *,
     now: datetime | None = None,
+    now_provider: Callable[[], datetime] | None = None,
     llm_configured: Callable[[ConfigPort], bool] | None = None,
 ) -> LivingPlanProjection:
     """Propose paths via LLM, auto-select, WEEK_FILL, atomically persist + FLAG.
 
     Idempotent when a LivingPlan already exists for the learner (no re-LLM).
+    WEEK_FILL for persist runs after the LLM returns (`now_provider` preferred;
+    fixed `now` kept for tests that freeze the clock).
     """
     from teacher_service.domain.learner import get_or_create_learner
+
+    def _clock() -> datetime:
+        if now_provider is not None:
+            return now_provider()
+        if now is not None:
+            return now
+        return datetime.now(timezone.utc)
 
     learner = get_or_create_learner(store)
 
@@ -434,15 +446,12 @@ def create_living_plan(
         speaking_score=learner.placement_speaking_score,
     )
 
-    if now is None:
-        now = datetime.now(timezone.utc)
-
-    occurrences = week_fill_occurrences(
+    # Fail fast on empty/unusable slots before spending an LLM call.
+    if not week_fill_occurrences(
         learner.weekly_slots,
         tz_name=learner.timezone,
-        now=now,
-    )
-    if not occurrences:
+        now=_clock(),
+    ):
         raise LivingPlanError(
             "schedule_unusable",
             "no usable lesson times in the next 7 days from weekly_slots",
@@ -499,6 +508,18 @@ def create_living_plan(
             str(exc),
             retryable=True,
         ) from exc
+
+    # Recompute after LLM so slow proposes cannot persist past lesson times.
+    occurrences = week_fill_occurrences(
+        learner.weekly_slots,
+        tz_name=learner.timezone,
+        now=_clock(),
+    )
+    if not occurrences:
+        raise LivingPlanError(
+            "schedule_unusable",
+            "no usable lesson times in the next 7 days from weekly_slots",
+        )
 
     selected = select_path(paths)
     plan_id = str(uuid.uuid4())

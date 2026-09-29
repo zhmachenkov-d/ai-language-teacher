@@ -226,6 +226,7 @@ So that keys stay off LLM prompts and the repo, and the teacher has a single loc
 **Given** an API caller with a valid local token
 **When** they read a basic learner/profile or config-status projection
 **Then** the response is `snake_case` JSON from SQLite/Config (Standing constraints)
+_(Narrowed: Story 1.3 Done shipped Config/SQLite layout only; authenticated projection deferred — intake `GET`/`PATCH /learner` landed in 2.1; broader profile/config-status may still expand. See `_bmad-output/implementation-artifacts/deferred-work.md`.)_
 
 ### Story 1.4: Design tokens, dark mode, and Russian app chrome shell
 
@@ -251,6 +252,7 @@ So that later screens share one visual language instead of ad-hoc styling.
 **When** the app shell navigates between Calendar, Living plan, Progress, and Settings
 **Then** nav labels are in Russian; routes may be placeholder screens except where later Epic 1 stories fill Calendar/Settings
 **And** motion for panel/screen transitions is moderate and respects OS reduce-motion
+_(Narrowed: Story 1.4 Done shipped design tokens + dark mode only; Russian nav shell / UX-DR20 routed chrome deferred then absorbed by Story 1.5. See `_bmad-output/implementation-artifacts/deferred-work.md`.)_
 
 ### Story 1.5: Calendar home empty chrome with side panel
 

@@ -706,7 +706,7 @@ def create_app(
                 persistence,
                 llm_port,
                 cfg,
-                now=now_fn(),
+                now_provider=now_fn,
                 llm_configured=_llm_configured,
             )
         except LivingPlanError as exc:

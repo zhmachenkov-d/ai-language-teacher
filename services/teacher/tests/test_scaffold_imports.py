@@ -154,3 +154,28 @@ def test_no_dotenv_secrets_in_scaffold_trees() -> None:
     # Repo-root scan already covers nested trees; dedupe
     unique = sorted(set(unexpected))
     assert unique == [], f"unexpected .env files: {unique}"
+
+
+def test_teacher_api_console_script_resolves() -> None:
+    """Packaged entrypoints must resolve — direct cli.main tests alone can stay green if miswired."""
+    import importlib.metadata
+
+    eps = importlib.metadata.entry_points()
+    # importlib.metadata API differs slightly by Python minor; normalize to names.
+    selected = (
+        eps.select(group="console_scripts")
+        if hasattr(eps, "select")
+        else eps.get("console_scripts", [])
+    )
+    by_name = {ep.name: ep for ep in selected}
+    assert "teacher-api" in by_name
+    loaded = by_name["teacher-api"].load()
+    from teacher_service.adapters.api.cli import main as cli_main
+
+    assert loaded is cli_main
+
+
+def test_adapters_api_main_module_imports() -> None:
+    import teacher_service.adapters.api.__main__ as api_main
+
+    assert callable(api_main.main)

@@ -45,17 +45,28 @@ cd services/teacher
 uv sync
 uv run pytest
 
-# Listen on 127.0.0.1:8765 — token from env (bootstrap/override) or Config bearer_token:
-export TEACHER_AUTH_TOKEN="$(openssl rand -hex 32)"
 # optional: export TEACHER_DATA_DIR=/tmp/teacher-data-dev
+
+# Bearer for listen — pick one:
+# (A) env bootstrap/override:
+export TEACHER_AUTH_TOKEN="$(openssl rand -hex 32)"
+# (B) Config secret under app-data (no Settings UI / no env):
+#   TEACHER_DATA_DIR=/tmp/teacher-data-dev uv run python -c \
+#     "from teacher_service.adapters.config import FileConfig, SECRET_BEARER_TOKEN; \
+#      import secrets; c=FileConfig(); c.ensure_layout(); \
+#      c.set_secret(SECRET_BEARER_TOKEN, secrets.token_hex(32)); \
+#      print(c.get_secret(SECRET_BEARER_TOKEN))"
+#   then unset TEACHER_AUTH_TOKEN so CLI reads Config bearer_token
+
 uv run teacher-api
 # or: uv run python -m teacher_service.adapters.api
 
 # Smoke:
 curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" http://127.0.0.1:8765/health
 # expect 200 snake_case JSON, e.g. {"status":"ok"}
-curl -sS http://127.0.0.1:8765/health
-# expect 401 with {"code","message","retryable"}
+curl -sS http://127.0.0.1:8765/health | tee /tmp/teacher-health-401.json
+# expect 401; body must be {"code","message","retryable"} (jq installed in this image):
+#   jq -e 'keys|sort==["code","message","retryable"]' /tmp/teacher-health-401.json
 ```
 
 Desktop verify (after `npm install` in `apps/desktop/`): `npm test` (Vitest) and `npm run build`.
@@ -73,3 +84,7 @@ Desktop verify (after `npm install` in `apps/desktop/`): `npm test` (Vitest) and
 ## Dev Container GUI (Electron)
 
 This environment includes `desktop-lite` (noVNC). After rebuild: open forwarded port **6080** (password `vscode`), then `cd apps/desktop && npm run dev`. `ELECTRON_DISABLE_SANDBOX=1` is set via `containerEnv`. Headless smoke without VNC: `npm run preview:xvfb`.
+
+### Linux Electron system libraries
+
+Bare Linux hosts (and older images) need Chromium/Electron runtime libs before `npm run dev` / `preview` can open a window. Common missing shared object: `libatk-1.0.so.0` (`libatk1.0-0`). This repo’s `.devcontainer/Dockerfile` installs the usual set (`libnss3`, `libatk-bridge2.0-0`, `libgtk-3-0`, `libgbm1`, `libasound2`, `xvfb`, …). Outside the devcontainer, install an equivalent Electron/Chromium dependency pack for your distro, or use `npm run preview:xvfb` when only headless smoke is needed.

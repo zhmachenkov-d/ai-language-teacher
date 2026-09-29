@@ -53,7 +53,14 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(1) from exc
 
     app = create_app(auth_token=token, config=config)
-    uvicorn.run(app, host=LOOPBACK_HOST, port=DEFAULT_PORT, log_level="info")
+    try:
+        uvicorn.run(app, host=LOOPBACK_HOST, port=DEFAULT_PORT, log_level="info")
+    except OSError as exc:
+        print(
+            f"Failed to bind {LOOPBACK_HOST}:{DEFAULT_PORT}: {exc}",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from exc
 
 
 if __name__ == "__main__":
