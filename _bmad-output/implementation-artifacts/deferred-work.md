@@ -120,6 +120,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
   summary: Production OpenAiLlmAdapter / LocalVoiceAdapter never executed under pytest (only Fake* ports)
   evidence: Verification-gap review; fabricate-on-error in real adapters would leave placement API suite green; settle with thin adapter unit/integration smoke later
+  resolved_by: test_llm_adapter.py + expanded test_voice_adapter.py — mocked HTTP / stand-in CLI smoke (2026-09-29)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
   summary: Bounded THREE+SERVER plan-create failure pause (`plan_create_failures`, 409 `plan_create_paused`, `reset_failures` «Повторить», paused UI state)
@@ -148,4 +149,4 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
   summary: Enable SQLite PRAGMA foreign_keys=ON so lesson_record → living_plan FK is enforced
   evidence: Story 2.4 added the FK declaration but the store never enables foreign_keys (pre-existing pattern); orphan lesson rows remain possible
-  resolved_by: SqliteStore._connect PRAGMA foreign_keys=ON + test_sqlite_foreign_keys_pragma_on (2026-09-29)
+  resolved_by: SqliteStore.\_connect PRAGMA foreign_keys=ON + test_sqlite_foreign_keys_pragma_on (2026-09-29)
