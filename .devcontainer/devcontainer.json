@@ -22,7 +22,8 @@
     }
   },
   "containerEnv": {
-    "ELECTRON_DISABLE_SANDBOX": "1"
+    "ELECTRON_DISABLE_SANDBOX": "1",
+    "NO_SANDBOX": "1"
   },
   "runArgs": ["--env-file", "${localWorkspaceFolder}/.env"],
   "initializeCommand": "bash .devcontainer/ensure-env.sh",
