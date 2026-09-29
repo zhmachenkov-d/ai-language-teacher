@@ -8,6 +8,7 @@ describe("onboarding gate", () => {
         intake_step: "goals",
         consent_complete: false,
         placement_complete: false,
+        plan_complete: false,
       }),
     ).toBe("onboarding");
   });
@@ -18,6 +19,7 @@ describe("onboarding gate", () => {
         intake_step: "complete",
         consent_complete: false,
         placement_complete: false,
+        plan_complete: false,
       }),
     ).toBe("onboarding-consent");
   });
@@ -28,6 +30,7 @@ describe("onboarding gate", () => {
         intake_step: "complete",
         consent_complete: true,
         placement_complete: false,
+        plan_complete: false,
       }),
     ).toBe("onboarding-placement");
   });
@@ -38,6 +41,18 @@ describe("onboarding gate", () => {
         intake_step: "complete",
         consent_complete: true,
         placement_complete: true,
+        plan_complete: false,
+      }),
+    ).toBe("onboarding-plan");
+  });
+
+  it("keeps plan_complete on plan stub until calendar climax (2.6)", () => {
+    expect(
+      gateDestination({
+        intake_step: "complete",
+        consent_complete: true,
+        placement_complete: true,
+        plan_complete: true,
       }),
     ).toBe("onboarding-plan");
   });

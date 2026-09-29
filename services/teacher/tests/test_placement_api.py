@@ -60,6 +60,19 @@ class FakeLlmPort:
             raise self.error
         return self.raw
 
+    def propose_learning_paths(
+        self,
+        *,
+        target_language: str,
+        l1: str,
+        goals: Sequence[str],
+        desired_outcome: Sequence[str],
+        interests: Sequence[str],
+        emphasis: Sequence[str],
+        difficulty: str,
+    ) -> dict[str, Any]:
+        raise AssertionError("living-plan LLM must not be called in placement tests")
+
 
 class FakeVoicePort:
     def __init__(

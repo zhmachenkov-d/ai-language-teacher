@@ -37,6 +37,7 @@ const BASE_LEARNER: LearnerProfile = {
   placement_speaking_transcript: null,
   placement_speaking_score: null,
   placement_complete: false,
+  plan_complete: false,
 }
 
 type MediaListener = (event: MediaQueryListEvent) => void

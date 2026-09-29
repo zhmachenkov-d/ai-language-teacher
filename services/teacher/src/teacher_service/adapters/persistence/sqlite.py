@@ -1,9 +1,10 @@
-"""SQLite persistence adapter for the Learner store."""
+"""SQLite persistence adapter for the Learner + LivingPlan store."""
 
 from __future__ import annotations
 
 import json
 import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 
 from teacher_service.domain.learner import (
@@ -11,6 +12,12 @@ from teacher_service.domain.learner import (
     Learner,
     WeeklySlot,
     validate_weekly_slot,
+)
+from teacher_service.domain.living_plan import (
+    LessonRecord,
+    LivingPlan,
+    LivingPlanProjection,
+    PathOption,
 )
 from teacher_service.domain.placement import (
     PLACEMENT_STAGE_BRIEFING,
@@ -47,7 +54,30 @@ CREATE TABLE IF NOT EXISTS learner (
     placement_listening_score REAL,
     placement_speaking_transcript TEXT,
     placement_speaking_score REAL,
-    placement_complete INTEGER NOT NULL DEFAULT 0
+    placement_complete INTEGER NOT NULL DEFAULT 0,
+    plan_complete INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS living_plan (
+    id TEXT PRIMARY KEY NOT NULL,
+    learner_id TEXT NOT NULL UNIQUE,
+    goals_json TEXT NOT NULL,
+    focus TEXT NOT NULL,
+    upcoming_topics_json TEXT NOT NULL,
+    difficulty TEXT NOT NULL,
+    selected_path_id TEXT NOT NULL,
+    proposed_paths_json TEXT NOT NULL,
+    revisable INTEGER NOT NULL DEFAULT 1,
+    target_language TEXT NOT NULL,
+    l1 TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS lesson_record (
+    id TEXT PRIMARY KEY NOT NULL,
+    living_plan_id TEXT NOT NULL,
+    scheduled_at TEXT NOT NULL,
+    timezone TEXT NOT NULL,
+    FOREIGN KEY (living_plan_id) REFERENCES living_plan(id)
 );
 """
 
@@ -85,6 +115,10 @@ _PLACEMENT_COLUMNS: tuple[tuple[str, str], ...] = (
     ("placement_complete", "INTEGER NOT NULL DEFAULT 0"),
 )
 
+_PLAN_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("plan_complete", "INTEGER NOT NULL DEFAULT 0"),
+)
+
 _SELECT_COLS = (
     "id, target_language, l1, timezone, address_as, age, "
     "goals_json, desired_outcome_json, interests_json, emphasis_json, "
@@ -94,7 +128,7 @@ _SELECT_COLS = (
     "placement_written_score, placement_listening_generated, "
     "placement_listening_played, placement_listening_answers_json, "
     "placement_listening_score, placement_speaking_transcript, "
-    "placement_speaking_score, placement_complete"
+    "placement_speaking_score, placement_complete, plan_complete"
 )
 
 
@@ -187,6 +221,85 @@ def _loads_slots(raw: str | None) -> tuple[WeeklySlot, ...]:
     return tuple(out)
 
 
+def _dumps_paths(paths: tuple[PathOption, ...]) -> str:
+    return json.dumps(
+        [
+            {
+                "id": p.id,
+                "title": p.title,
+                "summary": p.summary,
+                "recommended": p.recommended,
+            }
+            for p in paths
+        ],
+        ensure_ascii=False,
+    )
+
+
+def _loads_paths(raw: str | None) -> tuple[PathOption, ...]:
+    """Parse persisted proposed_paths; raise ValueError on corrupt data.
+
+    Callers map this to `plan_inconsistent` — never return truncated/empty paths.
+    """
+    if not raw:
+        raise ValueError("proposed_paths_json is missing or empty")
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError("proposed_paths_json is not valid JSON") from exc
+    if not isinstance(data, list):
+        raise ValueError("proposed_paths_json must be a JSON array")
+    if not data:
+        raise ValueError("proposed_paths_json is an empty array")
+    out: list[PathOption] = []
+    for i, item in enumerate(data):
+        if not isinstance(item, dict):
+            raise ValueError(f"proposed_paths[{i}] must be an object")
+        path_id = item.get("id")
+        title = item.get("title")
+        summary = item.get("summary")
+        recommended = item.get("recommended")
+        if (
+            not isinstance(path_id, str)
+            or not isinstance(title, str)
+            or not isinstance(summary, str)
+            or not isinstance(recommended, bool)
+        ):
+            raise ValueError(
+                f"proposed_paths[{i}] must have string id/title/summary "
+                "and boolean recommended"
+            )
+        out.append(
+            PathOption(
+                id=path_id,
+                title=title,
+                summary=summary,
+                recommended=recommended,
+            )
+        )
+    return tuple(out)
+
+
+def _utc_iso(value: datetime) -> str:
+    aware = value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    return aware.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _parse_utc_iso(raw: str) -> datetime:
+    if not isinstance(raw, str) or not raw.strip():
+        raise ValueError(f"unparseable scheduled_at: {raw!r}")
+    text = raw.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError(f"unparseable scheduled_at: {raw!r}") from exc
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 def _bool_from_row(row: sqlite3.Row, keys: set[str], name: str) -> bool:
     if name not in keys:
         return False
@@ -275,6 +388,23 @@ def _row_to_learner(row: sqlite3.Row) -> Learner:
             else None
         ),
         placement_complete=_bool_from_row(row, keys, "placement_complete"),
+        plan_complete=_bool_from_row(row, keys, "plan_complete"),
+    )
+
+
+def _row_to_living_plan(row: sqlite3.Row) -> LivingPlan:
+    return LivingPlan(
+        id=row["id"],
+        learner_id=row["learner_id"],
+        goals=_loads_str_list(row["goals_json"]),
+        focus=row["focus"],
+        upcoming_topics=_loads_str_list(row["upcoming_topics_json"]),
+        difficulty=row["difficulty"],
+        selected_path_id=row["selected_path_id"],
+        proposed_paths=_loads_paths(row["proposed_paths_json"]),
+        revisable=bool(row["revisable"]),
+        target_language=row["target_language"],
+        l1=row["l1"],
     )
 
 
@@ -301,6 +431,7 @@ class SqliteStore:
                 *_INTAKE_COLUMNS,
                 *_CONSENT_COLUMNS,
                 *_PLACEMENT_COLUMNS,
+                *_PLAN_COLUMNS,
             ):
                 if name not in existing:
                     conn.execute(f"ALTER TABLE learner ADD COLUMN {name} {decl}")
@@ -323,10 +454,10 @@ class SqliteStore:
                 "placement_listening_generated, placement_listening_played, "
                 "placement_listening_answers_json, placement_listening_score, "
                 "placement_speaking_transcript, placement_speaking_score, "
-                "placement_complete"
+                "placement_complete, plan_complete"
                 ") VALUES ("
                 "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
                 ")",
                 (
                     learner.id,
@@ -358,6 +489,7 @@ class SqliteStore:
                     learner.placement_speaking_transcript,
                     learner.placement_speaking_score,
                     int(learner.placement_complete),
+                    int(learner.plan_complete),
                 ),
             )
             conn.commit()
@@ -395,7 +527,7 @@ class SqliteStore:
                 "placement_listening_generated = ?, placement_listening_played = ?, "
                 "placement_listening_answers_json = ?, placement_listening_score = ?, "
                 "placement_speaking_transcript = ?, placement_speaking_score = ?, "
-                "placement_complete = ? "
+                "placement_complete = ?, plan_complete = ? "
                 "WHERE id = ?",
                 (
                     learner.target_language,
@@ -426,8 +558,89 @@ class SqliteStore:
                     learner.placement_speaking_transcript,
                     learner.placement_speaking_score,
                     int(learner.placement_complete),
+                    int(learner.plan_complete),
                     learner.id,
                 ),
             )
             conn.commit()
         return learner
+
+    def create_living_plan_atomic(
+        self,
+        plan: LivingPlan,
+        lessons: tuple[LessonRecord, ...],
+    ) -> LivingPlanProjection:
+        with self._connect() as conn:
+            try:
+                conn.execute("BEGIN")
+                conn.execute(
+                    "INSERT INTO living_plan ("
+                    "id, learner_id, goals_json, focus, upcoming_topics_json, "
+                    "difficulty, selected_path_id, proposed_paths_json, revisable, "
+                    "target_language, l1"
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        plan.id,
+                        plan.learner_id,
+                        _dumps_str_list(plan.goals),
+                        plan.focus,
+                        _dumps_str_list(plan.upcoming_topics),
+                        plan.difficulty,
+                        plan.selected_path_id,
+                        _dumps_paths(plan.proposed_paths),
+                        int(plan.revisable),
+                        plan.target_language,
+                        plan.l1,
+                    ),
+                )
+                for lesson in lessons:
+                    conn.execute(
+                        "INSERT INTO lesson_record ("
+                        "id, living_plan_id, scheduled_at, timezone"
+                        ") VALUES (?, ?, ?, ?)",
+                        (
+                            lesson.id,
+                            lesson.living_plan_id,
+                            _utc_iso(lesson.scheduled_at),
+                            lesson.timezone,
+                        ),
+                    )
+                updated = conn.execute(
+                    "UPDATE learner SET plan_complete = 1 WHERE id = ?",
+                    (plan.learner_id,),
+                )
+                if updated.rowcount != 1:
+                    raise ValueError("learner not found for living plan")
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+        return LivingPlanProjection(plan=plan, lessons=lessons)
+
+    def load_living_plan(self, learner_id: str) -> LivingPlanProjection | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT id, learner_id, goals_json, focus, upcoming_topics_json, "
+                "difficulty, selected_path_id, proposed_paths_json, revisable, "
+                "target_language, l1 FROM living_plan WHERE learner_id = ?",
+                (learner_id,),
+            ).fetchone()
+            if row is None:
+                return None
+            plan = _row_to_living_plan(row)
+            lesson_rows = conn.execute(
+                "SELECT id, living_plan_id, scheduled_at, timezone "
+                "FROM lesson_record WHERE living_plan_id = ? "
+                "ORDER BY scheduled_at ASC",
+                (plan.id,),
+            ).fetchall()
+        lessons = tuple(
+            LessonRecord(
+                id=r["id"],
+                living_plan_id=r["living_plan_id"],
+                scheduled_at=_parse_utc_iso(r["scheduled_at"]),
+                timezone=r["timezone"],
+            )
+            for r in lesson_rows
+        )
+        return LivingPlanProjection(plan=plan, lessons=lessons)

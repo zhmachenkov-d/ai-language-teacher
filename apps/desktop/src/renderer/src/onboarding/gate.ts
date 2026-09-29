@@ -2,7 +2,7 @@
  * First-run GATE: unfinished intake → wizard; intake done && !consent → consent;
  * consent_complete && !placement_complete → placement; placement_complete →
  * plan stub (calendar climax is Story 2.6 — never treat intake/consent/placement
- * alone as onboarded).
+ * or plan_complete alone as onboarded).
  */
 
 import type { LearnerProfile } from "../services/teacherClient";
@@ -17,7 +17,7 @@ export type GateDestination =
 export function gateDestination(
   learner: Pick<
     LearnerProfile,
-    "intake_step" | "consent_complete" | "placement_complete"
+    "intake_step" | "consent_complete" | "placement_complete" | "plan_complete"
   >,
 ): GateDestination {
   if (learner.intake_step !== "complete") {
@@ -29,8 +29,9 @@ export function gateDestination(
   if (!learner.placement_complete) {
     return "onboarding-placement";
   }
-  // Living plan creation/animation (2.4) + calendar climax (2.6) not done yet —
-  // hand off to the plan chrome stub, never calendar-as-onboarded.
+  // Living plan FLAG may be set (2.4) but calendar climax stays 2.6 —
+  // `plan_complete` alone must never open calendar.
+  void learner.plan_complete;
   return "onboarding-plan";
 }
 

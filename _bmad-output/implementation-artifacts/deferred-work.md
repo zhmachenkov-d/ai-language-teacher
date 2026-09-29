@@ -104,3 +104,31 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
   summary: Production OpenAiLlmAdapter / LocalVoiceAdapter never executed under pytest (only Fake* ports)
   evidence: Verification-gap review; fabricate-on-error in real adapters would leave placement API suite green; settle with thin adapter unit/integration smoke later
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
+  summary: Bounded THREE+SERVER plan-create failure pause (`plan_create_failures`, 409 `plan_create_paused`, `reset_failures` «Повторить», paused UI state)
+  evidence: Split from 2.4 to fit the token budget; narrowed 2.4 ships happy-path create + Config block + simple LLM error retry without a server fail-count pause — epic NFR3 bounded-pause AC remains open here
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
+  summary: LessonRecord richness beyond schedule projection (`living_plan_id`, `status`, optional `topic` stub) for Story 2.6 calendar consumers
+  evidence: Split from 2.4 to fit the token budget; narrowed 2.4 persists lessons with `id` / `scheduled_at` / `timezone` only — 2.6 may require the richer columns
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
+  summary: WEEK_FILL DST/invalid-IANA hardening (spring gap skip, fall-back fold pick, bad timezone → `schedule_unusable`)
+  evidence: Split from 2.4 to fit the token budget; narrowed 2.4 covers empty slots and zero hits in `[now, now+7d)` only
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
+  summary: Desktop onboarding plan view — replace OnboardingPlanStub with `config_blocked`/`creating`/`ready`/`error` UI, auto-POST, READONLY path cards + «план готов», GET resume chrome (UX-DR13)
+  evidence: Second split from 2.4 to fit the token budget; narrowed 2.4 ships teacher domain/API/persistence + `plan_complete` on learner/gate types only — stub remains until this deferred UI lands
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
+  summary: Automated coverage of UNIQUE(learner_id) race → domain reload idempotent path in create_living_plan
+  evidence: Review found only raw SQL IntegrityError coverage; concurrent POST loser branch (living_plan.py except/reload) is untested; v1 single-learner desktop makes real races unlikely
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
+  summary: Recompute WEEK_FILL after LLM returns so slow proposes cannot persist lesson times already in the past
+  evidence: maybe-false medium from edge-case review; settle by injecting a clock that advances across a slot boundary during propose and asserting recomputed scheduled_at
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
+  summary: Enable SQLite PRAGMA foreign_keys=ON so lesson_record → living_plan FK is enforced
+  evidence: Story 2.4 added the FK declaration but the store never enables foreign_keys (pre-existing pattern); orphan lesson rows remain possible

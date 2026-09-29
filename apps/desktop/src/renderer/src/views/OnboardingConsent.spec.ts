@@ -32,6 +32,18 @@ const INTAKE_DONE: LearnerProfile = {
   consent_ai: false,
   consent_privacy: false,
   consent_complete: false,
+  placement_stage: "briefing",
+  placement_items: null,
+  placement_written_answers: [],
+  placement_written_score: null,
+  placement_listening_generated: false,
+  placement_listening_played: false,
+  placement_listening_answers: [],
+  placement_listening_score: null,
+  placement_speaking_transcript: null,
+  placement_speaking_score: null,
+  placement_complete: false,
+  plan_complete: false,
 };
 
 function jsonResponse(status: number, body: unknown): Response {

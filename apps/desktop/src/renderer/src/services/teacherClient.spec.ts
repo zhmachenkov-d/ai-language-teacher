@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  createLivingPlan,
   fetchLearner,
+  fetchLivingPlan,
   fetchLlmConfigStatus,
   generatePlacementItems,
   getTeacherAuth,
@@ -289,5 +291,107 @@ describe("teacherClient", () => {
     expect(init.body).toBe(
       JSON.stringify({ audio_base64: "abc", mime_type: "audio/webm" }),
     );
+  });
+
+  it("createLivingPlan POSTs empty body to /living-plan", async () => {
+    const plan = {
+      id: "plan-1",
+      goals: ["Speak"],
+      focus: "Conversation",
+      upcoming_topics: ["Greetings"],
+      difficulty: "intermediate",
+      selected_path_id: "conv",
+      proposed_paths: [
+        {
+          id: "conv",
+          title: "Conversation",
+          summary: "Talk first",
+          recommended: true,
+        },
+      ],
+      revisable: true,
+      target_language: "en",
+      l1: "ru",
+      lessons: [
+        {
+          id: "lesson-1",
+          scheduled_at: "2026-03-02T07:00:00Z",
+          timezone: "Europe/Moscow",
+        },
+      ],
+    };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, plan));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(createLivingPlan(RUNNING)).resolves.toEqual(plan);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("http://127.0.0.1:8765/living-plan");
+    expect(init.method).toBe("POST");
+    expect(init.body).toBe("{}");
+  });
+
+  it("fetchLivingPlan GETs /living-plan", async () => {
+    const plan = { id: "plan-1", lessons: [] };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, plan));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(fetchLivingPlan(RUNNING)).resolves.toEqual(plan);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://127.0.0.1:8765/living-plan",
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: "Bearer tok-123" }),
+      }),
+    );
+  });
+
+  it("createLivingPlan surfaces schedule_unusable as shaped error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(422, {
+          code: "schedule_unusable",
+          message: "no usable lesson times",
+          retryable: false,
+        }),
+      ),
+    );
+    await expect(createLivingPlan(RUNNING)).rejects.toMatchObject({
+      code: "schedule_unusable",
+      status: 422,
+    });
+  });
+
+  it("fetchLivingPlan surfaces living_plan_not_found as shaped 404", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(404, {
+          code: "living_plan_not_found",
+          message: "living plan has not been created yet",
+          retryable: false,
+        }),
+      ),
+    );
+    await expect(fetchLivingPlan(RUNNING)).rejects.toMatchObject({
+      code: "living_plan_not_found",
+      status: 404,
+      retryable: false,
+    });
+  });
+
+  it("fetchLivingPlan surfaces plan_inconsistent as shaped 500", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(500, {
+          code: "plan_inconsistent",
+          message: "plan_complete is set but no living plan row exists",
+          retryable: false,
+        }),
+      ),
+    );
+    await expect(fetchLivingPlan(RUNNING)).rejects.toMatchObject({
+      code: "plan_inconsistent",
+      status: 500,
+      retryable: false,
+    });
   });
 });
