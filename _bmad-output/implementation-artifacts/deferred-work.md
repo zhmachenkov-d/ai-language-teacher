@@ -86,11 +86,14 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-6-settings-sections-shell-with-explicit-save.md`
   summary: Electron main HOST_SURVIVAL wiring (close→hide, window-all-closed no-quit, tray quit→isQuitting, before-quit stop-owned) lacks an Electron harness test beyond pure hostSurvival helpers
   evidence: Verification-gap review; hostSurvival.spec.ts covers decisions only; demonstrating index.ts regressions needs Electron main test runtime unavailable in this sandbox
+  resolved_by: electronMainWiring.spec.ts — static HOST_SURVIVAL index.ts wiring assert (2026-09-29; full Electron GUI harness still out of sandbox)
 
 ## Deferred from: code review of spec-1-6-settings-sections-shell-with-explicit-save.md (2026-09-28)
 
 - HOST_SURVIVAL Electron main wiring untested beyond hostSurvival helpers — needs Electron main harness (already ledgered above; reconfirmed this review)
+  resolved: 2026-09-29 — electronMainWiring.spec.ts static wiring (same as source_spec entry above)
 - AUTH_BRIDGE main/preload IPC handlers never executed in tests — same Electron-host harness cost; Vue/HTTP covered against mock contract
+  resolved: 2026-09-29 — electronMainWiring.spec.ts static main+preload scan + mocked preload invoke/on execution
 - AGENTS.md still says Electron spawn/host-survival remain deferred — fix edits agent-context AGENTS.md
   resolved_by: epic-1-retro-2026-09-28.md (action item 2 — Running section updated 2026-09-28)
 
