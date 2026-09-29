@@ -227,7 +227,9 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
-def _placement_items_public_or_none(raw_items: dict[str, Any] | None) -> dict[str, Any] | None:
+def _placement_items_public_or_none(
+    raw_items: dict[str, Any] | None,
+) -> dict[str, Any] | None:
     """Client-safe items projection — never leak `correct_index` over the wire."""
     if raw_items is None:
         return None
@@ -405,9 +407,7 @@ def create_app(
         return _learner_to_dict(learner)
 
     @app.patch("/learner")
-    async def patch_learner(
-        payload: LearnerPatch, request: Request
-    ) -> dict[str, Any]:
+    async def patch_learner(payload: LearnerPatch, request: Request) -> dict[str, Any]:
         persistence: PersistencePort = request.app.state.store
         raw = payload.model_dump(exclude_unset=True)
         kwargs: dict[str, Any] = {}

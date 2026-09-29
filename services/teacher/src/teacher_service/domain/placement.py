@@ -92,7 +92,9 @@ def _parse_choice_item(raw: Any, *, context: str) -> ChoiceItem:
         or not isinstance(correct_index, int)
         or not (0 <= correct_index < len(options))
     ):
-        raise PlacementItemsError(f"{context}.correct_index must be a valid option index")
+        raise PlacementItemsError(
+            f"{context}.correct_index must be a valid option index"
+        )
     return ChoiceItem(
         prompt=prompt.strip(),
         options=tuple(o.strip() for o in options),
@@ -112,7 +114,9 @@ def parse_placement_items(raw: Any) -> PlacementItems:
 
     written_raw = raw.get("written")
     if not isinstance(written_raw, list) or len(written_raw) != WRITTEN_ITEM_COUNT:
-        raise PlacementItemsError(f"written must contain exactly {WRITTEN_ITEM_COUNT} items")
+        raise PlacementItemsError(
+            f"written must contain exactly {WRITTEN_ITEM_COUNT} items"
+        )
     written = tuple(
         _parse_choice_item(item, context=f"written[{i}]")
         for i, item in enumerate(written_raw)
@@ -149,20 +153,30 @@ def parse_placement_items(raw: Any) -> PlacementItems:
         )
     speaking_prompts = tuple(p.strip() for p in speaking_raw)
 
-    return PlacementItems(written=written, listening=listening, speaking_prompts=speaking_prompts)
+    return PlacementItems(
+        written=written, listening=listening, speaking_prompts=speaking_prompts
+    )
 
 
 def placement_items_to_storage(items: PlacementItems) -> dict[str, Any]:
     """Full server-side dict (incl. `correct_index`) for SQLite persistence."""
     return {
         "written": [
-            {"prompt": i.prompt, "options": list(i.options), "correct_index": i.correct_index}
+            {
+                "prompt": i.prompt,
+                "options": list(i.options),
+                "correct_index": i.correct_index,
+            }
             for i in items.written
         ],
         "listening": {
             "script": items.listening.script,
             "questions": [
-                {"prompt": q.prompt, "options": list(q.options), "correct_index": q.correct_index}
+                {
+                    "prompt": q.prompt,
+                    "options": list(q.options),
+                    "correct_index": q.correct_index,
+                }
                 for q in items.listening.questions
             ],
         },
@@ -192,7 +206,9 @@ def placement_items_public(items: PlacementItems) -> dict[str, Any]:
     """Client-safe dict — strips `correct_index` and the raw script/answer key
     so placement cannot be gamed by reading the wire payload."""
     public = {
-        "written": [{"prompt": i.prompt, "options": list(i.options)} for i in items.written],
+        "written": [
+            {"prompt": i.prompt, "options": list(i.options)} for i in items.written
+        ],
         "listening": {
             "questions": [
                 {"prompt": q.prompt, "options": list(q.options)}

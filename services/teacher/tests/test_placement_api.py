@@ -66,7 +66,8 @@ class FakeVoicePort:
         self,
         *,
         audio: bytes = b"RIFF-fake-wav-bytes",
-        transcript: str = "hello there this is a real transcript with enough words " * 3,
+        transcript: str = "hello there this is a real transcript with enough words "
+        * 3,
         synth_error: Exception | None = None,
         transcribe_error: Exception | None = None,
     ) -> None:
@@ -247,7 +248,10 @@ class TestGeneratePlacementItems:
 
         get_body = client.get("/learner", headers=_auth_header(auth_token)).json()
         assert "correct_index" not in get_body["placement_items"]["written"][0]
-        assert "correct_index" not in get_body["placement_items"]["listening"]["questions"][0]
+        assert (
+            "correct_index"
+            not in get_body["placement_items"]["listening"]["questions"][0]
+        )
         assert "script" not in get_body["placement_items"]["listening"]
 
         patch_response = client.patch(
@@ -261,7 +265,10 @@ class TestGeneratePlacementItems:
         assert patch_response.status_code == 200
         patch_body = patch_response.json()
         assert "correct_index" not in patch_body["placement_items"]["written"][0]
-        assert "correct_index" not in patch_body["placement_items"]["listening"]["questions"][0]
+        assert (
+            "correct_index"
+            not in patch_body["placement_items"]["listening"]["questions"][0]
+        )
         assert "script" not in patch_body["placement_items"]["listening"]
 
 
@@ -324,7 +331,10 @@ class TestSpeakingTranscribe:
         client = make_client(config, auth_token)
         response = client.post(
             "/placement/speaking/transcribe",
-            json={"audio_base64": base64.b64encode(b"x").decode(), "mime_type": "audio/webm"},
+            json={
+                "audio_base64": base64.b64encode(b"x").decode(),
+                "mime_type": "audio/webm",
+            },
             headers=_auth_header(auth_token),
         )
         assert response.status_code == 422
@@ -335,7 +345,10 @@ class TestSpeakingTranscribe:
         _seed_consent_complete(client, auth_token)
         response = client.post(
             "/placement/speaking/transcribe",
-            json={"audio_base64": base64.b64encode(b"x").decode(), "mime_type": "audio/webm"},
+            json={
+                "audio_base64": base64.b64encode(b"x").decode(),
+                "mime_type": "audio/webm",
+            },
             headers=_auth_header(auth_token),
         )
         assert response.status_code == 422
@@ -369,7 +382,10 @@ class TestSpeakingTranscribe:
         client.post("/placement/items", headers=_auth_header(auth_token))
         response = client.post(
             "/placement/speaking/transcribe",
-            json={"audio_base64": base64.b64encode(b"x").decode(), "mime_type": "audio/webm"},
+            json={
+                "audio_base64": base64.b64encode(b"x").decode(),
+                "mime_type": "audio/webm",
+            },
             headers=_auth_header(auth_token),
         )
         assert response.status_code == 422
@@ -388,7 +404,10 @@ class TestSpeakingTranscribe:
         client.post("/placement/items", headers=_auth_header(auth_token))
         response = client.post(
             "/placement/speaking/transcribe",
-            json={"audio_base64": base64.b64encode(b"x").decode(), "mime_type": "audio/webm"},
+            json={
+                "audio_base64": base64.b64encode(b"x").decode(),
+                "mime_type": "audio/webm",
+            },
             headers=_auth_header(auth_token),
         )
         assert response.status_code == 200
@@ -465,7 +484,10 @@ class TestPlacementCompleteEndToEnd:
 
         transcribe = client.post(
             "/placement/speaking/transcribe",
-            json={"audio_base64": base64.b64encode(b"x").decode(), "mime_type": "audio/webm"},
+            json={
+                "audio_base64": base64.b64encode(b"x").decode(),
+                "mime_type": "audio/webm",
+            },
             headers=_auth_header(auth_token),
         )
         assert transcribe.status_code == 200

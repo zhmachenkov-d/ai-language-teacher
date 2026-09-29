@@ -1,10 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { nextTick } from "vue";
-import { createRouter, createWebHashHistory, RouterView, type Router } from "vue-router";
+import {
+  createRouter,
+  createWebHashHistory,
+  RouterView,
+  type Router,
+} from "vue-router";
 import OnboardingPlacement from "./OnboardingPlacement.vue";
 import OnboardingPlanStub from "./OnboardingPlanStub.vue";
-import type { LearnerProfile, PlacementItemsPublic } from "../services/teacherClient";
+import type {
+  LearnerProfile,
+  PlacementItemsPublic,
+} from "../services/teacherClient";
 
 const RUNNING_AUTH = {
   state: "running" as const,
@@ -87,43 +95,61 @@ class FakeMediaRecorder {
     /* no-op */
   }
   stop(): void {
-    this.ondataavailable?.({ data: new Blob(["fake-audio-bytes"], { type: this.mimeType }) });
+    this.ondataavailable?.({
+      data: new Blob(["fake-audio-bytes"], { type: this.mimeType }),
+    });
     this.onstop?.();
   }
 }
 
-function fakeMediaStream(): { stream: MediaStream; stopTrack: ReturnType<typeof vi.fn> } {
+function fakeMediaStream(): {
+  stream: MediaStream;
+  stopTrack: ReturnType<typeof vi.fn>;
+} {
   const stopTrack = vi.fn();
-  const stream = { getTracks: () => [{ stop: stopTrack }] } as unknown as MediaStream;
+  const stream = {
+    getTracks: () => [{ stop: stopTrack }],
+  } as unknown as MediaStream;
   return { stream, stopTrack };
 }
 
 /** Stubs `navigator.mediaDevices.getUserMedia` + `window.MediaRecorder` so
  * `micAvailable()` reports true and the speaking record flow can run. */
-function mockMicSupport(
-  getUserMediaImpl?: () => Promise<MediaStream>,
-): { getUserMedia: ReturnType<typeof vi.fn> } {
+function mockMicSupport(getUserMediaImpl?: () => Promise<MediaStream>): {
+  getUserMedia: ReturnType<typeof vi.fn>;
+} {
   const { stream } = fakeMediaStream();
-  const getUserMedia = vi.fn().mockImplementation(getUserMediaImpl ?? (() => Promise.resolve(stream)));
+  const getUserMedia = vi
+    .fn()
+    .mockImplementation(getUserMediaImpl ?? (() => Promise.resolve(stream)));
   Object.defineProperty(navigator, "mediaDevices", {
     configurable: true,
     value: { getUserMedia },
   });
-  vi.stubGlobal("MediaRecorder", FakeMediaRecorder as unknown as typeof MediaRecorder);
+  vi.stubGlobal(
+    "MediaRecorder",
+    FakeMediaRecorder as unknown as typeof MediaRecorder,
+  );
   return { getUserMedia };
 }
 
 type RouteHandler = (init: RequestInit | undefined) => Response;
 
 /** Dispatches by "METHOD /path" so each test only defines the endpoints it exercises. */
-function dispatcher(handlers: Record<string, RouteHandler>): ReturnType<typeof vi.fn> {
+function dispatcher(
+  handlers: Record<string, RouteHandler>,
+): ReturnType<typeof vi.fn> {
   return vi.fn((url: string, init?: RequestInit) => {
     const path = url.replace("http://127.0.0.1:8765", "");
     const key = `${init?.method ?? "GET"} ${path}`;
     const handler = handlers[key];
     if (!handler) {
       return Promise.resolve(
-        jsonResponse(500, { code: "unhandled", message: `no handler for ${key}`, retryable: false }),
+        jsonResponse(500, {
+          code: "unhandled",
+          message: `no handler for ${key}`,
+          retryable: false,
+        }),
       );
     }
     return Promise.resolve(handler(init));
@@ -145,8 +171,16 @@ async function mountPlacement(fetchImpl: ReturnType<typeof vi.fn>): Promise<{
         name: "onboarding-placement",
         component: OnboardingPlacement,
       },
-      { path: "/onboarding/plan", name: "onboarding-plan", component: OnboardingPlanStub },
-      { path: "/settings", name: "settings", component: { template: "<div />" } },
+      {
+        path: "/onboarding/plan",
+        name: "onboarding-plan",
+        component: OnboardingPlanStub,
+      },
+      {
+        path: "/settings",
+        name: "settings",
+        component: { template: "<div />" },
+      },
     ],
   });
   const wrapper = mount(RouterView, { global: { plugins: [router] } });
@@ -182,7 +216,9 @@ describe("OnboardingPlacement", () => {
         }),
     });
     const { wrapper } = await mountPlacement(fetchMock);
-    expect(wrapper.find('[data-testid="placement-briefing"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="placement-briefing"]').exists()).toBe(
+      true,
+    );
 
     await wrapper.get('[data-testid="briefing-next"]').trigger("click");
     await flushPromises();
@@ -192,8 +228,12 @@ describe("OnboardingPlacement", () => {
     );
     expect(wrapper.find(".settings-link").exists()).toBe(true);
     // Still on briefing — no PATCH advancing the stage happened.
-    expect(wrapper.find('[data-testid="placement-briefing"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="placement-written"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="placement-briefing"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[data-testid="placement-written"]').exists()).toBe(
+      false,
+    );
     const patchCalls = fetchMock.mock.calls.filter(
       (c) => (c[1] as RequestInit | undefined)?.method === "PATCH",
     );
@@ -212,9 +252,13 @@ describe("OnboardingPlacement", () => {
     await wrapper.get('[data-testid="briefing-next"]').trigger("click");
     await flushPromises();
 
-    expect(wrapper.find('[data-testid="placement-written"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="placement-written"]').exists()).toBe(
+      true,
+    );
     expect(wrapper.findAll(".item")).toHaveLength(5);
-    expect(wrapper.get('[data-testid="written-timer"]').text()).toContain("05:00");
+    expect(wrapper.get('[data-testid="written-timer"]').text()).toContain(
+      "05:00",
+    );
     wrapper.unmount();
   });
 
@@ -243,7 +287,9 @@ describe("OnboardingPlacement", () => {
         jsonResponse(200, { audio_base64: "aGVsbG8=", mime_type: "audio/wav" }),
     });
     const { wrapper } = await mountPlacement(fetchMock);
-    expect(wrapper.find('[data-testid="placement-written"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="placement-written"]').exists()).toBe(
+      true,
+    );
 
     await vi.advanceTimersByTimeAsync(300_000);
     await flushPromises();
@@ -256,7 +302,9 @@ describe("OnboardingPlacement", () => {
         }),
       ]),
     );
-    expect(wrapper.find('[data-testid="placement-listening"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="placement-listening"]').exists()).toBe(
+      true,
+    );
     wrapper.unmount();
     vi.useRealTimers();
   });
@@ -274,7 +322,9 @@ describe("OnboardingPlacement", () => {
         jsonResponse(200, { audio_base64: "aGVsbG8=", mime_type: "audio/wav" }),
     });
     const { wrapper } = await mountPlacement(fetchMock);
-    expect(wrapper.find('[data-testid="placement-listening"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="placement-listening"]').exists()).toBe(
+      true,
+    );
     expect(wrapper.find('[data-testid="listening-play"]').exists()).toBe(true);
     expect(wrapper.findAll(".item")).toHaveLength(3);
     wrapper.unmount();
@@ -307,16 +357,18 @@ describe("OnboardingPlacement", () => {
 
     await wrapper.get('[data-testid="listening-submit"]').trigger("click");
     await flushPromises();
-    expect(wrapper.get('[data-testid="listening-save-error"]').text()).toContain(
-      "прослушайте",
-    );
+    expect(
+      wrapper.get('[data-testid="listening-save-error"]').text(),
+    ).toContain("прослушайте");
     expect(
       fetchMock.mock.calls.filter(
         (c) => (c[1] as RequestInit | undefined)?.method === "PATCH",
       ),
     ).toHaveLength(0);
     // Still on listening — the must-play gate blocked the transition.
-    expect(wrapper.find('[data-testid="placement-listening"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="placement-listening"]').exists()).toBe(
+      true,
+    );
 
     await wrapper.get('[data-testid="listening-audio"]').trigger("ended");
     await wrapper.get('[data-testid="listening-submit"]').trigger("click");
@@ -327,7 +379,9 @@ describe("OnboardingPlacement", () => {
         (c) => (c[1] as RequestInit | undefined)?.method === "PATCH",
       ),
     ).toHaveLength(1);
-    expect(wrapper.find('[data-testid="placement-speaking"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="placement-speaking"]').exists()).toBe(
+      true,
+    );
     wrapper.unmount();
   });
 
@@ -348,8 +402,12 @@ describe("OnboardingPlacement", () => {
         }),
     });
     const { wrapper } = await mountPlacement(fetchMock);
-    expect(wrapper.get('[data-testid="listening-audio-error"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="listening-audio"]').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="listening-audio-error"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[data-testid="listening-audio"]').exists()).toBe(
+      false,
+    );
     expect(wrapper.find('[data-testid="listening-play"]').exists()).toBe(false);
     wrapper.unmount();
   });
@@ -368,20 +426,26 @@ describe("OnboardingPlacement", () => {
         }),
     });
     const { wrapper } = await mountPlacement(fetchMock);
-    expect(wrapper.find('[data-testid="placement-speaking"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="placement-speaking"]').exists()).toBe(
+      true,
+    );
 
     await wrapper.get('[data-testid="speaking-record"]').trigger("click");
     await flushPromises();
 
-    expect(wrapper.get('[data-testid="mic-error"]').text()).toContain("Микрофон");
+    expect(wrapper.get('[data-testid="mic-error"]').text()).toContain(
+      "Микрофон",
+    );
     const transcribeCalls = fetchMock.mock.calls.filter(([url]) =>
       String(url).includes("/placement/speaking/transcribe"),
     );
     expect(transcribeCalls).toHaveLength(0);
     // Text-only completion stays blocked: no transcript yet → Готово disabled.
     expect(
-      (wrapper.get('[data-testid="speaking-finish"]').element as HTMLButtonElement)
-        .disabled,
+      (
+        wrapper.get('[data-testid="speaking-finish"]')
+          .element as HTMLButtonElement
+      ).disabled,
     ).toBe(true);
     wrapper.unmount();
   });
@@ -438,8 +502,10 @@ describe("OnboardingPlacement", () => {
       "hello this is my answer",
     );
     expect(
-      (wrapper.get('[data-testid="speaking-finish"]').element as HTMLButtonElement)
-        .disabled,
+      (
+        wrapper.get('[data-testid="speaking-finish"]')
+          .element as HTMLButtonElement
+      ).disabled,
     ).toBe(false);
     wrapper.unmount();
   });
@@ -483,8 +549,10 @@ describe("OnboardingPlacement", () => {
     );
     expect(wrapper.find(".settings-link").exists()).toBe(true);
     expect(
-      (wrapper.get('[data-testid="speaking-finish"]').element as HTMLButtonElement)
-        .disabled,
+      (
+        wrapper.get('[data-testid="speaking-finish"]')
+          .element as HTMLButtonElement
+      ).disabled,
     ).toBe(true);
     wrapper.unmount();
   });
@@ -548,18 +616,26 @@ describe("OnboardingPlacement", () => {
     await flushPromises();
 
     expect(router.currentRoute.value.name).toBe("onboarding-plan");
-    expect(wrapper.find('[data-testid="onboarding-plan-stub"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="onboarding-plan-stub"]').exists()).toBe(
+      true,
+    );
     wrapper.unmount();
   });
 
   it("already placement_complete on load redirects to the plan stub", async () => {
     const fetchMock = dispatcher({
       "GET /learner": () =>
-        jsonResponse(200, { ...BASE_LEARNER, placement_stage: "complete", placement_complete: true }),
+        jsonResponse(200, {
+          ...BASE_LEARNER,
+          placement_stage: "complete",
+          placement_complete: true,
+        }),
     });
     const { wrapper, router } = await mountPlacement(fetchMock);
     expect(router.currentRoute.value.name).toBe("onboarding-plan");
-    expect(wrapper.find('[data-testid="onboarding-plan-stub"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="onboarding-plan-stub"]').exists()).toBe(
+      true,
+    );
     wrapper.unmount();
   });
 });

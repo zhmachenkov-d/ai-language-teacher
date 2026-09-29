@@ -406,7 +406,9 @@ def update_learner(
             placement_written_answers, field="placement_written_answers"
         )
         items = _placement_items_or_raise(
-            placement_items if placement_items is not _UNSET else current.placement_items
+            placement_items
+            if placement_items is not _UNSET
+            else current.placement_items
         )
         try:
             score = score_choice_answers(items.written, answers)
@@ -430,7 +432,9 @@ def update_learner(
             placement_listening_answers, field="placement_listening_answers"
         )
         items = _placement_items_or_raise(
-            placement_items if placement_items is not _UNSET else current.placement_items
+            placement_items
+            if placement_items is not _UNSET
+            else current.placement_items
         )
         try:
             score = score_choice_answers(items.listening.questions, answers)

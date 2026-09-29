@@ -15,8 +15,6 @@ from teacher_service.domain.learner import (
 )
 from teacher_service.domain.placement import (
     ChoiceItem,
-    ListeningContent,
-    PlacementItems,
     PlacementItemsError,
     parse_placement_items,
     placement_items_public,
@@ -227,7 +225,11 @@ class TestPlacementGating:
         _update(store, placement_items=placement_items_to_storage(items))
         _update(store, placement_written_answers=[0, 0, 0, 0, 0])
         _update(store, placement_listening_generated=True)
-        _update(store, placement_listening_played=True, placement_listening_answers=[1, 1, 1])
+        _update(
+            store,
+            placement_listening_played=True,
+            placement_listening_answers=[1, 1, 1],
+        )
 
         with pytest.raises(LearnerValidationError) as exc_info:
             _update(store, placement_complete=True)
@@ -251,7 +253,11 @@ class TestPlacementGating:
         _update(store, placement_items=placement_items_to_storage(items))
         _update(store, placement_written_answers=[0, 0, 0, 0, 0])
         _update(store, placement_listening_generated=True)
-        _update(store, placement_listening_played=True, placement_listening_answers=[1, 1, 1])
+        _update(
+            store,
+            placement_listening_played=True,
+            placement_listening_answers=[1, 1, 1],
+        )
         _update(store, placement_speaking_transcript="hello world " * 10)
 
         with pytest.raises(LearnerValidationError) as exc_info:
@@ -276,7 +282,11 @@ class TestPlacementGating:
         _update(store, placement_items=placement_items_to_storage(items))
         _update(store, placement_written_answers=[0, 0, 0, 0, 0])
         _update(store, placement_listening_generated=True)
-        _update(store, placement_listening_played=True, placement_listening_answers=[1, 1, 1])
+        _update(
+            store,
+            placement_listening_played=True,
+            placement_listening_answers=[1, 1, 1],
+        )
         _update(
             store,
             placement_speaking_transcript="hello world " * 10,

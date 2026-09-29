@@ -232,8 +232,7 @@ def _row_to_learner(row: sqlite3.Row) -> Learner:
         consent_complete=_bool_from_row(row, keys, "consent_complete"),
         placement_stage=(
             row["placement_stage"]
-            if "placement_stage" in keys
-            and row["placement_stage"] in PLACEMENT_STAGES
+            if "placement_stage" in keys and row["placement_stage"] in PLACEMENT_STAGES
             else PLACEMENT_STAGE_BRIEFING
         ),
         placement_items=_loads_dict_or_none(
@@ -296,10 +295,13 @@ class SqliteStore:
         with self._connect() as conn:
             conn.executescript(_SCHEMA)
             existing = {
-                row[1]
-                for row in conn.execute("PRAGMA table_info(learner)").fetchall()
+                row[1] for row in conn.execute("PRAGMA table_info(learner)").fetchall()
             }
-            for name, decl in (*_INTAKE_COLUMNS, *_CONSENT_COLUMNS, *_PLACEMENT_COLUMNS):
+            for name, decl in (
+                *_INTAKE_COLUMNS,
+                *_CONSENT_COLUMNS,
+                *_PLACEMENT_COLUMNS,
+            ):
                 if name not in existing:
                     conn.execute(f"ALTER TABLE learner ADD COLUMN {name} {decl}")
             conn.commit()
@@ -365,12 +367,8 @@ class SqliteStore:
         with self._connect() as conn:
             count = conn.execute("SELECT COUNT(*) FROM learner").fetchone()[0]
             if count > 1:
-                raise RuntimeError(
-                    f"expected at most one learner row, found {count}"
-                )
-            row = conn.execute(
-                f"SELECT {_SELECT_COLS} FROM learner LIMIT 1"
-            ).fetchone()
+                raise RuntimeError(f"expected at most one learner row, found {count}")
+            row = conn.execute(f"SELECT {_SELECT_COLS} FROM learner LIMIT 1").fetchone()
         if row is None:
             return None
         return _row_to_learner(row)
