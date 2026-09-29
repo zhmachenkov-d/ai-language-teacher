@@ -19,7 +19,7 @@ Complete the first-run closed loop: intake and speaking/listening placement seed
 ## Requirements & Constraints
 
 - Preferences (goals, interests, emphasis, duration 30/45/60, weekly schedule) persist and drive Living plan, templates, and later reminders; at least one weekly slot is required—zero slots block advance with clear copy.
-- Placement must include written, listening (with comprehension check, not playback alone), and real speaking capture; text-only placement cannot complete onboarding; listening/speaking gaps block finish.
+- Placement must include written, listening (with comprehension check, not playback alone), and real speaking capture; text-only placement cannot complete onboarding; missing listening or speaking results block finish.
 - After intake + placement, teacher proposes path option(s), creates a revisable Living plan, and schedules the path into lesson one; learner can view the plan before or as lesson one begins.
 - Age under 16 (self-declared at greeting) hard-blocks onboarding with regulated exit—no limited/minor mode in v1; age is not re-asked on consent.
 - Explicit consent for mic/voice recording and Telegram; AI disclaimer (not certified teacher / not exam guarantee); Privacy/PII copy; no unqualified certificate or level claims.
