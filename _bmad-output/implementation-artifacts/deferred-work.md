@@ -118,7 +118,7 @@
   evidence: Split from 2.3; speaking seedability requires real local STT transcript stored — detailed pronunciation feedback stays Epic 3
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
-  summary: Production OpenAiLlmAdapter / LocalVoiceAdapter never executed under pytest (only Fake* ports)
+  summary: Production OpenAiLlmAdapter / LocalVoiceAdapter never executed under pytest (only Fake\* ports)
   evidence: Verification-gap review; fabricate-on-error in real adapters would leave placement API suite green; settle with thin adapter unit/integration smoke later
   resolved_by: test_llm_adapter.py + expanded test_voice_adapter.py — mocked HTTP / stand-in CLI smoke (2026-09-29)
 
@@ -141,6 +141,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
   summary: Automated coverage of UNIQUE(learner_id) race → domain reload idempotent path in create_living_plan
   evidence: Review found only raw SQL IntegrityError coverage; concurrent POST loser branch (living_plan.py except/reload) is untested; v1 single-learner desktop makes real races unlikely
+  resolved_by: test_living_plan_create_race.py — RaceStore IntegrityError + reload winner / empty fail (2026-09-29)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
   summary: Recompute WEEK_FILL after LLM returns so slow proposes cannot persist lesson times already in the past
