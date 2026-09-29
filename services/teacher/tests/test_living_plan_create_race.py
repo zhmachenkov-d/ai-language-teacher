@@ -72,9 +72,7 @@ class RaceStore:
         lessons: tuple[LessonRecord, ...],
     ) -> LivingPlanProjection:
         self.create_calls += 1
-        raise sqlite3.IntegrityError(
-            "UNIQUE constraint failed: living_plan.learner_id"
-        )
+        raise sqlite3.IntegrityError("UNIQUE constraint failed: living_plan.learner_id")
 
 
 class EmptyAfterRaceStore(RaceStore):

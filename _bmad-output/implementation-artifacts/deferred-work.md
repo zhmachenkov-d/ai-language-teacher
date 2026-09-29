@@ -146,6 +146,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
   summary: Recompute WEEK_FILL after LLM returns so slow proposes cannot persist lesson times already in the past
   evidence: maybe-false medium from edge-case review; settle by injecting a clock that advances across a slot boundary during propose and asserting recomputed scheduled_at
+  resolved_by: create_living_plan now_provider + post-LLM WEEK_FILL; test_living_plan_week_fill_recompute.py (2026-09-29)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-living-plan-creation-and-persistence.md`
   summary: Enable SQLite PRAGMA foreign_keys=ON so lesson_record → living_plan FK is enforced
