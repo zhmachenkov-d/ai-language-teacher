@@ -1,12 +1,13 @@
 <script setup lang="ts">
 /**
  * Real multi-stage placement (Story 2.3): briefing → written (timer) →
- * listening (TTS play/pause → comprehension) → speaking (local mic → STT).
+ * listening (TTS player scrub/seek/replay → comprehension) → speaking (local mic → STT).
  * One LLM-generated item set per run; server enforces listening+speaking
  * before `placement_complete` — this view only renders/gates the UI side.
  */
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
+import ListeningPlayer from "../components/ListeningPlayer.vue";
 import {
   fetchLearner,
   generatePlacementItems,
@@ -58,7 +59,6 @@ const listeningPlaybackError = ref<string | null>(null);
 const listeningAnswers = ref<number[]>([]);
 const savingListening = ref(false);
 const listeningSaveError = ref<string | null>(null);
-const audioEl = ref<HTMLAudioElement | null>(null);
 
 // speaking
 const recording = ref(false);
@@ -275,34 +275,13 @@ function setListeningAnswer(index: number, optionIndex: number): void {
   listeningAnswers.value = next;
 }
 
-const LISTENING_PLAYBACK_ERROR_MESSAGE =
-  "Не удалось воспроизвести запись. Проверьте динамики/наушники и попробуйте снова.";
-
-function onPlayPause(): void {
-  const el = audioEl.value;
-  if (!el) {
-    return;
-  }
+function onListeningEndedOnce(): void {
+  listeningPlayedLocal.value = true;
   listeningPlaybackError.value = null;
-  try {
-    if (el.paused) {
-      const playResult = el.play();
-      if (playResult && typeof playResult.then === "function") {
-        playResult.catch(() => {
-          listeningPlaybackError.value = LISTENING_PLAYBACK_ERROR_MESSAGE;
-        });
-      }
-    } else {
-      el.pause();
-    }
-  } catch {
-    // Some headless/test environments throw synchronously.
-    listeningPlaybackError.value = LISTENING_PLAYBACK_ERROR_MESSAGE;
-  }
 }
 
-function onAudioEnded(): void {
-  listeningPlayedLocal.value = true;
+function onListeningPlaybackError(message: string): void {
+  listeningPlaybackError.value = message || null;
 }
 
 async function onListeningSubmit(): Promise<void> {
@@ -575,20 +554,11 @@ onUnmounted(() => {
           </div>
         </div>
         <template v-else-if="listeningAudioUrl">
-          <audio
-            ref="audioEl"
+          <ListeningPlayer
             :src="listeningAudioUrl"
-            data-testid="listening-audio"
-            @ended="onAudioEnded"
+            @ended-once="onListeningEndedOnce"
+            @playback-error="onListeningPlaybackError"
           />
-          <button
-            type="button"
-            class="secondary"
-            data-testid="listening-play"
-            @click="onPlayPause"
-          >
-            Слушать / Пауза
-          </button>
           <p
             v-if="listeningPlaybackError"
             class="error"
