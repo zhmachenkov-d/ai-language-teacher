@@ -98,6 +98,7 @@ class Learner:
     placement_speaking_transcript: str | None = None
     placement_speaking_score: float | None = None
     placement_complete: bool = False
+    plan_complete: bool = False
 
 
 def _coerce_str_list(value: Sequence[str]) -> tuple[str, ...]:

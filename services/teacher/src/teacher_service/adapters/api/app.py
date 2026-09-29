@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import base64
 import binascii
+from collections.abc import Callable
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.cors import CORSMiddleware
@@ -30,6 +32,12 @@ from teacher_service.domain.learner import (
     WeeklySlot,
     get_or_create_learner,
     update_learner,
+)
+from teacher_service.domain.living_plan import (
+    LivingPlanError,
+    create_living_plan,
+    get_living_plan,
+    living_plan_to_wire,
 )
 from teacher_service.domain.placement import (
     PLACEMENT_STAGES,
@@ -115,6 +123,12 @@ class SpeakingAudioIn(BaseModel):
         if len(value) > _MAX_SPEAKING_AUDIO_BASE64_CHARS:
             raise ValueError("audio_base64 exceeds the maximum allowed size")
         return value
+
+
+class LivingPlanCreateBody(BaseModel):
+    """POST /living-plan body — must be exactly `{}` (POST_BODY)."""
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class LearnerPatch(BaseModel):
@@ -274,7 +288,12 @@ def _learner_to_dict(learner: Any) -> dict[str, Any]:
         "placement_speaking_transcript": learner.placement_speaking_transcript,
         "placement_speaking_score": learner.placement_speaking_score,
         "placement_complete": learner.placement_complete,
+        "plan_complete": learner.plan_complete,
     }
+
+
+def _default_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def create_app(
@@ -284,6 +303,7 @@ def create_app(
     store: PersistencePort | None = None,
     llm: LlmPort | None = None,
     voice: VoicePort | None = None,
+    now_provider: Callable[[], datetime] | None = None,
 ) -> FastAPI:
     """Build the API app. Token: arg → env → Config bearer (fail closed)."""
     if config is None:
@@ -313,6 +333,7 @@ def create_app(
     app.state.store = store
     app.state.llm = llm
     app.state.voice = voice
+    app.state.now_provider = now_provider or _default_now
     # Middleware order: last added runs first. CORS must wrap Bearer so preflight
     # is answered before auth; Bearer still skips OPTIONS defensively.
     app.add_middleware(BearerAuthMiddleware, token=settings.token)
@@ -642,5 +663,64 @@ def create_app(
             placement_speaking_score=score,
         )
         return _learner_to_dict(updated)
+
+    def _living_plan_http_error(exc: LivingPlanError) -> HTTPException:
+        if exc.code == "living_plan_not_found":
+            status = 404
+        elif exc.code == "plan_inconsistent":
+            status = 500
+        else:
+            status = 422
+        return HTTPException(
+            status_code=status,
+            detail={
+                "code": exc.code,
+                "message": str(exc),
+                "retryable": exc.retryable,
+            },
+        )
+
+    @app.post("/living-plan")
+    async def post_living_plan(
+        payload: LivingPlanCreateBody, request: Request
+    ) -> dict[str, Any]:
+        # POST_BODY: only `{}` accepted (extra fields → 422 via extra=forbid).
+        del payload  # empty body; presence validates shape
+        persistence: PersistencePort = request.app.state.store
+        llm_port: LlmPort = request.app.state.llm
+        cfg: ConfigPort = request.app.state.config
+        now_fn: Callable[[], datetime] = request.app.state.now_provider
+
+        def _llm_configured(c: ConfigPort) -> bool:
+            try:
+                return c.get_secret(SECRET_LLM_API_KEY) is not None
+            except RuntimeError as exc:
+                raise LivingPlanError(
+                    "llm_config_missing",
+                    str(exc),
+                    retryable=True,
+                ) from exc
+
+        try:
+            projection = create_living_plan(
+                persistence,
+                llm_port,
+                cfg,
+                now=now_fn(),
+                llm_configured=_llm_configured,
+            )
+        except LivingPlanError as exc:
+            raise _living_plan_http_error(exc) from exc
+        return living_plan_to_wire(projection)
+
+    @app.get("/living-plan")
+    async def get_living_plan_endpoint(request: Request) -> dict[str, Any]:
+        persistence: PersistencePort = request.app.state.store
+        learner = get_or_create_learner(persistence)
+        try:
+            projection = get_living_plan(persistence, learner)
+        except LivingPlanError as exc:
+            raise _living_plan_http_error(exc) from exc
+        return living_plan_to_wire(projection)
 
     return app

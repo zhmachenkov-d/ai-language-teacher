@@ -79,6 +79,7 @@ export interface LearnerProfile {
   placement_speaking_transcript: string | null;
   placement_speaking_score: number | null;
   placement_complete: boolean;
+  plan_complete: boolean;
 }
 
 export type LearnerPatch = Partial<{
@@ -326,4 +327,64 @@ export async function transcribeSpeakingAudio(
     throw await toApiError(response);
   }
   return parseSuccessJson<LearnerProfile>(response);
+}
+
+export interface PathOption {
+  id: string;
+  title: string;
+  summary: string;
+  recommended: boolean;
+}
+
+export interface LivingPlanLesson {
+  id: string;
+  scheduled_at: string;
+  timezone: string;
+}
+
+export interface LivingPlanProjection {
+  id: string;
+  goals: string[];
+  focus: string;
+  upcoming_topics: string[];
+  difficulty: string;
+  selected_path_id: string;
+  proposed_paths: PathOption[];
+  revisable: boolean;
+  target_language: string;
+  l1: string;
+  lessons: LivingPlanLesson[];
+}
+
+/**
+ * Create (or return the existing) Living plan after placement.
+ * POST body must be `{}`. Idempotent when a plan already exists (no re-LLM).
+ * 422: llm_config_missing | llm_generation_failed | placement_incomplete |
+ * placement_scores_missing | schedule_unusable.
+ */
+export async function createLivingPlan(
+  auth: TeacherAuth,
+): Promise<LivingPlanProjection> {
+  // LLM propose can take up to ~30s; override the default 8s fetch timeout.
+  const response = await authorizedFetch(auth, "/living-plan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+    signal: AbortSignal.timeout(35000),
+  });
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+  return parseSuccessJson<LivingPlanProjection>(response);
+}
+
+/** Fetch the Living plan. 404 when !plan_complete; 500 if FLAG without row. */
+export async function fetchLivingPlan(
+  auth: TeacherAuth,
+): Promise<LivingPlanProjection> {
+  const response = await authorizedFetch(auth, "/living-plan");
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+  return parseSuccessJson<LivingPlanProjection>(response);
 }
