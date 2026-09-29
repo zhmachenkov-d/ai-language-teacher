@@ -1,25 +1,26 @@
 <script setup lang="ts">
 /**
- * Chrome-only placement handoff stub for Story 2.3. Consent-complete learners
- * land here; calendar stays gated until the 2.6 climax. No briefing/tasks.
+ * Chrome-only Living plan handoff stub for Story 2.4 (HANDOFF: PLAN_STUB).
+ * `placement_complete` learners land here; calendar climax stays gated until
+ * 2.6 — no plan-creation animation/persistence here.
  */
 </script>
 
 <template>
-  <main class="placement-stub" data-testid="onboarding-placement-stub">
+  <main class="plan-stub" data-testid="onboarding-plan-stub">
     <section class="surface">
       <span class="accent-rule" aria-hidden="true" />
-      <h1>Проверка уровня</h1>
+      <h1>Учебный план</h1>
       <p class="hint">
-        Следующий шаг — placement: письменная часть, слушание и говорение.
-        Экран заданий появится в следующем шаге онбординга.
+        Проверка уровня пройдена. Дальше — создание учебного плана и
+        расписание первого урока появятся в следующем шаге онбординга.
       </p>
     </section>
   </main>
 </template>
 
 <style scoped>
-.placement-stub {
+.plan-stub {
   flex: 1;
   display: flex;
   align-items: flex-start;

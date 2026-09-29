@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import binascii
 from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI, HTTPException, Request
@@ -29,10 +31,22 @@ from teacher_service.domain.learner import (
     get_or_create_learner,
     update_learner,
 )
+from teacher_service.domain.placement import (
+    PLACEMENT_STAGES,
+    PlacementItemsError,
+    parse_placement_items,
+    placement_items_public,
+    placement_items_to_storage,
+    score_speaking_transcript,
+)
+from teacher_service.ports.llm import LlmGenerationError
+from teacher_service.ports.voice import VoiceUnavailableError
 
 if TYPE_CHECKING:
     from teacher_service.ports.config import ConfigPort
+    from teacher_service.ports.llm import LlmPort
     from teacher_service.ports.persistence import PersistencePort
+    from teacher_service.ports.voice import VoicePort
 
 LOOPBACK_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
@@ -82,6 +96,27 @@ class WeeklySlotIn(BaseModel):
         return value
 
 
+# ~4 MB of base64 text (~3 MB decoded) — covers a few short mic prompts with
+# headroom, rejects runaway uploads before base64 decode + STT.
+_MAX_SPEAKING_AUDIO_BASE64_CHARS = 4_000_000
+
+
+class SpeakingAudioIn(BaseModel):
+    """POST /placement/speaking/transcribe body — base64 local mic capture."""
+
+    audio_base64: str
+    mime_type: str = "audio/webm"
+
+    @field_validator("audio_base64")
+    @classmethod
+    def _audio_nonblank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("audio_base64 must be a non-empty string")
+        if len(value) > _MAX_SPEAKING_AUDIO_BASE64_CHARS:
+            raise ValueError("audio_base64 exceeds the maximum allowed size")
+        return value
+
+
 class LearnerPatch(BaseModel):
     """PATCH /learner — all fields optional; omitted keys are unchanged."""
 
@@ -100,6 +135,11 @@ class LearnerPatch(BaseModel):
     consent_ai: bool | None = None
     consent_privacy: bool | None = None
     consent_complete: bool | None = None
+    placement_stage: str | None = None
+    placement_written_answers: list[int] | None = None
+    placement_listening_played: bool | None = None
+    placement_listening_answers: list[int] | None = None
+    placement_complete: bool | None = None
 
     @field_validator("address_as")
     @classmethod
@@ -146,6 +186,24 @@ class LearnerPatch(BaseModel):
             raise ValueError("invalid intake_step")
         return value
 
+    @field_validator("placement_stage")
+    @classmethod
+    def _placement_stage_allowed(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if value not in PLACEMENT_STAGES:
+            raise ValueError("invalid placement_stage")
+        return value
+
+    @field_validator("placement_written_answers", "placement_listening_answers")
+    @classmethod
+    def _answers_are_ints(cls, value: list[int] | None) -> list[int] | None:
+        if value is None:
+            return None
+        if not all(isinstance(v, int) and not isinstance(v, bool) for v in value):
+            raise ValueError("answers must be a list of integers")
+        return value
+
 
 class BearerAuthMiddleware(BaseHTTPMiddleware):
     """Reject every request without a valid Bearer token (including unmatched routes)."""
@@ -167,6 +225,19 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
         if not tokens_match(presented, self._token):
             return JSONResponse(status_code=401, content=_UNAUTHORIZED_BODY)
         return await call_next(request)
+
+
+def _placement_items_public_or_none(
+    raw_items: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """Client-safe items projection — never leak `correct_index` over the wire."""
+    if raw_items is None:
+        return None
+    try:
+        return placement_items_public(parse_placement_items(raw_items))
+    except PlacementItemsError:
+        # Corrupt persisted payload — surface as absent rather than leaking raw shape.
+        return None
 
 
 def _learner_to_dict(learner: Any) -> dict[str, Any]:
@@ -192,6 +263,17 @@ def _learner_to_dict(learner: Any) -> dict[str, Any]:
         "consent_ai": learner.consent_ai,
         "consent_privacy": learner.consent_privacy,
         "consent_complete": learner.consent_complete,
+        "placement_stage": learner.placement_stage,
+        "placement_items": _placement_items_public_or_none(learner.placement_items),
+        "placement_written_answers": list(learner.placement_written_answers),
+        "placement_written_score": learner.placement_written_score,
+        "placement_listening_generated": learner.placement_listening_generated,
+        "placement_listening_played": learner.placement_listening_played,
+        "placement_listening_answers": list(learner.placement_listening_answers),
+        "placement_listening_score": learner.placement_listening_score,
+        "placement_speaking_transcript": learner.placement_speaking_transcript,
+        "placement_speaking_score": learner.placement_speaking_score,
+        "placement_complete": learner.placement_complete,
     }
 
 
@@ -200,6 +282,8 @@ def create_app(
     auth_token: str | None = None,
     config: ConfigPort | None = None,
     store: PersistencePort | None = None,
+    llm: LlmPort | None = None,
+    voice: VoicePort | None = None,
 ) -> FastAPI:
     """Build the API app. Token: arg → env → Config bearer (fail closed)."""
     if config is None:
@@ -210,6 +294,14 @@ def create_app(
     settings = AuthSettings(token)
     if store is None:
         store = SqliteStore(config.sqlite_path())
+    if llm is None:
+        from teacher_service.adapters.llm import OpenAiLlmAdapter
+
+        llm = OpenAiLlmAdapter(config)
+    if voice is None:
+        from teacher_service.adapters.voice import LocalVoiceAdapter
+
+        voice = LocalVoiceAdapter()
     app = FastAPI(
         title="teacher-service",
         docs_url=None,
@@ -219,6 +311,8 @@ def create_app(
     app.state.auth = settings
     app.state.config = config
     app.state.store = store
+    app.state.llm = llm
+    app.state.voice = voice
     # Middleware order: last added runs first. CORS must wrap Bearer so preflight
     # is answered before auth; Bearer still skips OPTIONS defensively.
     app.add_middleware(BearerAuthMiddleware, token=settings.token)
@@ -313,9 +407,7 @@ def create_app(
         return _learner_to_dict(learner)
 
     @app.patch("/learner")
-    async def patch_learner(
-        payload: LearnerPatch, request: Request
-    ) -> dict[str, Any]:
+    async def patch_learner(payload: LearnerPatch, request: Request) -> dict[str, Any]:
         persistence: PersistencePort = request.app.state.store
         raw = payload.model_dump(exclude_unset=True)
         kwargs: dict[str, Any] = {}
@@ -348,5 +440,207 @@ def create_app(
                 },
             ) from exc
         return _learner_to_dict(learner)
+
+    @app.post("/placement/items")
+    async def generate_placement_items_endpoint(request: Request) -> dict[str, Any]:
+        persistence: PersistencePort = request.app.state.store
+        learner = get_or_create_learner(persistence)
+        if not learner.consent_complete:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "placement_requires_consent",
+                    "message": "placement requires consent_complete",
+                    "retryable": False,
+                },
+            )
+        # CONTENT: LLM_GEN — one LLM-generated item set per placement run.
+        if learner.placement_items is not None:
+            try:
+                cached = parse_placement_items(learner.placement_items)
+            except PlacementItemsError as exc:
+                raise HTTPException(
+                    status_code=500,
+                    detail={
+                        "code": "placement_items_corrupt",
+                        "message": str(exc),
+                        "retryable": True,
+                    },
+                ) from exc
+            return placement_items_public(cached)
+
+        cfg: ConfigPort = request.app.state.config
+        try:
+            configured = cfg.get_secret(SECRET_LLM_API_KEY) is not None
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={"code": "config_error", "message": str(exc), "retryable": True},
+            ) from exc
+        if not configured:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "llm_config_missing",
+                    "message": "LLM API key is not configured",
+                    "retryable": True,
+                },
+            )
+
+        llm_port: LlmPort = request.app.state.llm
+        try:
+            raw = llm_port.generate_placement_items(
+                target_language=learner.target_language,
+                l1=learner.l1,
+                interests=learner.interests,
+                emphasis=learner.emphasis,
+            )
+        except LlmGenerationError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "llm_generation_failed",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
+        try:
+            items = parse_placement_items(raw)
+        except PlacementItemsError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "llm_generation_failed",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
+
+        update_learner(persistence, placement_items=placement_items_to_storage(items))
+        return placement_items_public(items)
+
+    @app.post("/placement/listening/audio")
+    async def synthesize_listening_audio_endpoint(request: Request) -> dict[str, Any]:
+        persistence: PersistencePort = request.app.state.store
+        learner = get_or_create_learner(persistence)
+        if not learner.consent_complete:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "placement_requires_consent",
+                    "message": "placement requires consent_complete",
+                    "retryable": False,
+                },
+            )
+        if learner.placement_items is None:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "placement_items_missing",
+                    "message": "generate placement items before requesting audio",
+                    "retryable": True,
+                },
+            )
+        try:
+            items = parse_placement_items(learner.placement_items)
+        except PlacementItemsError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "placement_items_corrupt",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
+
+        voice_port: VoicePort = request.app.state.voice
+        try:
+            audio = voice_port.synthesize_speech(items.listening.script)
+        except VoiceUnavailableError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "voice_unavailable",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
+
+        update_learner(persistence, placement_listening_generated=True)
+        return {
+            "audio_base64": base64.b64encode(audio).decode("ascii"),
+            "mime_type": "audio/wav",
+        }
+
+    @app.post("/placement/speaking/transcribe")
+    async def transcribe_speaking_audio_endpoint(
+        payload: SpeakingAudioIn, request: Request
+    ) -> dict[str, Any]:
+        persistence: PersistencePort = request.app.state.store
+        learner = get_or_create_learner(persistence)
+        if not learner.consent_complete:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "placement_requires_consent",
+                    "message": "placement requires consent_complete",
+                    "retryable": False,
+                },
+            )
+        if learner.placement_items is None:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "placement_items_missing",
+                    "message": "generate placement items before speaking",
+                    "retryable": True,
+                },
+            )
+        try:
+            items = parse_placement_items(learner.placement_items)
+        except PlacementItemsError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "placement_items_corrupt",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
+
+        try:
+            audio_bytes = base64.b64decode(payload.audio_base64, validate=True)
+        except (ValueError, binascii.Error) as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "validation_error",
+                    "message": str(exc),
+                    "retryable": False,
+                },
+            ) from exc
+
+        voice_port: VoicePort = request.app.state.voice
+        try:
+            transcript = voice_port.transcribe_audio(
+                audio_bytes, mime_type=payload.mime_type
+            )
+        except VoiceUnavailableError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "voice_unavailable",
+                    "message": str(exc),
+                    "retryable": True,
+                },
+            ) from exc
+
+        score = score_speaking_transcript(transcript, items.speaking_prompts)
+        updated = update_learner(
+            persistence,
+            placement_speaking_transcript=transcript,
+            placement_speaking_score=score,
+        )
+        return _learner_to_dict(updated)
 
     return app

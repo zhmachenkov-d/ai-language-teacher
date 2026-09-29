@@ -4,7 +4,7 @@ import { nextTick } from "vue";
 import { createRouter, createWebHashHistory, type Router } from "vue-router";
 import { RouterView } from "vue-router";
 import OnboardingConsent from "./OnboardingConsent.vue";
-import OnboardingPlacementStub from "./OnboardingPlacementStub.vue";
+import OnboardingPlacement from "./OnboardingPlacement.vue";
 import type { LearnerProfile } from "../services/teacherClient";
 
 const RUNNING_AUTH = {
@@ -64,6 +64,13 @@ async function mountConsent(fetchImpl: ReturnType<typeof vi.fn>): Promise<{
   const quit = vi.fn().mockResolvedValue(undefined);
   mockBridges(quit);
   vi.stubGlobal("fetch", fetchImpl);
+  // Set the hash *before* creating the router: `createWebHashHistory()` reads
+  // the current hash at construction time. If a prior test's hash (e.g.
+  // `#/onboarding/placement`) is still set, creating the router first would
+  // resolve its initial navigation against that stale route, mounting the
+  // wrong (now-real, fetching) view and double-consuming this test's single
+  // mocked Response body before the intended navigation even runs.
+  window.location.hash = "#/onboarding/consent";
   const router = createRouter({
     history: createWebHashHistory(),
     routes: [
@@ -76,11 +83,10 @@ async function mountConsent(fetchImpl: ReturnType<typeof vi.fn>): Promise<{
       {
         path: "/onboarding/placement",
         name: "onboarding-placement",
-        component: OnboardingPlacementStub,
+        component: OnboardingPlacement,
       },
     ],
   });
-  window.location.hash = "#/onboarding/consent";
   const wrapper = mount(RouterView, {
     global: { plugins: [router] },
   });
@@ -178,7 +184,7 @@ describe("OnboardingConsent", () => {
     });
     expect(router.currentRoute.value.name).toBe("onboarding-placement");
     expect(
-      wrapper.find("[data-testid=\"onboarding-placement-stub\"]").exists(),
+      wrapper.find("[data-testid=\"onboarding-placement\"]").exists(),
     ).toBe(true);
     wrapper.unmount();
   });

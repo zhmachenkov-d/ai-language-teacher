@@ -84,3 +84,23 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-1-onboarding-wizard-greeting-goals-interests-duration-schedule.md`
   summary: Outlook-like week-grid schedule UI (visual week chrome / click-to-add slots) reusable for Settings «изменить» mini-wizard
   evidence: Split from 2.1 to fit the token budget; narrowed 2.1 ships intake wizard with a compact weekday+time slot list editor and the same slot persistence model — epic Outlook week-grid chrome AC remains open here (needed before/with 2.7 Settings schedule edit)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
+  summary: Rich listening player scrub/seek/replay-from-position UI (full EXPERIENCE listening player)
+  evidence: Split from 2.3 to fit the token budget; narrowed 2.3 ships play/pause + comprehension questions only for placement listening
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
+  summary: Optional cloud Voice fallback behind VoicePort (AD-9)
+  evidence: Split from 2.3; narrowed story ships local-first STT/TTS only for placement seedable results
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
+  summary: Adaptive multi-form placement bank / re-take flows after first completion
+  evidence: Split from 2.3; narrowed story persists one LLM-generated item set per learner placement run
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
+  summary: Pronunciation/intonation scoring beyond transcript + simple aggregate placement score (Epic 3.7)
+  evidence: Split from 2.3; speaking seedability requires real local STT transcript stored — detailed pronunciation feedback stays Epic 3
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
+  summary: Production OpenAiLlmAdapter / LocalVoiceAdapter never executed under pytest (only Fake* ports)
+  evidence: Verification-gap review; fabricate-on-error in real adapters would leave placement API suite green; settle with thin adapter unit/integration smoke later

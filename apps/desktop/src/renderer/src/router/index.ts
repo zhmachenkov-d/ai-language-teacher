@@ -9,7 +9,8 @@ import SettingsView from '../views/SettingsView.vue'
 import TitleStubView from '../views/TitleStubView.vue'
 import OnboardingWizard from '../views/OnboardingWizard.vue'
 import OnboardingConsent from '../views/OnboardingConsent.vue'
-import OnboardingPlacementStub from '../views/OnboardingPlacementStub.vue'
+import OnboardingPlacement from '../views/OnboardingPlacement.vue'
+import OnboardingPlanStub from '../views/OnboardingPlanStub.vue'
 import {
   gateDestination,
   isGatedRoute,
@@ -69,7 +70,13 @@ export function createAppRouter(): Router {
       {
         path: '/onboarding/placement',
         name: 'onboarding-placement',
-        component: OnboardingPlacementStub,
+        component: OnboardingPlacement,
+        meta: { hideNav: true },
+      },
+      {
+        path: '/onboarding/plan',
+        name: 'onboarding-plan',
+        component: OnboardingPlanStub,
         meta: { hideNav: true },
       },
       {
