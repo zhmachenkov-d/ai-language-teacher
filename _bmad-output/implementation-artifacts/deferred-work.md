@@ -105,6 +105,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
   summary: Rich listening player scrub/seek/replay-from-position UI (full EXPERIENCE listening player)
   evidence: Split from 2.3 to fit the token budget; narrowed 2.3 ships play/pause + comprehension questions only for placement listening
+  resolved_by: spec-2-3-listening-player-scrub-seek-replay.md
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
   summary: Optional cloud Voice fallback behind VoicePort (AD-9)

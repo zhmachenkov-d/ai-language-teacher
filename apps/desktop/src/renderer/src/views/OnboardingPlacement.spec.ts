@@ -326,7 +326,10 @@ describe("OnboardingPlacement", () => {
     expect(wrapper.find('[data-testid="placement-listening"]').exists()).toBe(
       true,
     );
+    expect(wrapper.find('[data-testid="listening-player"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="listening-play"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="listening-scrub"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="listening-replay"]').exists()).toBe(true);
     expect(wrapper.findAll(".item")).toHaveLength(3);
     wrapper.unmount();
   });
@@ -386,6 +389,165 @@ describe("OnboardingPlacement", () => {
     wrapper.unmount();
   });
 
+  it("scrub to end without native ended keeps must-play gate locked (no PATCH)", async () => {
+    const fetchMock = dispatcher({
+      "GET /learner": () =>
+        jsonResponse(200, {
+          ...BASE_LEARNER,
+          placement_stage: "listening",
+          placement_items: PUBLIC_ITEMS,
+          placement_written_score: 1,
+        }),
+      "POST /placement/listening/audio": () =>
+        jsonResponse(200, { audio_base64: "aGVsbG8=", mime_type: "audio/wav" }),
+      "PATCH /learner": () =>
+        jsonResponse(200, {
+          ...BASE_LEARNER,
+          placement_stage: "speaking",
+          placement_items: PUBLIC_ITEMS,
+          placement_listening_played: true,
+        }),
+    });
+    const { wrapper } = await mountPlacement(fetchMock);
+    const audio = wrapper.get('[data-testid="listening-audio"]')
+      .element as HTMLAudioElement;
+    let current = 0;
+    Object.defineProperty(audio, "duration", {
+      configurable: true,
+      get: () => 10,
+    });
+    Object.defineProperty(audio, "currentTime", {
+      configurable: true,
+      get: () => current,
+      set: (v: number) => {
+        current = v;
+      },
+    });
+    await audio.dispatchEvent(new Event("loadedmetadata"));
+    await nextTick();
+
+    const scrub = wrapper.get('[data-testid="listening-scrub"]');
+    await scrub.setValue(10);
+    await scrub.trigger("input");
+    expect(current).toBe(10);
+
+    await wrapper.get('[data-testid="listening-submit"]').trigger("click");
+    await flushPromises();
+    expect(
+      wrapper.get('[data-testid="listening-save-error"]').text(),
+    ).toContain("прослушайте");
+    expect(
+      fetchMock.mock.calls.filter(
+        (c) => (c[1] as RequestInit | undefined)?.method === "PATCH",
+      ),
+    ).toHaveLength(0);
+    expect(wrapper.find('[data-testid="placement-listening"]').exists()).toBe(
+      true,
+    );
+    wrapper.unmount();
+  });
+
+  it("ended then Сначала keeps gate open — submit advances to speaking", async () => {
+    const fetchMock = dispatcher({
+      "GET /learner": () =>
+        jsonResponse(200, {
+          ...BASE_LEARNER,
+          placement_stage: "listening",
+          placement_items: PUBLIC_ITEMS,
+          placement_written_score: 1,
+        }),
+      "POST /placement/listening/audio": () =>
+        jsonResponse(200, { audio_base64: "aGVsbG8=", mime_type: "audio/wav" }),
+      "PATCH /learner": () =>
+        jsonResponse(200, {
+          ...BASE_LEARNER,
+          placement_stage: "speaking",
+          placement_items: PUBLIC_ITEMS,
+          placement_written_score: 1,
+          placement_listening_generated: true,
+          placement_listening_played: true,
+          placement_listening_score: 1,
+        }),
+    });
+    const { wrapper } = await mountPlacement(fetchMock);
+    const audio = wrapper.get('[data-testid="listening-audio"]')
+      .element as HTMLAudioElement;
+    let current = 0;
+    Object.defineProperty(audio, "duration", {
+      configurable: true,
+      get: () => 8,
+    });
+    Object.defineProperty(audio, "currentTime", {
+      configurable: true,
+      get: () => current,
+      set: (v: number) => {
+        current = v;
+      },
+    });
+    Object.defineProperty(audio, "paused", {
+      configurable: true,
+      get: () => true,
+    });
+    audio.play = vi.fn().mockResolvedValue(undefined) as unknown as HTMLAudioElement["play"];
+
+    await audio.dispatchEvent(new Event("ended"));
+    await nextTick();
+    await wrapper.get('[data-testid="listening-replay"]').trigger("click");
+    expect(current).toBe(0);
+    expect(audio.play).toHaveBeenCalled();
+
+    await wrapper.get('[data-testid="listening-submit"]').trigger("click");
+    await flushPromises();
+    expect(
+      fetchMock.mock.calls.filter(
+        (c) => (c[1] as RequestInit | undefined)?.method === "PATCH",
+      ),
+    ).toHaveLength(1);
+    expect(wrapper.find('[data-testid="placement-speaking"]').exists()).toBe(
+      true,
+    );
+    wrapper.unmount();
+  });
+
+  it("play() rejection shows listening-playback-error Russian banner", async () => {
+    const fetchMock = dispatcher({
+      "GET /learner": () =>
+        jsonResponse(200, {
+          ...BASE_LEARNER,
+          placement_stage: "listening",
+          placement_items: PUBLIC_ITEMS,
+          placement_written_score: 1,
+        }),
+      "POST /placement/listening/audio": () =>
+        jsonResponse(200, { audio_base64: "aGVsbG8=", mime_type: "audio/wav" }),
+    });
+    const { wrapper } = await mountPlacement(fetchMock);
+    const audio = wrapper.get('[data-testid="listening-audio"]')
+      .element as HTMLAudioElement;
+    Object.defineProperty(audio, "duration", {
+      configurable: true,
+      get: () => 5,
+    });
+    Object.defineProperty(audio, "paused", {
+      configurable: true,
+      get: () => true,
+    });
+    audio.play = vi
+      .fn()
+      .mockRejectedValue(new Error("autoplay blocked")) as unknown as HTMLAudioElement["play"];
+    await audio.dispatchEvent(new Event("loadedmetadata"));
+    await nextTick();
+
+    await wrapper.get('[data-testid="listening-play"]').trigger("click");
+    await vi.waitUntil(() =>
+      wrapper.find('[data-testid="listening-playback-error"]').exists(),
+    );
+    expect(
+      wrapper.get('[data-testid="listening-playback-error"]').text(),
+    ).toContain("Не удалось воспроизвести");
+    wrapper.unmount();
+  });
+
   it("TTS failure on listening shows retryable error, no fake pass", async () => {
     const fetchMock = dispatcher({
       "GET /learner": () =>
@@ -407,6 +569,9 @@ describe("OnboardingPlacement", () => {
       true,
     );
     expect(wrapper.find('[data-testid="listening-audio"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.find('[data-testid="listening-player"]').exists()).toBe(
       false,
     );
     expect(wrapper.find('[data-testid="listening-play"]').exists()).toBe(false);
