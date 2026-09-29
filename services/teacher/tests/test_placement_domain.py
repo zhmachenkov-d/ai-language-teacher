@@ -63,6 +63,16 @@ class TestParsePlacementItems:
         assert "correct_index" not in public["written"][0]
         assert "script" not in public["listening"]
         assert "correct_index" not in public["listening"]["questions"][0]
+        # Defense-in-depth: even if a nested answer-key sneaks into a
+        # hand-built payload, scrub drops it before the wire.
+        sneaky = placement_items_public(items)
+        sneaky["written"][0]["correct_index"] = 0
+        sneaky["listening"]["script"] = "secret"
+        from teacher_service.domain.placement import _scrub_answer_keys
+
+        scrubbed = _scrub_answer_keys(sneaky)
+        assert "correct_index" not in scrubbed["written"][0]
+        assert "script" not in scrubbed["listening"]
         assert public["speaking_prompts"] == [
             "Tell me about your day.",
             "Describe your job.",
@@ -222,6 +232,61 @@ class TestPlacementGating:
         with pytest.raises(LearnerValidationError) as exc_info:
             _update(store, placement_complete=True)
         assert exc_info.value.code == "placement_speaking_incomplete"
+
+    def test_placement_complete_rejected_without_speaking_score(
+        self, store: SqliteStore
+    ) -> None:
+        """Transcript alone is not seedable — score must be server-computed too."""
+        from teacher_service.domain.learner import update_learner as _update
+
+        _consented_learner(store)
+        _update(
+            store,
+            consent_mic=True,
+            consent_ai=True,
+            consent_privacy=True,
+            consent_complete=True,
+        )
+        items = parse_placement_items(_valid_raw_items())
+        _update(store, placement_items=placement_items_to_storage(items))
+        _update(store, placement_written_answers=[0, 0, 0, 0, 0])
+        _update(store, placement_listening_generated=True)
+        _update(store, placement_listening_played=True, placement_listening_answers=[1, 1, 1])
+        _update(store, placement_speaking_transcript="hello world " * 10)
+
+        with pytest.raises(LearnerValidationError) as exc_info:
+            _update(store, placement_complete=True)
+        assert exc_info.value.code == "placement_speaking_incomplete"
+
+    def test_placement_complete_coerces_stage_to_complete(
+        self, store: SqliteStore
+    ) -> None:
+        """Bare complete FLAG keeps stage enum aligned for RESUME."""
+        from teacher_service.domain.learner import update_learner as _update
+
+        _consented_learner(store)
+        _update(
+            store,
+            consent_mic=True,
+            consent_ai=True,
+            consent_privacy=True,
+            consent_complete=True,
+        )
+        items = parse_placement_items(_valid_raw_items())
+        _update(store, placement_items=placement_items_to_storage(items))
+        _update(store, placement_written_answers=[0, 0, 0, 0, 0])
+        _update(store, placement_listening_generated=True)
+        _update(store, placement_listening_played=True, placement_listening_answers=[1, 1, 1])
+        _update(
+            store,
+            placement_speaking_transcript="hello world " * 10,
+            placement_speaking_score=0.5,
+            placement_stage="speaking",
+        )
+
+        learner = _update(store, placement_complete=True)
+        assert learner.placement_complete is True
+        assert learner.placement_stage == "complete"
 
     def test_placement_complete_rejected_without_listening(
         self, store: SqliteStore

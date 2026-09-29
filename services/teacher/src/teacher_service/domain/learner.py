@@ -250,7 +250,12 @@ def _require_placement_prereqs(updated: Learner, *, up_to_stage: str) -> None:
         )
     if up_to_stage == PLACEMENT_STAGE_SPEAKING:
         return
-    if not updated.placement_speaking_transcript:
+    transcript = updated.placement_speaking_transcript
+    if (
+        not isinstance(transcript, str)
+        or not transcript.strip()
+        or updated.placement_speaking_score is None
+    ):
         raise LearnerValidationError(
             "placement_speaking_incomplete",
             "speaking result is required before placement_complete",
@@ -266,7 +271,8 @@ def _require_placement_complete(updated: Learner) -> None:
 
     Checked regardless of the concurrent `placement_stage` value so a bare
     `PATCH {"placement_complete": true}` cannot bypass gaps (text-only complete
-    matrix row) — mirrors 2.2's consent_complete FLAG rigor.
+    matrix row) — mirrors 2.2's consent_complete FLAG rigor. Seedable speaking
+    requires both a real STT transcript and a server-computed score.
     """
     _require_placement_prereqs(updated, up_to_stage=PLACEMENT_STAGE_COMPLETE)
 
@@ -465,4 +471,7 @@ def update_learner(
     _require_placement_stage(updated)
     if updated.placement_complete:
         _require_placement_complete(updated)
+        # Keep FLAG + stage enum aligned for RESUME / GATE (bare complete PATCH).
+        if updated.placement_stage != PLACEMENT_STAGE_COMPLETE:
+            updated = replace(updated, placement_stage=PLACEMENT_STAGE_COMPLETE)
     return store.update_learner(updated)

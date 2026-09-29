@@ -96,9 +96,9 @@ class WeeklySlotIn(BaseModel):
         return value
 
 
-# ~15 MB of base64 text (~11 MB decoded) — generous for a few short mic
-# prompts, tight enough to reject a runaway/oversized upload before decoding.
-_MAX_SPEAKING_AUDIO_BASE64_CHARS = 15_000_000
+# ~4 MB of base64 text (~3 MB decoded) — covers a few short mic prompts with
+# headroom, rejects runaway uploads before base64 decode + STT.
+_MAX_SPEAKING_AUDIO_BASE64_CHARS = 4_000_000
 
 
 class SpeakingAudioIn(BaseModel):

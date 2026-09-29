@@ -12,7 +12,10 @@ from teacher_service.domain.learner import (
     WeeklySlot,
     validate_weekly_slot,
 )
-from teacher_service.domain.placement import PLACEMENT_STAGE_BRIEFING
+from teacher_service.domain.placement import (
+    PLACEMENT_STAGE_BRIEFING,
+    PLACEMENT_STAGES,
+)
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS learner (
@@ -229,7 +232,8 @@ def _row_to_learner(row: sqlite3.Row) -> Learner:
         consent_complete=_bool_from_row(row, keys, "consent_complete"),
         placement_stage=(
             row["placement_stage"]
-            if "placement_stage" in keys and row["placement_stage"]
+            if "placement_stage" in keys
+            and row["placement_stage"] in PLACEMENT_STAGES
             else PLACEMENT_STAGE_BRIEFING
         ),
         placement_items=_loads_dict_or_none(

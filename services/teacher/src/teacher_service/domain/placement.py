@@ -170,10 +170,28 @@ def placement_items_to_storage(items: PlacementItems) -> dict[str, Any]:
     }
 
 
+# Keys that must never appear on the wire — even if a future build path
+# accidentally copies storage fields into the public projection.
+_ANSWER_KEY_FIELDS = frozenset({"correct_index", "script"})
+
+
+def _scrub_answer_keys(value: Any) -> Any:
+    """Defense-in-depth: drop answer-key fields from any nested mapping/list."""
+    if isinstance(value, dict):
+        return {
+            key: _scrub_answer_keys(item)
+            for key, item in value.items()
+            if key not in _ANSWER_KEY_FIELDS
+        }
+    if isinstance(value, list):
+        return [_scrub_answer_keys(item) for item in value]
+    return value
+
+
 def placement_items_public(items: PlacementItems) -> dict[str, Any]:
     """Client-safe dict — strips `correct_index` and the raw script/answer key
     so placement cannot be gamed by reading the wire payload."""
-    return {
+    public = {
         "written": [{"prompt": i.prompt, "options": list(i.options)} for i in items.written],
         "listening": {
             "questions": [
@@ -183,6 +201,7 @@ def placement_items_public(items: PlacementItems) -> dict[str, Any]:
         },
         "speaking_prompts": list(items.speaking_prompts),
     }
+    return _scrub_answer_keys(public)
 
 
 def score_choice_answers(items: Sequence[ChoiceItem], answers: Sequence[int]) -> float:

@@ -247,6 +247,7 @@ class TestGeneratePlacementItems:
 
         get_body = client.get("/learner", headers=_auth_header(auth_token)).json()
         assert "correct_index" not in get_body["placement_items"]["written"][0]
+        assert "correct_index" not in get_body["placement_items"]["listening"]["questions"][0]
         assert "script" not in get_body["placement_items"]["listening"]
 
         patch_response = client.patch(
@@ -260,6 +261,7 @@ class TestGeneratePlacementItems:
         assert patch_response.status_code == 200
         patch_body = patch_response.json()
         assert "correct_index" not in patch_body["placement_items"]["written"][0]
+        assert "correct_index" not in patch_body["placement_items"]["listening"]["questions"][0]
         assert "script" not in patch_body["placement_items"]["listening"]
 
 
@@ -346,7 +348,7 @@ class TestSpeakingTranscribe:
         client = make_client(config, auth_token)
         _seed_consent_complete(client, auth_token)
         client.post("/placement/items", headers=_auth_header(auth_token))
-        oversized = base64.b64encode(b"x" * 100).decode() * 200_000  # > 15M chars
+        oversized = base64.b64encode(b"x" * 100).decode() * 40_000  # > 4M chars
         response = client.post(
             "/placement/speaking/transcribe",
             json={"audio_base64": oversized, "mime_type": "audio/webm"},
@@ -535,6 +537,14 @@ def test_legacy_learner_without_placement_columns_gets_defaults(
     assert loaded is not None
     assert loaded.placement_stage == "briefing"
     assert loaded.placement_items is None
+    assert loaded.placement_written_answers == ()
+    assert loaded.placement_written_score is None
+    assert loaded.placement_listening_generated is False
+    assert loaded.placement_listening_played is False
+    assert loaded.placement_listening_answers == ()
+    assert loaded.placement_listening_score is None
+    assert loaded.placement_speaking_transcript is None
+    assert loaded.placement_speaking_score is None
     assert loaded.placement_complete is False
 
     client = TestClient(create_app(auth_token=auth_token, config=config, store=store))
@@ -543,3 +553,27 @@ def test_legacy_learner_without_placement_columns_gets_defaults(
     body = response.json()
     assert body["placement_stage"] == "briefing"
     assert body["placement_complete"] is False
+    assert body["placement_items"] is None
+
+
+def test_corrupt_placement_stage_coerces_to_briefing(
+    data_dir: Path, auth_token: str
+) -> None:
+    """Unknown placement_stage values from SQLite fall back to briefing on load."""
+    import sqlite3
+
+    config = FileConfig(data_dir)
+    config.ensure_layout()
+    db_path = config.sqlite_path()
+    store = SqliteStore(db_path)
+    # Ensure full schema exists, then poison the stage enum.
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            "INSERT INTO learner (id, target_language, l1, timezone, placement_stage) "
+            "VALUES ('corrupt-stage', 'en', 'ru', 'UTC', 'not-a-stage')"
+        )
+        conn.commit()
+
+    loaded = store.load_learner()
+    assert loaded is not None
+    assert loaded.placement_stage == "briefing"
