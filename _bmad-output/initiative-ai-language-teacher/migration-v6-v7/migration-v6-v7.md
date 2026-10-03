@@ -1,7 +1,7 @@
 ---
 type: migration
 title: "Move v6 planning and implementation artifacts into the v7 initiative layout"
-status: draft
+status: done
 created: 2026-10-03
 from: "6"
 to: "7"
@@ -204,4 +204,4 @@ _(filled after execute)_
 
 ## Approval
 
-**Answers recorded 2026-10-03. Status: draft — waiting for plan approval. No moves until you approve.**
+**Approved 2026-10-03. Executed on branch chore/bmad-v7-migrate-artifacts. Backup: git history (no `_bmad-output-bak`).**
