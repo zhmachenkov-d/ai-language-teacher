@@ -172,3 +172,12 @@ Session: 57b2860b-0fc8-41f6-8b5d-cde8b8e20862 · Timestamp: 2026-10-03T22:08:33+
 - Result: Narrative marked wrapped up; committing walkthrough-living-plan-document/.
 - Evidence: narrative + log under walkthrough-living-plan-document/; PR #29 left open.
 - Open: optional story triage rewrite; merge PR #29 if desired.
+
+## 20 — Wrap-up — rewrite triage + push
+
+Session: 57b2860b-0fc8-41f6-8b5d-cde8b8e20862 · Timestamp: 2026-10-03T22:09:00+00:00
+
+- Action: User asked push + rewrite story Review Triage Log dispositions.
+- Result: Added Walkthrough disposition section marking all Pass-1 items fixed; commit + push branch.
+- Evidence: story-living-plan-full-screen-document-view-only-plan.md Review Triage Log; branch feat/2-5-living-plan-document.
+- Open: merge PR #29 if desired.

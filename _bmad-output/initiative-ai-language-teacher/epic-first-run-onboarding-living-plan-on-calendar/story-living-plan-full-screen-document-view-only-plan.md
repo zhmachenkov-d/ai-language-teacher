@@ -126,6 +126,19 @@ Settings density: accent rule + uppercase kicker + body list/paragraph in surfac
 - verdict: `low` — route: `patch` — blank focus «Пока пусто» uses `.body` (ink) while goals/topics soft-empty use `.soft-empty` (muted). Evidence: template `plan-focus` vs `goals-soft-empty` / `topics-soft-empty` classes.
 - verdict: `medium` — route: `patch` — no tests for `fetchLearner` failure on 404 (omit CTA) or 401/403 rehydrate without tight plan-retry loop; matrix Error Handling / task “prove I/O matrix” leave those paths unchecked. Evidence: `resolveEmptyCta` catch and `loadPlan` 401/403 branch exist; suite has no cases.
 
+### Walkthrough disposition — 2026-10-03
+
+Human walkthrough of `feat/2-5-living-plan-document` @ `5591a85` (narrative: `walkthrough-living-plan-document/`). Pass-1 items rechecked against current code + Vitest; all four **fixed** (no open patches from Pass 1).
+
+| Pass-1 item | Disposition | Evidence |
+| ----------- | ----------- | -------- |
+| loading hash order / isolated Loading row | fixed | `mountPlan` and loading case set `window.location.hash` before `createWebHashHistory`; `npm test -t "loading:"` passes |
+| `retry()` always «перезапустить» on running-path | fixed | `retry()` branches on `usedRestart`; running path uses «Не удалось получить статус учителя» |
+| focus soft-empty `.body` vs `.soft-empty` | fixed | `plan-focus` uses `soft-empty` when blank; soft-empty test asserts class |
+| missing fetchLearner-fail / 401–403 tests | fixed | `PlanView.spec.ts`: omit CTA on learner fail; 401 rehydrate without tight plan loop |
+
+Note (not Pass-1): empty CTA «К календарю» is forward-compat until story 2.6 — `gateDestination` still voids `plan_complete` and returns `onboarding-plan`. Verified in walkthrough: `npm test` 197 passed; `npm run build` ok.
+
 ## Verification
 
 **Commands:**
