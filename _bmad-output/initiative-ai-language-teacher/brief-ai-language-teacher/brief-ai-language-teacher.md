@@ -1,4 +1,6 @@
 ---
+type: brief
+status: done
 title: "Product Brief: AI Language Teacher"
 status: ready
 created: 2026-09-22

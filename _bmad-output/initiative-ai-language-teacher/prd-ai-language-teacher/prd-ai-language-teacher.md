@@ -1,4 +1,5 @@
 ---
+type: prd
 title: "PRD: AI Language Teacher"
 status: final
 created: 2026-09-22

@@ -1,4 +1,6 @@
 ---
+type: architecture
+status: done
 name: "ai-language-teacher"
 type: architecture-spine
 purpose: build-substrate
@@ -292,3 +294,10 @@ erDiagram
 | Multi-user web client                                 | Horizon only                                                        |
 | Fully offline LLM                                     | Out of v1                                                           |
 | Vocab SRS algorithm detail                            | ProgressEvent catalog fixed; spacing policy at feature altitude     |
+
+
+## Companion files
+
+- `.memlog.md`
+- `investor-overview.html`
+- `reviews`
