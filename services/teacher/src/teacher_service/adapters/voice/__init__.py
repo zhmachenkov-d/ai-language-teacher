@@ -92,7 +92,9 @@ class LocalVoiceAdapter:
                 raise VoiceUnavailableError("local STT engine produced no transcript")
             transcript = txt_files[0].read_text(encoding="utf-8").strip()
             if not transcript:
-                raise VoiceUnavailableError("local STT engine returned an empty transcript")
+                raise VoiceUnavailableError(
+                    "local STT engine returned an empty transcript"
+                )
             return transcript
 
     @staticmethod
@@ -189,15 +191,22 @@ class CloudVoiceAdapter:
         return api_key
 
     def _base_url(self) -> str:
+        """Resolve cloud base URL. Unset/blank/default-stub fail closed immediately
+        (no ~30s wait on `DEFAULT_CLOUD_VOICE_BASE_URL`). Constructor `base_url=`
+        bypasses the env gate for tests."""
+        default = DEFAULT_CLOUD_VOICE_BASE_URL.rstrip("/")
         if self._base_url_override is not None:
-            raw = self._base_url_override
-        else:
-            raw = os.environ.get(
-                CLOUD_VOICE_BASE_URL_ENV, DEFAULT_CLOUD_VOICE_BASE_URL
-            )
+            cleaned = (self._base_url_override or "").strip().rstrip("/")
+            if not cleaned:
+                raise VoiceUnavailableError("cloud voice base URL is empty")
+            return cleaned
+        raw = os.environ.get(CLOUD_VOICE_BASE_URL_ENV)
         cleaned = (raw or "").strip().rstrip("/")
-        if not cleaned:
-            cleaned = DEFAULT_CLOUD_VOICE_BASE_URL.rstrip("/")
+        if not cleaned or cleaned == default:
+            raise VoiceUnavailableError(
+                "cloud voice base URL is not configured "
+                f"(set {CLOUD_VOICE_BASE_URL_ENV} to a contract-compatible host)"
+            )
         return cleaned
 
     @staticmethod

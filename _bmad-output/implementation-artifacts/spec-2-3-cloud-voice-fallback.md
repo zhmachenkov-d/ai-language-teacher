@@ -94,6 +94,7 @@ context:
 - Composite: local first; cloud only on `VoiceUnavailableError` when secret non-empty per call; other local exceptions do not fall through.
 - Verified: `uv run pytest` voice + config/voice suites green (35); full teacher suite was 205 at implement time.
 - Deferred-work cloud Voice row `resolved_by: spec-2-3-cloud-voice-fallback.md`.
+- 2026-10-03 pre-ship patch: `_base_url` fail-fast (unset/default stub); AGENTS.md cloud Voice docs; PUT `/config/voice` RuntimeError→500 test.
 
 ## Spec Change Log
 
@@ -132,7 +133,7 @@ Compose adapters behind one port. `LocalVoiceAdapter` stays Config-free; composi
 
 **Cloud HTTP contract** (stdlib `urllib`; mock in tests):
 
-- Base URL: `TEACHER_CLOUD_VOICE_BASE_URL` (default `http://127.0.0.1:9` — unreachable stub host for docs; tests inject a mock opener/handler)
+- Base URL: `TEACHER_CLOUD_VOICE_BASE_URL` required for live cloud calls; unset/blank/`http://127.0.0.1:9` (doc stub) fail closed immediately — no urlopen. Tests set env or `base_url=`
 - Auth: `Authorization: Bearer <cloud_voice_api_key>`
 - TTS: `POST {base}/v1/tts` with JSON `{ "text": "<string>" }` → `200` body = raw WAV bytes (`Content-Type: audio/wav`); non-200 / empty / non-WAV → `VoiceUnavailableError`
 - STT: `POST {base}/v1/stt` with body = raw audio bytes, headers `Content-Type: <mime_type>`, `Authorization` as above → `200` JSON `{ "transcript": "<string>" }`; missing/empty transcript or non-200 → `VoiceUnavailableError`

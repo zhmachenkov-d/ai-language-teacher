@@ -159,11 +159,14 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-cloud-voice-fallback.md`
   summary: Cloud Voice keyed with unset TEACHER_CLOUD_VOICE_BASE_URL waits ~30s on default stub 127.0.0.1:9 after local fail
   evidence: Review found intentional STUB default makes everyday keyed-without-env path slow; fail-fast-on-default-host not in Intent
+  resolved_by: CloudVoiceAdapter._base_url fail-fast when unset/blank/default stub (2026-10-03)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-cloud-voice-fallback.md`
   summary: Document cloud_voice_api_key, GET/PUT /config/voice, and TEACHER_CLOUD_VOICE_BASE_URL in AGENTS.md teacher Running notes
   evidence: Review deferred because the fix edits agent-context AGENTS.md
+  resolved_by: AGENTS.md teacher Running — cloud_voice_api_key + /config/voice + TEACHER_CLOUD_VOICE_BASE_URL (2026-10-03)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-cloud-voice-fallback.md`
   summary: Pytest coverage of PUT /config/voice RuntimeError→shaped 500 (set_secret boom); GET path already covered
   evidence: Verification-gap review; rare write-failure branch; mirrors existing /config/llm GET-only 500 coverage pattern
+  resolved_by: test_put_config_voice_runtime_error_returns_shaped_500 (2026-10-03)

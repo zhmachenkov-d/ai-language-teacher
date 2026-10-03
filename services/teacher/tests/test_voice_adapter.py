@@ -225,6 +225,7 @@ def test_cloud_stt_posts_audio_and_returns_transcript(
 
 def test_cloud_tts_non_wav_raises(config: FileConfig, monkeypatch: pytest.MonkeyPatch) -> None:
     config.set_secret(SECRET_CLOUD_VOICE_API_KEY, "cv-test-key")
+    monkeypatch.setenv(CLOUD_VOICE_BASE_URL_ENV, "https://voice.test")
 
     def fake_urlopen(request: Any, timeout: float = 0) -> _FakeHttpResponse:
         return _FakeHttpResponse(b"not-a-wav")
@@ -238,6 +239,7 @@ def test_cloud_stt_empty_transcript_raises(
     config: FileConfig, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     config.set_secret(SECRET_CLOUD_VOICE_API_KEY, "cv-test-key")
+    monkeypatch.setenv(CLOUD_VOICE_BASE_URL_ENV, "https://voice.test")
 
     def fake_urlopen(request: Any, timeout: float = 0) -> _FakeHttpResponse:
         return _FakeHttpResponse(json.dumps({"transcript": "  "}).encode())
@@ -259,6 +261,7 @@ def test_cloud_stt_unparseable_response_raises(
     config: FileConfig, monkeypatch: pytest.MonkeyPatch, body: bytes
 ) -> None:
     config.set_secret(SECRET_CLOUD_VOICE_API_KEY, "cv-test-key")
+    monkeypatch.setenv(CLOUD_VOICE_BASE_URL_ENV, "https://voice.test")
 
     def fake_urlopen(request: Any, timeout: float = 0) -> _FakeHttpResponse:
         return _FakeHttpResponse(body)
@@ -272,6 +275,7 @@ def test_cloud_http_error_maps_to_voice_unavailable(
     config: FileConfig, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     config.set_secret(SECRET_CLOUD_VOICE_API_KEY, "cv-test-key")
+    monkeypatch.setenv(CLOUD_VOICE_BASE_URL_ENV, "https://voice.test")
 
     def fake_urlopen(request: Any, timeout: float = 0) -> _FakeHttpResponse:
         raise HTTPError(request.full_url, 401, "Unauthorized", hdrs=None, fp=None)  # type: ignore[arg-type]
@@ -285,6 +289,7 @@ def test_cloud_transport_error_maps_to_voice_unavailable(
     config: FileConfig, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     config.set_secret(SECRET_CLOUD_VOICE_API_KEY, "cv-test-key")
+    monkeypatch.setenv(CLOUD_VOICE_BASE_URL_ENV, "https://voice.test")
 
     def fake_urlopen(request: Any, timeout: float = 0) -> _FakeHttpResponse:
         raise URLError("connection refused")
@@ -294,10 +299,46 @@ def test_cloud_transport_error_maps_to_voice_unavailable(
         CloudVoiceAdapter(config).synthesize_speech("hello")
 
 
-def test_cloud_missing_secret_raises(config: FileConfig) -> None:
+def test_cloud_missing_secret_raises(config: FileConfig, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(CLOUD_VOICE_BASE_URL_ENV, "https://voice.test")
     with pytest.raises(VoiceUnavailableError, match="not configured"):
         CloudVoiceAdapter(config).synthesize_speech("hello")
 
+
+def test_cloud_unset_base_url_fails_fast(
+    config: FileConfig, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config.set_secret(SECRET_CLOUD_VOICE_API_KEY, "cv-test-key")
+    monkeypatch.delenv(CLOUD_VOICE_BASE_URL_ENV, raising=False)
+    called = {"n": 0}
+
+    def fake_urlopen(request: Any, timeout: float = 0) -> _FakeHttpResponse:
+        called["n"] += 1
+        return _FakeHttpResponse(_MIN_WAV)
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    with pytest.raises(VoiceUnavailableError, match="base URL is not configured"):
+        CloudVoiceAdapter(config).synthesize_speech("hello")
+    assert called["n"] == 0
+
+
+def test_cloud_default_stub_base_url_fails_fast(
+    config: FileConfig, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from teacher_service.adapters.voice import DEFAULT_CLOUD_VOICE_BASE_URL
+
+    config.set_secret(SECRET_CLOUD_VOICE_API_KEY, "cv-test-key")
+    monkeypatch.setenv(CLOUD_VOICE_BASE_URL_ENV, DEFAULT_CLOUD_VOICE_BASE_URL)
+    called = {"n": 0}
+
+    def fake_urlopen(request: Any, timeout: float = 0) -> _FakeHttpResponse:
+        called["n"] += 1
+        return _FakeHttpResponse(_MIN_WAV)
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    with pytest.raises(VoiceUnavailableError, match="base URL is not configured"):
+        CloudVoiceAdapter(config).synthesize_speech("hello")
+    assert called["n"] == 0
 
 def test_composite_local_ok_cloud_unset_skips_cloud(config: FileConfig) -> None:
     local = _RecordingLocal()

@@ -177,6 +177,29 @@ def test_config_voice_runtime_error_returns_shaped_500(
     assert "failed to read secret" in body["message"]
 
 
+def test_put_config_voice_runtime_error_returns_shaped_500(
+    client: TestClient,
+    auth_token: str,
+    config: FileConfig,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def boom(_name: str, _value: str) -> None:
+        raise RuntimeError("failed to write secret 'cloud_voice_api_key'")
+
+    monkeypatch.setattr(config, "set_secret", boom)
+    response = client.put(
+        "/config/voice",
+        json={"cloud_voice_api_key": "cv-should-fail"},
+        headers=_auth_header(auth_token),
+    )
+    assert response.status_code == 500
+    body = response.json()
+    assert body["code"] == "config_error"
+    assert body["retryable"] is True
+    assert "failed to write secret" in body["message"]
+    assert "cv-should-fail" not in response.text
+
+
 class _InjectedFakeVoice:
     """DI override — must be used as-is; composite must not be forced."""
 

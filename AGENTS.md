@@ -34,9 +34,9 @@ npm run preview      # start (preview production build)
 
 ### Teacher (`services/teacher/`)
 
-Loopback HTTP API with Bearer local auth (Story 1.2) plus Config/SQLite under OS app-data (Story 1.3). Electron main spawn/attach/preload and window-close host-survival (tray-first) shipped in Story 1.6 — desktop start **is** the normal teacher listen path via `TeacherHost`. Authenticated HTTP learner/profile projection remains deferred (only `/health` and `/config/llm` in Epic 1). Renderer→teacher HTTP needs CSP `connect-src` for `:8765` and CORS on the API (loopback Origin / `null` for `file://`).
+Loopback HTTP API with Bearer local auth (Story 1.2) plus Config/SQLite under OS app-data (Story 1.3). Electron main spawn/attach/preload and window-close host-survival (tray-first) shipped in Story 1.6 — desktop start **is** the normal teacher listen path via `TeacherHost`. Authenticated HTTP learner/profile projection remains deferred beyond intake/`/config/*` secrets. Config HTTP today: `/health`, `/config/llm`, `/config/voice` (cloud Voice key status only — not Settings mic prefs). Renderer→teacher HTTP needs CSP `connect-src` for `:8765` and CORS on the API (loopback Origin / `null` for `file://`).
 
-Data directory: OS app-data via `platformdirs` (`ai-language-teacher`), containing `teacher.sqlite`, `secrets/` (`bearer_token`, `llm_api_key`, `telegram_bot_token`), and `voice-models/`. Override for tests/dev with `TEACHER_DATA_DIR`. Host and CLI share the same layout (host may set `TEACHER_DATA_DIR` when spawning).
+Data directory: OS app-data via `platformdirs` (`ai-language-teacher`), containing `teacher.sqlite`, `secrets/` (`bearer_token`, `llm_api_key`, `telegram_bot_token`, `cloud_voice_api_key`), and `voice-models/`. Override for tests/dev with `TEACHER_DATA_DIR`. Host and CLI share the same layout (host may set `TEACHER_DATA_DIR` when spawning). Optional cloud Voice fallback (AD-9) is local-then-cloud behind VoicePort: set Config `cloud_voice_api_key` via `PUT /config/voice` (or `FileConfig.set_secret`) **and** `TEACHER_CLOUD_VOICE_BASE_URL` to a contract-compatible host — unset/default stub fails closed immediately (no silent cloud, no ~30s hang).
 
 Bearer resolve order for listen/`create_app`: explicit `auth_token` arg (when not `None`) → non-empty stripped `TEACHER_AUTH_TOKEN` → Config `bearer_token` secret → fail closed (CLI exit 1). Whitespace-only env counts as unset. Electron mints/loads Config `bearer_token` and passes it to the child via env on spawn. CLI listen resolves Config for Bearer only — SQLite/Learner init is not required to start `/health`. Prove layout + Learner get-or-create with `uv run pytest` (temp `TEACHER_DATA_DIR`).
 
@@ -67,6 +67,14 @@ curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" http://127.0.0.1:8765/he
 curl -sS http://127.0.0.1:8765/health | tee /tmp/teacher-health-401.json
 # expect 401; body must be {"code","message","retryable"} (jq installed in this image):
 #   jq -e 'keys|sort==["code","message","retryable"]' /tmp/teacher-health-401.json
+
+# Optional cloud Voice key (never echoed; blank → 422):
+# curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"cloud_voice_api_key":"…"}' http://127.0.0.1:8765/config/voice
+# curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" http://127.0.0.1:8765/config/voice
+# expect {"configured":true}
+# export TEACHER_CLOUD_VOICE_BASE_URL=https://your-contract-host   # required for cloud path
 ```
 
 Desktop verify (after `npm install` in `apps/desktop/`): `npm test` (Vitest) and `npm run build`.
