@@ -200,8 +200,37 @@ Workspace / separate store repo: skipped (answers keep the store in this project
 
 ## Checklist results
 
-_(filled after execute)_
+| # | Item | Result |
+| --- | --- | --- |
+| 1 | Every v6 source file under initiative / backlog / inbox / archive-v6, or left in place | **pass** — planning+impl+specs under initiative; party-mode → inbox; tracking → archive-v6; empty v6 folders removed |
+| 2 | Same-named main files; no new dated/v6-numbered names (except archive/migration) | **pass** — routers/mains created; UX `.working`/wireframe dates kept as moved-unchanged historical names |
+| 3 | Store root entries are initiative/inbox (no stray v6 tops) | **pass** — `_bmad-output/{initiative-ai-language-teacher,inbox}` |
+| 4 | `tickets.py status` exit 0; counts match archive | **pass** — exit 0; 32 tickets (29 epic stories + 3 flagged extras); done 13 (= 6+4 epic stories + 3 extras); planned 19 |
+| 5 | Every classic story is an entry; every build record a plan; no epic story files | **pass** — 13 plans joined by `ticket` id; backlog entries have no plans |
+| 6 | Plans have build type + mapped status; baselines kept | **pass** — all `type: feature`, `status: done`; `baseline_revision` from v6 `baseline_commit` on all 13 |
+| 7 | covers ids valid at initiative/epic/entry levels | **pass** after fix — entry 2.5/2.10 covers trimmed to epic-2 CAP set (CAP-1..3) |
+| 8 | Live in-store paths resolve; inbox/archive unchanged | **pass** — SPEC companions/sources rewritten; archive left as-is |
+| 9 | `config.user.toml` active_initiative; output_folder resolves | **pass** — `active_initiative = "initiative-ai-language-teacher"` (gitignored personal file) |
+| 10 | Store under git as answered; no dual tracking | **pass** — remains in project repo; no workspace/store repo |
+| 11 | Plan records questions, answers, backup, checklist | **pass** — this file |
+
+### Outside-store references (user updates — not edited by migration)
+
+| File | Lines / note |
+| --- | --- |
+| `AGENTS.md` | Still cites `_bmad-output/specs/…`, `planning-artifacts/architecture/…`, `planning-artifacts/ux-designs/…` |
+
+### Missing baselines
+
+None for done plans — all 13 carry `baseline_revision`.
+
+### Next (from migration guide)
+
+- `bmad-ticket` replaces removed `bmad-sprint-planning` / `bmad-create-epics-and-stories`
+- Next build: `bmad-build` on entry **2.5** (longest remaining / next planned in epic 2)
+- `bmad-project-context` to refresh root `AGENTS.md` paths for the active initiative
+- Optional: restore wiped `_bmad/custom/*.toml` team overrides from `_bmad_backup_20261003/custom/` (setup side effect, outside this migration)
 
 ## Approval
 
-**Approved 2026-10-03. Executed on branch chore/bmad-v7-migrate-artifacts. Backup: git history (no `_bmad-output-bak`).**
+**Approved 2026-10-03. Executed on branch `chore/bmad-v7-migrate-artifacts`. Backup: git history (no `_bmad-output-bak`). Status: done.**
