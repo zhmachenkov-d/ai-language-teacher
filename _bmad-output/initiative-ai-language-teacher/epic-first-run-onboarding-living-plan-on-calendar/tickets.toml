@@ -1,0 +1,122 @@
+# tickets for epic-first-run-onboarding-living-plan-on-calendar
+
+[[entry]]
+id = 1
+type = "story"
+title = "Onboarding wizard — greeting, goals, interests, duration, schedule"
+description = "A step-by-step first-run wizard to set how I’m addressed, goals, interests, lesson duration, and weekly schedule exists when done."
+verify = "each screen is one step on `{colors.bg}` with `{colors.surface}` sections (UX-DR13)"
+covers = ["CAP-1"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-1-onboarding-wizard-greeting-goals-interests-duration-schedule"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Consent and regulated copy gating"
+description = "Explicit consent and regulated disclaimers before placement exists when done."
+verify = "it includes explicit consent for microphone/voice recording and Telegram"
+covers = ["CAP-1"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-2-consent-and-regulated-copy-gating"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Placement — briefing, written, listening, speaking"
+description = "Placement that includes written, listening, and speaking tasks exists when done."
+verify = "it explains what the test is, roughly how long, how scored, and what it affects"
+covers = ["CAP-2"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-3-placement-briefing-written-listening-speaking"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Living plan creation and persistence"
+description = "The teacher to propose path option(s) and create a revisable Living plan after placement exists when done."
+verify = "a readiness check runs: missing or invalid required Config blocks with clear copy and a path to Settings + retry — not a mid-wizard silent failure"
+covers = ["CAP-3"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-4-living-plan-creation-and-persistence"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Living plan full-screen document (view-only)"
+description = "To open the Living plan as a full-screen document showing goals, focus, and upcoming topics exists when done."
+verify = "a full-screen document shows sections: goals / focus / upcoming topics on `{colors.bg}` with `{colors.surface}` blocks"
+covers = ["CAP-3"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-5-living-plan-full-screen-document-view-only"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Calendar climax — scheduled events, side-panel tip, stub start CTA"
+description = "To land on the calendar after onboarding with my scheduled lessons and a tip for the first lesson exists when done."
+verify = "the app opens Calendar home with timed event blocks for scheduled lessons in learner local time (AD-13)"
+covers = ["CAP-3"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-6-calendar-climax-scheduled-events-side-panel-tip-stub-start-c"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Settings wiring — Voice, Schedule edit, Goals"
+description = "Settings to actually save Voice preferences, edit my weekly schedule via a mini-wizard, and update goals/emphasis exists when done."
+verify = "preferences persist via teacher Config/domain (Standing constraints)"
+covers = ["CAP-1"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-7-settings-wiring-voice-schedule-edit-goals"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Outlook week-grid schedule UI"
+description = "Outlook week-grid schedule UI exists when done."
+verify = "Outlook week-grid schedule UI acceptance criteria hold"
+covers = ["CAP-1"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-1-outlook-week-grid-schedule"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Cloud Voice fallback behind VoicePort (AD-9)"
+description = "Cloud Voice fallback behind VoicePort (AD-9) exists when done."
+verify = "Cloud Voice fallback behind VoicePort (AD-9) acceptance criteria hold"
+covers = ["CAP-2"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-3-cloud-voice-fallback"
+
+[[entry]]
+id = 10
+type = "story"
+title = "Listening player — scrub, seek, replay"
+description = "Listening player — scrub, seek, replay exists when done."
+verify = "Listening player — scrub, seek, replay acceptance criteria hold"
+covers = ["CAP-2"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "2-3-listening-player-scrub-seek-replay"
+

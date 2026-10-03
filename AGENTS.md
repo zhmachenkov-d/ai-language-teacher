@@ -1,9 +1,9 @@
 <!-- bmad:context -->
-<!-- Verified 2026-09-23 against 442b13208d078e138cfb324c19057ccd8c2c74a4. Managed by bmad-project-context; edits inside this block are replaced on refresh. Keep anything you want preserved outside the markers. -->
+<!-- Verified 2026-10-04 against 7d9779bda82465c18cb4f6499a607ba1f7245279. Managed by bmad-project-context; edits inside this block are replaced on refresh. Keep anything you want preserved outside the markers. -->
 
 ## ai-language-teacher
 
-Personal desktop AI English teacher (v1): Electron + Vue UI client, Python teacher service (FastAPI, LangGraph, SQLite), hexagonal core. Canonical what-to-build: `_bmad-output/specs/spec-ai-language-teacher/SPEC.md` and its companions. How-to-build: `_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md`. UX: `_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/DESIGN.md` and `EXPERIENCE.md`.
+Personal desktop AI English teacher (v1): Electron + Vue UI client, Python teacher service (FastAPI, LangGraph, SQLite), hexagonal core. Canonical what-to-build: `_bmad-output/initiative-ai-language-teacher/spec-ai-language-teacher/` (`spec-ai-language-teacher.md` and companions). How-to-build: `_bmad-output/initiative-ai-language-teacher/architecture-ai-language-teacher/architecture-ai-language-teacher.md`. UX: `_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/DESIGN.md` and `EXPERIENCE.md`.
 
 ## Policy
 
@@ -14,9 +14,10 @@ Personal desktop AI English teacher (v1): Electron + Vue UI client, Python teach
 
 ## Where things are
 
-- Product contract: `_bmad-output/specs/spec-ai-language-teacher/` (`SPEC.md`, `glossary.md`, `lesson-templates.md`, `stories.yaml`)
-- Architecture decisions: `_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md`
-- UX spines: `_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/`
+- Product contract: `_bmad-output/initiative-ai-language-teacher/spec-ai-language-teacher/` (`spec-ai-language-teacher.md`, `glossary.md`, `lesson-templates.md`, `stories.yaml`)
+- Architecture decisions: `_bmad-output/initiative-ai-language-teacher/architecture-ai-language-teacher/architecture-ai-language-teacher.md`
+- UX spines: `_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/`
+- Tickets/epics: `_bmad-output/initiative-ai-language-teacher/` (epic folders under the initiative)
 - Layout: `apps/desktop/` (electron-vite main + preload + Vue 3 renderer; pinned Electron 44.4.5 / Vue 3.5.43 / Vite 7.3.6 / electron-vite 5.0.0); `services/teacher/` installable package `teacher_service` under `src/teacher_service/` (`domain/`, `ports/`, `adapters/{api,persistence,llm,voice,telegram,config}/`, `graphs/`); Python 3.12.11 floor, FastAPI 0.141.1, LangGraph 1.2.12, langchain-core 1.6.4
 
 ## Running and verifying
@@ -27,14 +28,14 @@ Personal desktop AI English teacher (v1): Electron + Vue UI client, Python teach
 cd apps/desktop
 npm install
 npm run build
-npm run dev          # start (dev): Electron window + tray host; teacher spawn/attach on ready
+npm run dev # start (dev): Electron window + tray host; teacher spawn/attach on ready
 # or after build:
-npm run preview      # start (preview production build)
+npm run preview # start (preview production build)
 ```
 
 ### Teacher (`services/teacher/`)
 
-Loopback HTTP API with Bearer local auth (Story 1.2) plus Config/SQLite under OS app-data (Story 1.3). Electron main spawn/attach/preload and window-close host-survival (tray-first) shipped in Story 1.6 — desktop start **is** the normal teacher listen path via `TeacherHost`. Authenticated HTTP learner/profile projection remains deferred beyond intake/`/config/*` secrets. Config HTTP today: `/health`, `/config/llm`, `/config/voice` (cloud Voice key status only — not Settings mic prefs). Renderer→teacher HTTP needs CSP `connect-src` for `:8765` and CORS on the API (loopback Origin / `null` for `file://`).
+Loopback HTTP API with Bearer local auth plus Config/SQLite under OS app-data. Electron main spawn/attach/preload and window-close host-survival (tray-first) — desktop start **is** the normal teacher listen path via `TeacherHost`. Authenticated surfaces today: `/health`, `/config/llm`, `/config/voice` (cloud Voice key status only — not Settings mic prefs), `/learner`, `/placement/*`, `/living-plan`. Renderer→teacher HTTP needs CSP `connect-src` for `:8765` and CORS on the API (loopback Origin / `null` for `file://`).
 
 Data directory: OS app-data via `platformdirs` (`ai-language-teacher`), containing `teacher.sqlite`, `secrets/` (`bearer_token`, `llm_api_key`, `telegram_bot_token`, `cloud_voice_api_key`), and `voice-models/`. Override for tests/dev with `TEACHER_DATA_DIR`. Host and CLI share the same layout (host may set `TEACHER_DATA_DIR` when spawning). Optional cloud Voice fallback (AD-9) is local-then-cloud behind VoicePort: set Config `cloud_voice_api_key` via `PUT /config/voice` (or `FileConfig.set_secret`) **and** `TEACHER_CLOUD_VOICE_BASE_URL` to a contract-compatible host — unset/default stub fails closed immediately (no silent cloud, no ~30s hang).
 
@@ -51,12 +52,12 @@ uv run pytest
 # (A) env bootstrap/override:
 export TEACHER_AUTH_TOKEN="$(openssl rand -hex 32)"
 # (B) Config secret under app-data (no Settings UI / no env):
-#   TEACHER_DATA_DIR=/tmp/teacher-data-dev uv run python -c \
-#     "from teacher_service.adapters.config import FileConfig, SECRET_BEARER_TOKEN; \
-#      import secrets; c=FileConfig(); c.ensure_layout(); \
-#      c.set_secret(SECRET_BEARER_TOKEN, secrets.token_hex(32)); \
-#      print(c.get_secret(SECRET_BEARER_TOKEN))"
-#   then unset TEACHER_AUTH_TOKEN so CLI reads Config bearer_token
+# TEACHER_DATA_DIR=/tmp/teacher-data-dev uv run python -c \
+# "from teacher_service.adapters.config import FileConfig, SECRET_BEARER_TOKEN; \
+# import secrets; c=FileConfig(); c.ensure_layout(); \
+# c.set_secret(SECRET_BEARER_TOKEN, secrets.token_hex(32)); \
+# print(c.get_secret(SECRET_BEARER_TOKEN))"
+# then unset TEACHER_AUTH_TOKEN so CLI reads Config bearer_token
 
 uv run teacher-api
 # or: uv run python -m teacher_service.adapters.api
@@ -66,15 +67,15 @@ curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" http://127.0.0.1:8765/he
 # expect 200 snake_case JSON, e.g. {"status":"ok"}
 curl -sS http://127.0.0.1:8765/health | tee /tmp/teacher-health-401.json
 # expect 401; body must be {"code","message","retryable"} (jq installed in this image):
-#   jq -e 'keys|sort==["code","message","retryable"]' /tmp/teacher-health-401.json
+# jq -e 'keys|sort==["code","message","retryable"]' /tmp/teacher-health-401.json
 
 # Optional cloud Voice key (never echoed; blank → 422):
 # curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" \
-#   -H "Content-Type: application/json" \
-#   -d '{"cloud_voice_api_key":"…"}' http://127.0.0.1:8765/config/voice
+# -H "Content-Type: application/json" \
+# -d '{"cloud_voice_api_key":"…"}' http://127.0.0.1:8765/config/voice
 # curl -sS -H "Authorization: Bearer $TEACHER_AUTH_TOKEN" http://127.0.0.1:8765/config/voice
 # expect {"configured":true}
-# export TEACHER_CLOUD_VOICE_BASE_URL=https://your-contract-host   # required for cloud path
+# export TEACHER_CLOUD_VOICE_BASE_URL=https://your-contract-host # required for cloud path
 ```
 
 Desktop verify (after `npm install` in `apps/desktop/`): `npm test` (Vitest) and `npm run build`.

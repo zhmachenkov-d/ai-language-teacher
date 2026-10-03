@@ -28,3 +28,6 @@ coverage/
 *.log
 .cache/
 tmp/
+
+# BMad local render cache
+_bmad/render/

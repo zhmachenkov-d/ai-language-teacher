@@ -1,0 +1,74 @@
+# tickets for epic-telegram-cadence-progress-replan
+
+[[entry]]
+id = 1
+type = "story"
+title = "Telegram link/unlink via Settings deep-link"
+description = "To link or unlink my Telegram account from Settings via an external deep-link exists when done."
+verify = "UI shows unlinked status and a primary «Привязать» control (coral-cta) (UX-DR17)"
+covers = ["CAP-13"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "4-1-telegram-link-unlink-via-settings-deep-link"
+
+[[entry]]
+id = 2
+type = "story"
+title = "MicroLesson entity + translation/spelling flows"
+description = "Between-lesson Micro-lessons that practice L1↔Target translation and spelling on new words exists when done."
+verify = "it is a `MicroLesson` entity distinct from `LessonSession` (AD-14)"
+covers = ["CAP-12"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "4-2-microlesson-entity-translation-spelling-flows"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Telegram delivery of Micro-lessons + result card"
+description = "Micro-lessons delivered to my linked Telegram in daytime with a clear result card exists when done."
+verify = "cadence defaults to at most one Micro-lesson per local calendar day; prefer rest days over days with a scheduled live lesson (still daytime-only)"
+covers = ["CAP-13"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "4-3-telegram-delivery-of-micro-lessons-result-card"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Telegram lesson reminders (T−15 + at start)"
+description = "Telegram reminders before and at lesson start time based on my schedule exists when done."
+verify = "Telegram sends a reminder that a lesson starts in 15 minutes and includes the topic when known (UX-DR21)"
+covers = ["CAP-14"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "4-4-telegram-lesson-reminders-t-15-at-start"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Progress dashboard (mastery, errors, words)"
+description = "A desktop Progress dashboard showing mastery, error themes, and word/translation stats exists when done."
+verify = "a full-screen single-scroll dashboard opens (not a drawer over calendar) (UX-DR16)"
+covers = ["CAP-15"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "4-5-progress-dashboard-mastery-errors-words"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Living plan replan + banner + change history"
+description = "The Living plan to revise when speed or recurring errors warrant it, with a visible summary and change history exists when done."
+verify = "automatic replan requires measurable evidence (e.g. same error category recurring across ≥2 completed lessons, or Learner-requested replan from Progress/Living plan)"
+covers = ["CAP-5"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "4-6-living-plan-replan-banner-change-history"
+
