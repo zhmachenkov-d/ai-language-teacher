@@ -5,6 +5,7 @@ import {
   type Router,
 } from 'vue-router'
 import CalendarHome from '../views/CalendarHome.vue'
+import PlanView from '../views/PlanView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import TitleStubView from '../views/TitleStubView.vue'
 import OnboardingWizard from '../views/OnboardingWizard.vue'
@@ -87,8 +88,7 @@ export function createAppRouter(): Router {
       {
         path: '/plan',
         name: 'plan',
-        component: TitleStubView,
-        props: { title: 'План' },
+        component: PlanView,
       },
       {
         path: '/progress',
