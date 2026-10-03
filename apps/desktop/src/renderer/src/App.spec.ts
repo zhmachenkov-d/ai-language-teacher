@@ -331,17 +331,19 @@ describe('App shell + onboarding GATE', () => {
     wrapper.unmount()
   })
 
-  it('stub routes are title-only without calendar panel', async () => {
-    for (const [hash, title] of [
-      ['#/plan', 'План'],
-      ['#/progress', 'Прогресс']
-    ] as const) {
-      const { wrapper, router } = await mountApp(hash)
-      expect(router.currentRoute.value.name).not.toBe('calendar')
-      expect(wrapper.find('h1').text()).toBe(title)
-      expect(wrapper.find('.panel').exists()).toBe(false)
-      wrapper.unmount()
-    }
+  it('plan document and progress stub are full-screen without calendar panel', async () => {
+    const planMount = await mountApp('#/plan')
+    expect(planMount.router.currentRoute.value.name).toBe('plan')
+    expect(planMount.wrapper.find('[data-testid="plan-view"]').exists()).toBe(true)
+    expect(planMount.wrapper.find('h1').text()).toBe('План')
+    expect(planMount.wrapper.find('.panel').exists()).toBe(false)
+    planMount.wrapper.unmount()
+
+    const progressMount = await mountApp('#/progress')
+    expect(progressMount.router.currentRoute.value.name).toBe('progress')
+    expect(progressMount.wrapper.find('h1').text()).toBe('Прогресс')
+    expect(progressMount.wrapper.find('.panel').exists()).toBe(false)
+    progressMount.wrapper.unmount()
   })
 
   it('unknown hash is gated away from calendar-as-onboarded', async () => {
