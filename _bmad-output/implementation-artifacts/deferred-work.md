@@ -110,6 +110,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
   summary: Optional cloud Voice fallback behind VoicePort (AD-9)
   evidence: Split from 2.3; narrowed story ships local-first STT/TTS only for placement seedable results
+  resolved_by: spec-2-3-cloud-voice-fallback.md
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-placement-briefing-written-listening-speaking.md`
   summary: Adaptive multi-form placement bank / re-take flows after first completion
@@ -154,3 +155,18 @@
   summary: Enable SQLite PRAGMA foreign_keys=ON so lesson_record → living_plan FK is enforced
   evidence: Story 2.4 added the FK declaration but the store never enables foreign_keys (pre-existing pattern); orphan lesson rows remain possible
   resolved_by: SqliteStore.\_connect PRAGMA foreign_keys=ON + test_sqlite_foreign_keys_pragma_on (2026-09-29)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-cloud-voice-fallback.md`
+  summary: Cloud Voice keyed with unset TEACHER_CLOUD_VOICE_BASE_URL waits ~30s on default stub 127.0.0.1:9 after local fail
+  evidence: Review found intentional STUB default makes everyday keyed-without-env path slow; fail-fast-on-default-host not in Intent
+  resolved_by: CloudVoiceAdapter._base_url fail-fast when unset/blank/default stub (2026-10-03)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-cloud-voice-fallback.md`
+  summary: Document cloud_voice_api_key, GET/PUT /config/voice, and TEACHER_CLOUD_VOICE_BASE_URL in AGENTS.md teacher Running notes
+  evidence: Review deferred because the fix edits agent-context AGENTS.md
+  resolved_by: AGENTS.md teacher Running — cloud_voice_api_key + /config/voice + TEACHER_CLOUD_VOICE_BASE_URL (2026-10-03)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-cloud-voice-fallback.md`
+  summary: Pytest coverage of PUT /config/voice RuntimeError→shaped 500 (set_secret boom); GET path already covered
+  evidence: Verification-gap review; rare write-failure branch; mirrors existing /config/llm GET-only 500 coverage pattern
+  resolved_by: test_put_config_voice_runtime_error_returns_shaped_500 (2026-10-03)

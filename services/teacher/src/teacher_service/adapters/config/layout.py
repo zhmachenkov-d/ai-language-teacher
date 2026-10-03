@@ -20,12 +20,14 @@ VOICE_MODELS_DIRNAME = "voice-models"
 SECRET_BEARER_TOKEN = "bearer_token"
 SECRET_LLM_API_KEY = "llm_api_key"
 SECRET_TELEGRAM_BOT_TOKEN = "telegram_bot_token"
+SECRET_CLOUD_VOICE_API_KEY = "cloud_voice_api_key"
 
 _KNOWN_SECRETS = frozenset(
     {
         SECRET_BEARER_TOKEN,
         SECRET_LLM_API_KEY,
         SECRET_TELEGRAM_BOT_TOKEN,
+        SECRET_CLOUD_VOICE_API_KEY,
     }
 )
 
