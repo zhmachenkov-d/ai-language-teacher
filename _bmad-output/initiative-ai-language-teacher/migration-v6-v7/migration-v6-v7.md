@@ -26,7 +26,7 @@ Source folders (from `_bmad/config.toml` defaults; no custom path overrides):
 | -------------- | ---------------------------------------- |
 | output         | `_bmad-output/`                          |
 | planning       | `_bmad-output/planning-artifacts/`       |
-| implementation | `_bmad-output/implementation-artifacts/` |
+| implementation | `_bmad-output/initiative-ai-language-teacher/` |
 
 ## Inventory summary
 

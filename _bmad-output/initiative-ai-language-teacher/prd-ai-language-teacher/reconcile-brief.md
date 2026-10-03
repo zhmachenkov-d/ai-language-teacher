@@ -5,10 +5,10 @@
 
 | Document | Path |
 | -------- | ---- |
-| Product brief | `_bmad-output/planning-artifacts/briefs/brief-ai-language-teacher-2026-09-22/brief.md` |
-| Brief addendum | `_bmad-output/planning-artifacts/briefs/brief-ai-language-teacher-2026-09-22/addendum.md` |
-| PRD | `_bmad-output/planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/prd.md` |
-| PRD addendum | `_bmad-output/planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/addendum.md` |
+| Product brief | `_bmad-output/initiative-ai-language-teacher/brief-ai-language-teacher/brief.md` |
+| Brief addendum | `_bmad-output/initiative-ai-language-teacher/brief-ai-language-teacher/addendum.md` |
+| PRD | `_bmad-output/initiative-ai-language-teacher/prd-ai-language-teacher/prd-ai-language-teacher.md` |
+| PRD addendum | `_bmad-output/initiative-ai-language-teacher/prd-ai-language-teacher/addendum.md` |
 
 **Verdict:** Mostly aligned on v1 core loop (onboarding → living plan → adaptive voice lessons → between-lesson practice → replan). One **scope conflict** (certificate track) and one **delivery constraint** (Telegram) introduced in PRD. Several brief qualitative differentiators and curriculum-level details are not carried into FRs.
 
@@ -112,4 +112,4 @@ Document explicitly in PRD; reconcile treats these as **accepted** unless brief 
 - **Input:** Product brief + brief addendum  
 - **Gaps:** (1) Certificate at intake in brief, deferred in PRD — scope conflict + missing FRs. (2) Shadowing/re-say in transfer template not in FRs. (3) Qualitative differentiation (accountability, anti-chat, no SaaS) dropped. (4) Micro-sessions narrowed vs “vocab and related.” (5) Lesson timing bands only in brief addendum.  
 - **Intentional overrides:** Certificate v1 deferral; Telegram-only micro-lessons/reminders; FR-12 scope.  
-- **File:** `_bmad-output/planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/reconcile-brief.md`
+- **File:** `_bmad-output/initiative-ai-language-teacher/prd-ai-language-teacher/reconcile-brief.md`

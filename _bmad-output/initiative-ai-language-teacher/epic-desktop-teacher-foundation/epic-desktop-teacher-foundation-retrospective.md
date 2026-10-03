@@ -21,7 +21,7 @@ headless: false
   - `1-5-calendar-home-empty-chrome-with-side-panel`
   - `1-6-settings-sections-shell-with-explicit-save`
 - **Sprint:** `epic-1: done`; `epic-1-retrospective: done` (this run); 5 open action items appended.
-- **Acceptance criteria:** Declared in `_bmad-output/planning-artifacts/epics.md` (Epic 1 + per-story ACs) and `_bmad-output/implementation-artifacts/epic-1-context.md`.
+- **Acceptance criteria:** Declared in `_bmad-output/planning-artifacts/epics.md` (Epic 1 + per-story ACs) and `_bmad-output/initiative-ai-language-teacher/epic-1-context.md`.
 
 ### Evidence inventory
 

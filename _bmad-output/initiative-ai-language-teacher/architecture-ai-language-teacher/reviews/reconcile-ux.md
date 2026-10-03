@@ -2,9 +2,9 @@
 title: "UX ↔ Architecture Spine Reconciliation"
 created: 2026-09-23
 sources:
-  - design: "_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/DESIGN.md"
-  - experience: "_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/EXPERIENCE.md"
-  - spine: "_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md"
+  - design: "_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/DESIGN.md"
+  - experience: "_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/EXPERIENCE.md"
+  - spine: "_bmad-output/initiative-ai-language-teacher/architecture-ai-language-teacher/architecture-ai-language-teacher.md"
 ---
 
 # UX ↔ Spine Reconciliation

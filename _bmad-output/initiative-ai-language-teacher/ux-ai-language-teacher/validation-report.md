@@ -1,7 +1,7 @@
 # Validation Report — ai-language-teacher
 
-- **DESIGN.md:** `_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/DESIGN.md`
-- **EXPERIENCE.md:** `_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/EXPERIENCE.md`
+- **DESIGN.md:** `_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/DESIGN.md`
+- **EXPERIENCE.md:** `_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/EXPERIENCE.md`
 - **Run at:** 2026-09-23T09:30:00Z
 
 ## Overall verdict

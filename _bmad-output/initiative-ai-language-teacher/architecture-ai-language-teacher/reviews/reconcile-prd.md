@@ -2,9 +2,9 @@
 title: "PRD ↔ Architecture Spine Reconciliation"
 created: 2026-09-23
 sources:
-  - prd: "_bmad-output/planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/prd.md"
-  - addendum: "_bmad-output/planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/addendum.md"
-  - spine: "_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md"
+  - prd: "_bmad-output/initiative-ai-language-teacher/prd-ai-language-teacher/prd-ai-language-teacher.md"
+  - addendum: "_bmad-output/initiative-ai-language-teacher/prd-ai-language-teacher/addendum.md"
+  - spine: "_bmad-output/initiative-ai-language-teacher/architecture-ai-language-teacher/architecture-ai-language-teacher.md"
 ---
 
 # PRD ↔ Spine Reconciliation

@@ -57,11 +57,11 @@ review_loop_iteration: 0
 
 ## Code Map
 
-- `_bmad-output/implementation-artifacts/epic-1-context.md` — AD-4/7/18; Learner fields
+- `_bmad-output/initiative-ai-language-teacher/epic-1-context.md` — AD-4/7/18; Learner fields
 - `_bmad-output/planning-artifacts/epics.md` (Story 1.3) — AC source; API projection deferred
 - `_bmad-output/planning-artifacts/architecture/.../ARCHITECTURE-SPINE.md` — AD-4, AD-7, AD-10, AD-18
-- `_bmad-output/implementation-artifacts/spec-1-2-...md` — Bearer middleware, `create_app(auth_token=…)`, `/health`
-- `_bmad-output/implementation-artifacts/deferred-work.md` — HTTP projection + Electron lifecycle
+- `_bmad-output/initiative-ai-language-teacher/spec-1-2-...md` — Bearer middleware, `create_app(auth_token=…)`, `/health`
+- `_bmad-output/initiative-ai-language-teacher/deferred-work.md` — HTTP projection + Electron lifecycle
 - `services/teacher/src/teacher_service/ports/config.py` — Protocol: data-dir paths + secret get/set
 - `services/teacher/src/teacher_service/ports/persistence.py` — Protocol: Learner create/load
 - `services/teacher/src/teacher_service/adapters/config/` — app-data resolve, layout, secret files

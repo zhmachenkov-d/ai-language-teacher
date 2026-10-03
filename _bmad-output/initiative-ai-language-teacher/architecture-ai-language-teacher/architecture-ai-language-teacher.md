@@ -12,9 +12,9 @@ created: "2026-09-23"
 updated: "2026-09-23"
 binds: []
 sources:
-  - "_bmad-output/planning-artifacts/briefs/brief-ai-language-teacher-2026-09-22/"
-  - "_bmad-output/planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/"
-  - "_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/"
+  - "_bmad-output/initiative-ai-language-teacher/brief-ai-language-teacher/"
+  - "_bmad-output/initiative-ai-language-teacher/prd-ai-language-teacher/"
+  - "_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/"
 companions: []
 ---
 

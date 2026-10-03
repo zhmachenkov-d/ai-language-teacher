@@ -1,6 +1,6 @@
 # Adversarial Architecture Review — ARCHITECTURE-SPINE.md
 
-**Artifact:** `_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md`  
+**Artifact:** `_bmad-output/initiative-ai-language-teacher/architecture-ai-language-teacher/architecture-ai-language-teacher.md`  
 **Stance:** Red team — construct downstream **features/epics** that satisfy every adopted AD **literally** yet still integrate into incompatible systems.  
 **Date:** 2026-09-23  
 **Reviewer role:** Adversarial (build-substrate gate)

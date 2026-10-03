@@ -80,13 +80,13 @@ review_loop_iteration: 0
 
 ## Code Map
 
-- `_bmad-output/implementation-artifacts/epic-1-context.md` — Settings + lifecycle constraints
+- `_bmad-output/initiative-ai-language-teacher/epic-1-context.md` — Settings + lifecycle constraints
 - `_bmad-output/planning-artifacts/epics.md` (Story 1.6 + absorbed 1.2 lifecycle/host-survival ACs) — AC source
-- `_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/EXPERIENCE.md` — sections + explicit «Сохранить»
-- `_bmad-output/implementation-artifacts/deferred-work.md` — resolve 1.2 spawn/token-bridge + host-survival + remint-on-bridge; leave polished status chrome deferred
-- `_bmad-output/implementation-artifacts/spec-1-2-loopback-http-api-with-local-auth-and-electron-service-lifec.md` — API auth continuity
-- `_bmad-output/implementation-artifacts/spec-1-3-config-port-secrets-layout-and-sqlite-app-data-store.md` — Config bearer + `llm_api_key`
-- `_bmad-output/implementation-artifacts/spec-1-5-calendar-home-empty-chrome-with-side-panel.md` — `#/settings` stub continuity
+- `_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/EXPERIENCE.md` — sections + explicit «Сохранить»
+- `_bmad-output/initiative-ai-language-teacher/deferred-work.md` — resolve 1.2 spawn/token-bridge + host-survival + remint-on-bridge; leave polished status chrome deferred
+- `_bmad-output/initiative-ai-language-teacher/epic-desktop-teacher-foundation/story-loopback-http-api-with-local-auth-and-electron-service-lifec-plan.md` — API auth continuity
+- `_bmad-output/initiative-ai-language-teacher/epic-desktop-teacher-foundation/story-config-port-secrets-layout-and-sqlite-app-data-store-plan.md` — Config bearer + `llm_api_key`
+- `_bmad-output/initiative-ai-language-teacher/epic-desktop-teacher-foundation/story-calendar-home-empty-chrome-with-side-panel-plan.md` — `#/settings` stub continuity
 - `apps/desktop/src/main/index.ts` — today quits on `window-all-closed`; replace with spawn/attach/stop/status, Config bearer seed, tray hide/reopen/quit
 - `apps/desktop/src/preload/index.ts` + `index.d.ts` — expose `base_url`, bearer, lifecycle status (no domain bus)
 - `apps/desktop/src/renderer/src/router/index.ts` — point `settings` at SettingsView
@@ -130,7 +130,7 @@ review_loop_iteration: 0
 ### Review Findings
 
 - [x] [Review][Patch] Devcontainer: ensure workspace `.env` exists from `.env.example` in post-create/post-start (decision: option 1) [`.devcontainer/`]
-- [x] [Review][Patch] Deduplicate HOST_SURVIVAL deferred-work ledger rows [`_bmad-output/implementation-artifacts/deferred-work.md:72-78`]
+- [x] [Review][Patch] Deduplicate HOST_SURVIVAL deferred-work ledger rows [`_bmad-output/initiative-ai-language-teacher/deferred-work.md:72-78`]
 - [x] [Review][Patch] `doStart()` always `killOwnedChild()` before attach — re-entrant `start()`/`retry` tears down a healthy owned teacher [`apps/desktop/src/main/teacherHost.ts:243`]
 - [x] [Review][Patch] Timeout/unhealthy spawn path: assert `kill` / `ownsChildProcess()===false` (cleanup implemented, unproven) [`apps/desktop/src/main/teacherHost.spec.ts:249`]
 - [x] [Review][Patch] Block leave-dirty confirm while `save()` PUT is in flight (key can persist after discard) [`apps/desktop/src/renderer/src/views/SettingsView.vue:110`]

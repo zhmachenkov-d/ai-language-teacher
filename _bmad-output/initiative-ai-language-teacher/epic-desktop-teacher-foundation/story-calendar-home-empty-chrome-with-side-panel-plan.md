@@ -71,12 +71,12 @@ Layout cue (mockup): left nav → main toolbar (range title + «Неделя» |
 
 ## Code Map
 
-- `_bmad-output/implementation-artifacts/epic-1-context.md` — calendar + chrome constraints
+- `_bmad-output/initiative-ai-language-teacher/epic-1-context.md` — calendar + chrome constraints
 - `_bmad-output/planning-artifacts/epics.md` (Story 1.5) — AC source
-- `_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/EXPERIENCE.md` — empty side panel + today orientation
-- `_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/mockups/key-calendar-home.html` — layout cue
-- `_bmad-output/implementation-artifacts/deferred-work.md` — Russian shell from 1.4 (absorbed; resolve on Done)
-- `_bmad-output/implementation-artifacts/spec-1-4-design-tokens-dark-mode-and-russian-app-chrome-shell.md` — tokens/`useTheme` continuity
+- `_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/EXPERIENCE.md` — empty side panel + today orientation
+- `_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/mockups/key-calendar-home.html` — layout cue
+- `_bmad-output/initiative-ai-language-teacher/deferred-work.md` — Russian shell from 1.4 (absorbed; resolve on Done)
+- `_bmad-output/initiative-ai-language-teacher/epic-desktop-teacher-foundation/story-design-tokens-dark-mode-and-russian-app-chrome-shell-plan.md` — tokens/`useTheme` continuity
 - `apps/desktop/package.json` — pin exact `vue-router`
 - `apps/desktop/src/renderer/src/main.ts` — `createApp` + hash router
 - `apps/desktop/src/renderer/src/App.vue` — shell (nav + theme control + `<RouterView>`); replace token-demo surface

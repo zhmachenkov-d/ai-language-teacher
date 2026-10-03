@@ -53,11 +53,11 @@ review_loop_iteration: 0
 
 ## Code Map
 
-- `_bmad-output/implementation-artifacts/epic-1-context.md` — AD-3/4/15 trust + wire rules
+- `_bmad-output/initiative-ai-language-teacher/epic-1-context.md` — AD-3/4/15 trust + wire rules
 - `_bmad-output/planning-artifacts/epics.md` (Story 1.2) — API/auth ACs in-scope; Electron ACs deferred
 - `_bmad-output/planning-artifacts/architecture/.../ARCHITECTURE-SPINE.md` — Bearer, loopback, `adapters/api`
-- `_bmad-output/implementation-artifacts/spec-1-1-...md` — continuity; 1.1 banned FastAPI in adapters
-- `_bmad-output/implementation-artifacts/deferred-work.md` — Electron lifecycle + host-survival + status chrome for this story
+- `_bmad-output/initiative-ai-language-teacher/spec-1-1-...md` — continuity; 1.1 banned FastAPI in adapters
+- `_bmad-output/initiative-ai-language-teacher/deferred-work.md` — Electron lifecycle + host-survival + status chrome for this story
 - `services/teacher/pyproject.toml` — pin uvicorn; `[project.scripts]` or equivalent entrypoint
 - `services/teacher/src/teacher_service/adapters/api/` — app factory, Bearer dependency (constant-time compare), `GET /health`, CLI/`__main__`
 - `services/teacher/tests/test_scaffold_imports.py` — allow FastAPI only under `adapters/api/`

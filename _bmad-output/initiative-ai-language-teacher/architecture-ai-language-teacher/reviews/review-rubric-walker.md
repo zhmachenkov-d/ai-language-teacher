@@ -1,6 +1,6 @@
 # Architecture Spine Rubric Review — ai-language-teacher
 
-**Artifact:** `_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md`  
+**Artifact:** `_bmad-output/initiative-ai-language-teacher/architecture-ai-language-teacher/architecture-ai-language-teacher.md`  
 **Reviewer:** Independent rubric walker (good-spine checklist)  
 **Date:** 2026-09-23  
 **Mechanical lint:** `lint_spine.py` → `ok: true`, 0 findings (structure, AD shape, duplicate IDs)
@@ -179,6 +179,6 @@ Map rows align FR groupings to domain locations and AD IDs: onboarding FR-1..3, 
 ## Artifacts referenced
 
 - `ARCHITECTURE-SPINE.md` (review target)
-- `_bmad-output/planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/prd.md`
-- `_bmad-output/planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/addendum.md`
+- `_bmad-output/initiative-ai-language-teacher/prd-ai-language-teacher/prd-ai-language-teacher.md`
+- `_bmad-output/initiative-ai-language-teacher/prd-ai-language-teacher/addendum.md`
 - `.memlog.md` (same architecture folder)

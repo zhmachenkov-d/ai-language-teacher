@@ -1,6 +1,6 @@
 # Technology & Version Reality Check — ARCHITECTURE-SPINE.md
 
-**Artifact:** `_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md`  
+**Artifact:** `_bmad-output/initiative-ai-language-teacher/architecture-ai-language-teacher/architecture-ai-language-teacher.md`  
 **Lens:** Verify committed stack decisions against live web/registry reality (not training-data assertions); greenfield starter defaults; mechanical vs semantic pin policy.  
 **Date:** 2026-09-23  
 **Spine status:** `draft`  

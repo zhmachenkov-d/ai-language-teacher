@@ -57,10 +57,10 @@ review_loop_iteration: 0
 
 ## Code Map
 
-- `_bmad-output/implementation-artifacts/epic-1-context.md` — token/chrome constraints; shell later
+- `_bmad-output/initiative-ai-language-teacher/epic-1-context.md` — token/chrome constraints; shell later
 - `_bmad-output/planning-artifacts/epics.md` (Story 1.4) — AC source; Russian shell AC deferred
-- `_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/DESIGN.md` — locked hex pairs, type, radius
-- `_bmad-output/implementation-artifacts/deferred-work.md` — Russian shell split entry
+- `_bmad-output/initiative-ai-language-teacher/ux-ai-language-teacher/DESIGN.md` — locked hex pairs, type, radius
+- `_bmad-output/initiative-ai-language-teacher/deferred-work.md` — Russian shell split entry
 - `apps/desktop/src/renderer/src/App.vue` — replace ad-hoc hex with tokenized demo + theme control
 - `apps/desktop/src/renderer/src/main.ts` — import tokens CSS
 - `apps/desktop/src/renderer/src/styles/tokens.css` (new) — light/dark `--color-*` pairs + `--font-sans` / `--radius-md` + reduce-motion helpers

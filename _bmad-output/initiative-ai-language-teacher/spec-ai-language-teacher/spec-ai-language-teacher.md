@@ -3,12 +3,12 @@ id: SPEC-ai-language-teacher
 companions:
   - glossary.md
   - lesson-templates.md
-  - ../../planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/DESIGN.md
-  - ../../planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/EXPERIENCE.md
-  - ../../planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md
+  - ../ux-ai-language-teacher/DESIGN.md
+  - ../ux-ai-language-teacher/EXPERIENCE.md
+  - ../architecture-ai-language-teacher/architecture-ai-language-teacher.md
 sources:
-  - ../../planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/prd.md
-  - ../../planning-artifacts/prds/prd-ai-language-teacher-2026-09-22/addendum.md
+  - ../prd-ai-language-teacher/prd-ai-language-teacher.md
+  - ../prd-ai-language-teacher/addendum.md
 ---
 
 > **Canonical contract.** This SPEC and the files in `companions:` are the complete, preservation-validated contract for what to build, test, and validate. Source documents listed in frontmatter are for traceability — consult them only if you need narrative rationale or prose color this contract intentionally omits.

@@ -8,7 +8,7 @@ updated: 2026-09-22
 
 # PRD: AI Language Teacher
 
-_For PM / downstream UX, architecture, and epics. Builds on product brief `_bmad-output/planning-artifacts/briefs/brief-ai-language-teacher-2026-09-22/`. Stack and Telegram transport live in `addendum.md`._
+_For PM / downstream UX, architecture, and epics. Builds on product brief `_bmad-output/initiative-ai-language-teacher/brief-ai-language-teacher/`. Stack and Telegram transport live in `addendum.md`._
 
 ## Vision
 

@@ -56,7 +56,7 @@ review_loop_iteration: 0
 - `AGENTS.md` — replace Running TODO with exact commands; note scaffolded layout + pins; keep policy/conventions
 - `.gitignore` — reuse; extend only for starter local-only artifacts
 - `.devcontainer/` — reuse; do not redesign
-- `_bmad-output/implementation-artifacts/epic-1-context.md` — epic constraints
+- `_bmad-output/initiative-ai-language-teacher/epic-1-context.md` — epic constraints
 - `_bmad-output/planning-artifacts/epics.md` (Story 1.1) — acceptance source (window start = human/display gate when GUI absent)
 - `_bmad-output/planning-artifacts/architecture/.../ARCHITECTURE-SPINE.md` — Stack families + Structural Seed (folders under package `teacher_service`)
 - `apps/desktop/package.json` — **create** pinned electron-vite + Electron + Vue 3 + Vite; scripts: `dev`/`build`/`preview` as appropriate
