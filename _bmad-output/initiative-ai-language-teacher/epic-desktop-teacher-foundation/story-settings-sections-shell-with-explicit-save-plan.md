@@ -1,14 +1,11 @@
 ---
 title: "1.6 Settings sections shell with explicit save"
 type: "feature"
-created: "2026-09-28"
+ticket: 6
 status: "done"
-route: "dispatch"
+created: "2026-09-28"
+baseline_revision: "a99d03109ad6f9efd893b3a2362e05d640ade60a"
 review_loop_iteration: 0
-baseline_commit: "a99d03109ad6f9efd893b3a2362e05d640ade60a"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md"
-  - "{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/EXPERIENCE.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

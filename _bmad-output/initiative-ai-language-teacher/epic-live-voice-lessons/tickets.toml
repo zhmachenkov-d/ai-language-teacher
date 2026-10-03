@@ -1,0 +1,122 @@
+# tickets for epic-live-voice-lessons
+
+[[entry]]
+id = 1
+type = "story"
+title = "Lesson eligibility + due/incomplete gates"
+description = "The teacher to decide when a lesson is next/due/missed/incomplete and to show due/incomplete gates on cold open exists when done."
+verify = "each lesson can be classified as at least `next`, `due`, `missed`, or `incomplete`"
+covers = ["CAP-4"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-1-lesson-eligibility-due-incomplete-gates"
+
+[[entry]]
+id = 2
+type = "story"
+title = "LessonSession start/resume + lesson screen chrome"
+description = "To start or resume a `LessonSession` into a lesson screen with plan stages, header actions, and mic chrome exists when done."
+verify = "domain creates at most one active `LessonSession` for the learner (AD-14)"
+covers = ["CAP-4"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-2-lessonsession-start-resume-lesson-screen-chrome"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Template selection + per-lesson plan/topic/vocab + SSE phases"
+description = "Each started lesson to pick a study-heavy / oral / transfer template, build topic/activities/vocab, and stream phase updates over SSE exists when done."
+verify = "exactly one of study-heavy, oral, or transfer/weak-spot is associated with the lesson"
+covers = ["CAP-4", "CAP-6"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-3-template-selection-per-lesson-plan-topic-vocab-sse-phases"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Spoken dialogue and role-play"
+description = "Spoken dialogue and role-play turn-taking in the Target language during oral/transfer phases exists when done."
+verify = "teacher and learner turns appear as chat bubbles (teacher = sidebar fill; learner = coral-soft) (UX-DR9)"
+covers = ["CAP-8"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-4-spoken-dialogue-and-role-play"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Listening comprehension card"
+description = "Listening tasks with a real comprehension check (not playback alone) exists when done."
+verify = "a Listening card renders (surface + line border + rounded.md) separate from inline teacher chat"
+covers = ["CAP-9"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-5-listening-comprehension-card"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Passage and vocabulary TTS"
+description = "Play controls for primary lesson passages and new vocabulary in the Target language exists when done."
+verify = "a play control is available for TTS in the Target language"
+covers = ["CAP-10"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-6-passage-and-vocabulary-tts"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Pronunciation and intonation feedback"
+description = "Feedback when my pronunciation or intonation is wrong, with a corrected model exists when done."
+verify = "full learner utterances are captured in dialogue without requiring a manual re-prompt as the default path (NFR2)"
+covers = ["CAP-11"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-7-pronunciation-and-intonation-feedback"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Error coaching + ProgressEvent writes"
+description = "Errors explained and recorded into a shared Progress catalog exists when done."
+verify = "the explanation covers what was wrong and how to avoid it"
+covers = ["CAP-7"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-8-error-coaching-progressevent-writes"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Connectivity modal + incomplete pause/idle"
+description = "Connectivity failures to offer retry or pause, and mid-lesson pause/close/idle to mark the lesson «Не завершен» exists when done."
+verify = "a blocking modal shows plain copy such as «нет связи» with **«Повторить»** | **«Пауза»** (UX-DR18)"
+covers = ["CAP-4"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-9-connectivity-modal-incomplete-pause-idle"
+
+[[entry]]
+id = 10
+type = "story"
+title = "Completion → history mode + template decision summary"
+description = "A completed lesson to switch into read-only history with outcome and template decision visible exists when done."
+verify = "the lesson is marked completed in the domain/calendar projection"
+covers = ["CAP-4"]
+after = []
+hitl = false
+risk = "low"
+v6_key = "3-10-completion-history-mode-template-decision-summary"
+

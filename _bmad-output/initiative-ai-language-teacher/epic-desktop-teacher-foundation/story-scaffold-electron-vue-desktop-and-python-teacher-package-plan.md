@@ -1,14 +1,11 @@
 ---
 title: "1.1 Scaffold Electron+Vue desktop and Python teacher package"
 type: "feature"
-created: "2026-09-24"
+ticket: 1
 status: "done"
-route: "dispatch"
+created: "2026-09-24"
+baseline_revision: "df13672a75dbb08845cee22e226dc7598447fde0"
 review_loop_iteration: 0
-baseline_commit: "df13672a75dbb08845cee22e226dc7598447fde0"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md"
-  - "{project-root}/_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

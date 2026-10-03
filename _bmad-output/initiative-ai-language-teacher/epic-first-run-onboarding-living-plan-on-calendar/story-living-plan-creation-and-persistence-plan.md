@@ -1,13 +1,11 @@
 ---
 title: "2.4 Living plan creation and persistence"
 type: "feature"
-created: "2026-09-29"
+ticket: 4
 status: "done"
-route: "dispatch"
+created: "2026-09-29"
+baseline_revision: "cbc522e4151b414e7fc7133239b9bdf959d203c7"
 review_loop_iteration: 2
-baseline_commit: "cbc522e4151b414e7fc7133239b9bdf959d203c7"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

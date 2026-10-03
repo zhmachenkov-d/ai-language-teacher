@@ -1,13 +1,11 @@
 ---
 title: "2.3 Listening player — scrub, seek, replay"
 type: "feature"
-created: "2026-09-29"
+ticket: 10
 status: "done"
-route: "dispatch"
+created: "2026-09-29"
+baseline_revision: "60cc0cf9f1f0c79a3a012a58650057d551bba9a4"
 review_loop_iteration: 0
-baseline_commit: "60cc0cf9f1f0c79a3a012a58650057d551bba9a4"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

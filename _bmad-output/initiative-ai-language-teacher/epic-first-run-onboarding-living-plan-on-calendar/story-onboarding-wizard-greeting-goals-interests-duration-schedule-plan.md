@@ -1,13 +1,11 @@
 ---
 title: "2.1 Onboarding wizard — greeting, goals, interests, duration, schedule"
 type: "feature"
-created: "2026-09-28"
+ticket: 1
 status: "done"
-route: "dispatch"
+created: "2026-09-28"
+baseline_revision: "bb5041a14a33ce7ac741cf14cab7e24fb2c3ebaf"
 review_loop_iteration: 0
-baseline_commit: "bb5041a14a33ce7ac741cf14cab7e24fb2c3ebaf"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

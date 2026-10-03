@@ -1,15 +1,11 @@
 ---
 title: "1.5 Calendar home empty chrome with side panel"
 type: "feature"
-created: "2026-09-28"
+ticket: 5
 status: "done"
-route: "dispatch"
+created: "2026-09-28"
+baseline_revision: "4fd77e5cdeb9bb3e27d9d7450aec4eb81bced1db"
 review_loop_iteration: 0
-baseline_commit: "4fd77e5cdeb9bb3e27d9d7450aec4eb81bced1db"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md"
-  - "{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/EXPERIENCE.md"
-  - "{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/mockups/key-calendar-home.html"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

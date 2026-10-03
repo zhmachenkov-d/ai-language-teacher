@@ -1,13 +1,11 @@
 ---
 title: "2.3 Placement — briefing, written, listening, speaking"
 type: "feature"
-created: "2026-09-28"
+ticket: 3
 status: "done"
-route: "dispatch"
+created: "2026-09-28"
+baseline_revision: "b4d9c774c8c437b8f149f98ed8328ab1a6037e70"
 review_loop_iteration: 0
-baseline_commit: "b4d9c774c8c437b8f149f98ed8328ab1a6037e70"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

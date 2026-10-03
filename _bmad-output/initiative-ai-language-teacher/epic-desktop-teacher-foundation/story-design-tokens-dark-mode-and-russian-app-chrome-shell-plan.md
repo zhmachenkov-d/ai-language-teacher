@@ -1,14 +1,11 @@
 ---
 title: "1.4 Design tokens and dark mode"
 type: "feature"
-created: "2026-09-27"
+ticket: 4
 status: "done"
-route: "dispatch"
+created: "2026-09-27"
+baseline_revision: "7497f1e8dc03d51c94098ae9f3cf082b8b392ad9"
 review_loop_iteration: 0
-baseline_commit: "7497f1e8dc03d51c94098ae9f3cf082b8b392ad9"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md"
-  - "{project-root}/_bmad-output/planning-artifacts/ux-designs/ux-ai-language-teacher-2026-09-22/DESIGN.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

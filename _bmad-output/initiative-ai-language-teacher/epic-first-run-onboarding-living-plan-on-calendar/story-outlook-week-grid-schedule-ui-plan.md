@@ -1,13 +1,11 @@
 ---
 title: "2.1 Outlook week-grid schedule UI"
 type: "feature"
-created: "2026-09-29"
+ticket: 8
 status: "done"
-route: "dispatch"
+created: "2026-09-29"
+baseline_revision: "846674a92e72012b42d287a771411b1448cd7e31"
 review_loop_iteration: 0
-baseline_commit: "846674a92e72012b42d287a771411b1448cd7e31"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

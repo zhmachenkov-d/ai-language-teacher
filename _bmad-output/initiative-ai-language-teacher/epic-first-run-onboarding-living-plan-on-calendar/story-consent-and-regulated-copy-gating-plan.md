@@ -1,13 +1,11 @@
 ---
 title: "2.2 Consent and regulated copy gating"
 type: "feature"
-created: "2026-09-28"
+ticket: 2
 status: "done"
-route: "dispatch"
+created: "2026-09-28"
+baseline_revision: "50e93c13134fe6f99826b88b935eb68def1a13ce"
 review_loop_iteration: 0
-baseline_commit: "50e93c13134fe6f99826b88b935eb68def1a13ce"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

@@ -1,14 +1,11 @@
 ---
 title: "1.2 Loopback HTTP API with local auth and Electron service lifecycle"
 type: "feature"
-created: "2026-09-24"
+ticket: 2
 status: "done"
-route: "dispatch"
+created: "2026-09-24"
+baseline_revision: "a88e2ed356cbb90f6388c355d510ce55c9b4ac15"
 review_loop_iteration: 0
-baseline_commit: "a88e2ed356cbb90f6388c355d510ce55c9b4ac15"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md"
-  - "{project-root}/_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

@@ -1,14 +1,11 @@
 ---
 title: "1.3 Config port, secrets layout, and SQLite app-data store"
 type: "feature"
-created: "2026-09-27"
+ticket: 3
 status: "done"
-route: "dispatch"
+created: "2026-09-27"
+baseline_revision: "ef76c801fff12c730dce6ccdae4c351ce5ab071d"
 review_loop_iteration: 0
-baseline_commit: "ef76c801fff12c730dce6ccdae4c351ce5ab071d"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md"
-  - "{project-root}/_bmad-output/planning-artifacts/architecture/architecture-ai-language-teacher-2026-09-23/ARCHITECTURE-SPINE.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

@@ -1,13 +1,11 @@
 ---
 title: "2.3 Cloud Voice fallback behind VoicePort (AD-9)"
 type: "feature"
-created: "2026-09-29"
+ticket: 9
 status: "done"
-route: "dispatch"
+created: "2026-09-29"
+baseline_revision: "6e43f6b9bdf7531360d8eadab4d070fb66f32d9a"
 review_loop_iteration: 0
-baseline_commit: "6e43f6b9bdf7531360d8eadab4d070fb66f32d9a"
-context:
-  - "{project-root}/_bmad-output/implementation-artifacts/epic-2-context.md"
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
